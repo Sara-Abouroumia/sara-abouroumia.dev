@@ -1,1 +1,70 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: light;
+
+  --bg: #ffffff;
+  --panel: #f4f2ec;
+  --border: #e2ded3;
+  --text: #1c1c1a;
+  --text-soft: #33322d;
+  --muted: #6b675c;
+  --muted-light: #6b6860;
+  --accent: #2c4a6e;
+  --accent-hover: #1a3350;
+  --accent-fg: #ffffff;
+  --input-bg: #ffffff;
+  --success-bg: #f4f7f1;
+  --success-border: #dfe6da;
+  --success-text: #3a4a34;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --bg: #14161a;
+  --panel: #1e2126;
+  --border: #2b2e33;
+  --text: #f1efe9;
+  --text-soft: #d8d5cb;
+  --muted: #9b9789;
+  --muted-light: #9c988c;
+  --accent: #7fa8d1;
+  --accent-hover: #9cc0e6;
+  --accent-fg: #0d1116;
+  --input-bg: #1a1c20;
+  --success-bg: #182018;
+  --success-border: #2c3a2c;
+  --success-text: #a9c9a4;
+}
+
+/* Class-based dark mode. Replaces v3's darkMode: 'class' config. */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* `inline` is load-bearing: it makes utilities emit var(--x) instead
+   of baking the hex, which is what lets .dark override them. */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-panel: var(--panel);
+  --color-border: var(--border);
+  --color-text: var(--text);
+  --color-text-soft: var(--text-soft);
+  --color-muted: var(--muted);
+  --color-muted-light: var(--muted-light);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-fg: var(--accent-fg);
+  --color-input-bg: var(--input-bg);
+  --color-success-bg: var(--success-bg);
+  --color-success-border: var(--success-border);
+  --color-success-text: var(--success-text);
+
+  --font-sans: var(--font-inter), system-ui, sans-serif;
+  --font-serif: var(--font-lora), Georgia, serif;
+
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+}
