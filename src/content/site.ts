@@ -5,6 +5,9 @@ export const site = {
   email: "saraabouroumia@gmail.com",
   linkedin: "https://linkedin.com/in/sara-abouroumia-7b5665210",
   resume: "/Sara_Abouroumia_Resume.pdf",
+  /** Drop a square photo in public/ and set the path here (e.g. "/sara.jpg").
+   *  Until then <Avatar /> renders initials. */
+  avatar: null as string | null,
 } as const;
 
 export const navItems = [

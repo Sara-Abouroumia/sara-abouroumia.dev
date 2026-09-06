@@ -77,7 +77,9 @@ export function SiteHeader() {
                     key={item.href}
                     href={item.href}
                     onClick={() => setOpen(false)}
-                    aria-current={isActive(pathname, item.href) ? "page" : undefined}
+                    aria-current={
+                      isActive(pathname, item.href) ? "page" : undefined
+                    }
                     className={
                       isActive(pathname, item.href)
                         ? "py-1.5 font-semibold text-text no-underline"

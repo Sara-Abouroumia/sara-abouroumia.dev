@@ -39,23 +39,49 @@ export function SiteFooter() {
             Elsewhere
           </span>
           <div className="flex gap-2">
-            <a href={`mailto:${site.email}`} aria-label="Email" className={ICON_LINK}>
-              <svg width="15" height="11" viewBox="0 0 24 18" fill="none" aria-hidden="true">
-                <rect x="1" y="1" width="22" height="16" rx="2" stroke="currentColor" strokeWidth="1.6" />
-                <path d="M2 2 L12 11 L22 2" stroke="currentColor" strokeWidth="1.6" fill="none" />
+            <a href={`mailto:${site.email}`} className={ICON_LINK}>
+              <span className="sr-only">Email {site.name}</span>
+              <svg
+                width="15"
+                height="11"
+                viewBox="0 0 24 18"
+                fill="none"
+                aria-hidden="true"
+              >
+                <rect
+                  x="1"
+                  y="1"
+                  width="22"
+                  height="16"
+                  rx="2"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                />
+                <path
+                  d="M2 2 L12 11 L22 2"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  fill="none"
+                />
               </svg>
             </a>
             <a
               href={site.linkedin}
               target="_blank"
               rel="noopener"
-              aria-label="LinkedIn"
               className={`${ICON_LINK} font-bold`}
             >
-              in
+              <span className="sr-only">LinkedIn profile</span>
+              <span aria-hidden="true">in</span>
             </a>
-            <a href={site.resume} target="_blank" rel="noopener" aria-label="Resume" className={ICON_LINK}>
-              CV
+            <a
+              href={site.resume}
+              target="_blank"
+              rel="noopener"
+              className={ICON_LINK}
+            >
+              <span className="sr-only">Download CV (PDF)</span>
+              <span aria-hidden="true">CV</span>
             </a>
           </div>
           <a
@@ -68,7 +94,9 @@ export function SiteFooter() {
       </div>
 
       <div className="mx-auto flex max-w-[880px] flex-wrap justify-between gap-4 border-t border-border px-6 pt-4 pb-7 text-xs text-muted-light">
-        <span>© {new Date().getFullYear()} {site.name}</span>
+        <span>
+          © {new Date().getFullYear()} {site.name}
+        </span>
         <span className="flex items-center gap-3.5">
           <span>Last updated September 2026</span>
         </span>

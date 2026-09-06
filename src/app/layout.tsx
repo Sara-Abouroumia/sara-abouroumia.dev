@@ -5,7 +5,6 @@ import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 
-
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
   variable: "--font-inter",
@@ -50,7 +49,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <SiteFooter />
           </div>
         </ThemeProvider>
-
       </body>
     </html>
   );
