@@ -1,0 +1,1292 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="./image-slot.js"></script>
+<style>
+  body { margin:0; background:var(--bg); }
+  a { color:var(--accent); text-decoration:underline; text-decoration-color:#c8ceda; }
+  a:hover { color:var(--accent-hover); }
+  * { box-sizing:border-box; }
+  @keyframes refCircle { to { stroke-dashoffset:0; } }
+  @keyframes refCheck { to { stroke-dashoffset:0; } }
+</style>
+</helmet>
+
+<div style="--bg:{{ tBg }}; --panel:{{ tPanel }}; --border:{{ tBorder }}; --text:{{ tText }}; --text-soft:{{ tTextSoft }}; --muted:{{ tMuted }}; --muted-light:{{ tMutedLight }}; --accent:{{ tAccent }}; --accent-hover:{{ tAccentHover }}; --accent-fg:{{ tAccentFg }}; --input-bg:{{ tInputBg }}; --success-bg:{{ tSuccessBg }}; --success-border:{{ tSuccessBorder }}; --success-text:{{ tSuccessText }}; min-height:100vh; background:var(--bg); color:var(--text); font-family:Inter,system-ui,sans-serif; display:flex; flex-direction:column;">
+
+  <sc-if value="{{ duckOn }}" hint-placeholder-val="{{ true }}">
+    <x-import component-from-global-scope="site-assistant" from="./assistant.js" theme="{{ duckTheme }}" page="{{ duckPage }}" hint-size="0px,0px"></x-import>
+  </sc-if>
+
+  <sc-if value="{{ isSiteMode }}" hint-placeholder-val="{{ true }}">
+  <div>
+  <!-- nav -->
+  <div style="border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--bg); z-index:10;">
+    <div style="max-width:880px; margin:0 auto; padding:20px 24px; display:flex; align-items:center; justify-content:space-between; gap:16px;">
+      <div style="font-family:Lora,Georgia,serif; font-size:19px; font-weight:600; letter-spacing:0.01em; white-space:nowrap; flex-shrink:0; align-self:flex-start;">Sara Abouroumia</div>
+
+      <sc-if value="{{ isDesktopNav }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex; align-items:center; justify-content:flex-end; gap:22px; flex-wrap:wrap; font-size:15px;">
+          <button onClick="{{ goAbout }}" style="{{ navStyleAbout }}">About</button>
+          <button onClick="{{ goExperience }}" style="{{ navStyleExperience }}">Experience</button>
+          <button onClick="{{ goProjects }}" style="{{ navStyleProjects }}">Projects</button>
+          <button onClick="{{ goProducts }}" style="{{ navStyleProducts }}">Products</button>
+          <button onClick="{{ goResearch }}" style="{{ navStyleResearch }}">Research</button>
+          <button onClick="{{ goWriting }}" style="{{ navStyleWriting }}">Blog</button>
+          <button onClick="{{ goContact }}" style="{{ navStyleContact }}">Contact</button>
+          <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ goReview }}" style="{{ navStyleReview }} white-space:nowrap;">Review{{ pendingBadge }}</button>
+          </sc-if>
+          <a href="./assets/Sara_Abouroumia_Resume.pdf" target="_blank" style="font-size:14px; color:var(--muted); text-decoration:none; border:1px solid var(--border); padding:5px 12px; border-radius:3px; white-space:nowrap;">Resume ↓</a>
+          <button onClick="{{ toggleDarkMode }}" style="background:none; border:1px solid var(--border); border-radius:3px; padding:5px 10px; font-size:14px; color:var(--muted); cursor:pointer; font-family:inherit; white-space:nowrap;">{{ themeLabel }}</button>
+          <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ signOut }}" style="background:none; border:1px solid var(--border); border-radius:3px; padding:5px 10px; font-size:14px; color:var(--muted); cursor:pointer; font-family:inherit; white-space:nowrap;">Sign out</button>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <button onClick="{{ toggleDarkMode }}" style="background:none; border:1px solid var(--border); border-radius:3px; padding:5px 10px; font-size:13px; color:var(--muted); cursor:pointer; font-family:inherit;">{{ themeLabel }}</button>
+          <button onClick="{{ openMenu }}" aria-label="Open menu" style="background:none; border:1px solid var(--border); border-radius:3px; width:36px; height:36px; font-size:18px; color:var(--text); cursor:pointer; line-height:1;">☰</button>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeMenu }}" style="position:fixed; inset:0; background:rgba(0,0,0,0.35); z-index:20;"></div>
+    <div style="position:fixed; top:0; right:0; bottom:0; width:min(78vw, 300px); background:var(--bg); border-left:1px solid var(--border); z-index:21; padding:20px; display:flex; flex-direction:column; gap:4px;">
+      <button onClick="{{ closeMenu }}" aria-label="Close menu" style="align-self:flex-end; background:none; border:none; font-size:20px; color:var(--muted); cursor:pointer; margin-bottom:12px;">×</button>
+      <button onClick="{{ goAboutClose }}" style="{{ drawerStyleAbout }}">About</button>
+      <button onClick="{{ goExperienceClose }}" style="{{ drawerStyleExperience }}">Experience</button>
+      <button onClick="{{ goProjectsClose }}" style="{{ drawerStyleProjects }}">Projects</button>
+      <button onClick="{{ goProductsClose }}" style="{{ drawerStyleProducts }}">Products</button>
+      <button onClick="{{ goResearchClose }}" style="{{ drawerStyleResearch }}">Research</button>
+      <button onClick="{{ goWritingClose }}" style="{{ drawerStyleWriting }}">Blog</button>
+      <button onClick="{{ goContactClose }}" style="{{ drawerStyleContact }}">Contact</button>
+      <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ goReviewClose }}" style="{{ drawerStyleReview }}">Review{{ pendingBadge }}</button>
+      </sc-if>
+      <a href="./assets/Sara_Abouroumia_Resume.pdf" target="_blank" style="font-size:15px; color:var(--muted); text-decoration:none; margin-top:12px; padding-top:12px; border-top:1px solid var(--border);">Resume ↓</a>
+      <sc-if value="{{ isAdmin }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ signOut }}" style="background:none; border:none; padding:6px 0; font-family:inherit; font-size:15px; text-align:left; color:var(--muted); cursor:pointer;">Sign out</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- content -->
+  <div style="flex:1; width:100%; max-width:720px; margin:0 auto; padding:56px 24px 96px;">
+
+    <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ true }}">
+      <div>
+        <div style="position:relative; margin:-24px -24px 28px; padding:32px 24px; overflow:hidden;">
+          <iframe src="{{ mapSrc }}" title="Visitor locations" style="position:absolute; inset:0; width:100%; height:100%; border:none; pointer-events:none; opacity:0.9;"></iframe>
+          <div style="position:relative; display:flex; align-items:center; gap:20px; flex-wrap:wrap;">
+            <image-slot id="avatar" style="width:88px; height:88px; flex-shrink:0;" shape="circle" placeholder="photo"></image-slot>
+            <div style="min-width:0;">
+              <h1 style="font-family:Lora,Georgia,serif; font-size:34px; font-weight:600; line-height:1.15; margin:0 0 8px; white-space:nowrap;">Sara Abouroumia</h1>
+              <p style="font-size:16px; color:var(--muted); margin:0; white-space:nowrap;">Software Engineer &middot; Kayseri, Turkey</p>
+            </div>
+          </div>
+          <p style="position:relative; font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted-light); margin:20px 0 0;">Read from 12 countries &middot; illustrative</p>
+        </div>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:28px;">
+          <a href="mailto:saraabouroumia@gmail.com" style="font-size:14px; text-decoration:none; color:var(--text-soft); border:1px solid var(--border); padding:6px 14px; border-radius:3px; white-space:nowrap;">Email</a>
+          <a href="https://linkedin.com/in/sara-abouroumia-7b5665210" style="font-size:14px; text-decoration:none; color:var(--text-soft); border:1px solid var(--border); padding:6px 14px; border-radius:3px; white-space:nowrap;">LinkedIn</a>
+          <a href="./assets/Sara_Abouroumia_Resume.pdf" target="_blank" style="font-size:14px; text-decoration:none; color:var(--text-soft); border:1px solid var(--border); padding:6px 14px; border-radius:3px; white-space:nowrap;">Download Resume</a>
+        </div>
+
+        <p style="font-size:17px; line-height:1.7; margin:0 0 20px; max-width:620px;">
+          I'm a software engineer working across backend systems, web, and mobile — currently building full-stack
+          products at Nextarp, from ERP and training-management systems to the CI/CD pipelines and security tooling
+          that ship them. I studied Computer Engineering at Abdullah Gul University, and outside of work I compete
+          in Kaggle machine learning competitions and build small products end to end.
+        </p>
+
+        <div style="display:flex; gap:10px; align-items:baseline; padding:14px 16px; background:var(--panel); border-radius:3px; margin-bottom:8px;">
+          <span style="font-size:12px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); flex-shrink:0;">Now</span>
+          <span style="font-size:15px; color:var(--text-soft); line-height:1.5;">Building agentic development-lifecycle tooling at Nextarp, and training models for an ongoing Kaggle competition.</span>
+        </div>
+
+        <div style="margin-top:40px; padding-top:28px; border-top:1px solid var(--border);">
+          <h2 style="font-family:Lora,Georgia,serif; font-size:16px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); margin:0 0 14px;">Education</h2>
+          <p style="font-size:16px; line-height:1.6; margin:0 0 2px;"><strong>Abdullah Gul University</strong> — B.S. in Computer Engineering, Honors (GPA 3.45/4.00)</p>
+          <p style="font-size:15px; color:var(--muted); margin:0;">Sep. 2019 – Jun. 2024 · Kayseri, Turkey</p>
+        </div>
+
+        <div style="margin-top:32px; padding-top:28px; border-top:1px solid var(--border);">
+          <h2 style="font-family:Lora,Georgia,serif; font-size:16px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); margin:0 0 14px;">Skills</h2>
+          <p style="font-size:15px; line-height:1.8; margin:0; color:var(--text-soft);">
+            Java, Python, JavaScript, C, C#, Dart, SQL · Spring Boot, .NET, Node.js, Express, REST APIs, JWT ·
+            React, Next.js, HTML/CSS, Bootstrap, Ant Design, Blazor WebAssembly · React Native, Flutter ·
+            TensorFlow, Scikit-learn · Docker, Linux, GitHub Actions, CI/CD, GCP, Azure · Git, ERPNext/Frappe, Figma,
+            MySQL, PostgreSQL, Redis, Stripe API
+          </p>
+        </div>
+
+        <div style="margin-top:32px; padding-top:28px; border-top:1px solid var(--border);">
+          <h2 style="font-family:Lora,Georgia,serif; font-size:16px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); margin:0 0 14px;">Recommendations</h2>
+          <sc-for list="{{ approvedRefsPublic }}" as="ref" hint-placeholder-count="0">
+            <div style="padding:16px 0; border-bottom:1px solid var(--border);">
+              <p style="font-size:16px; line-height:1.6; margin:0 0 8px; color:var(--text-soft);">&ldquo;{{ ref.text }}&rdquo;</p>
+              <p style="font-size:14px; color:var(--muted); margin:0;">{{ ref.name }}{{ ref.relationshipSuffix }}</p>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noApprovedPublic }}" hint-placeholder-val="{{ true }}">
+            <div style="padding:24px; border:1px dashed var(--border); color:var(--muted-light); font-size:14px; text-align:center; margin-bottom:12px;">
+              No recommendations added yet.
+            </div>
+          </sc-if>
+          <button onClick="{{ startWriteReference }}" style="margin-top:8px; background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; padding:0;">Write Sara a reference →</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isExperience }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="font-family:Lora,Georgia,serif; font-size:30px; font-weight:600; margin:0 0 36px;">Experience</h1>
+
+        <div style="margin-bottom:36px;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+          <h3 style="font-size:18px; font-weight:600; line-height:1.3; margin:0;">Software Engineer — Nextarp</h3>
+          <span style="font-size:14px; color:var(--muted);">Jun. 2024 – Present</span>
+        </div>
+          <p style="font-size:14px; color:var(--muted); margin:0 0 12px;">Remote · Netherlands</p>
+          <ul style="font-size:16px; line-height:1.7; margin:0; padding-left:20px; color:var(--text-soft);">
+            <li>Architected and deployed full-stack web and mobile applications using Spring Boot, React, and React Native, serving production traffic for training management and ERP systems</li>
+            <li>Engineered backend microservices with Spring Boot integrating MySQL, Redis caching, and Stripe payment processing, improving response times through efficient data access patterns</li>
+            <li>Built an agentic development lifecycle (ADLC) system of automated bots managing code review, testing, and a multi-stage security gate (SAST, secrets scanning, SCA), authenticating into GCP without stored keys via Workload Identity Federation</li>
+            <li>Established CI/CD pipelines using Docker and GitHub Actions, automating zero-downtime deployments to GCP and Azure, and managed distribution through Microsoft Partner Center</li>
+            <li>Extended ERPNext/Frappe functionality through custom modules and REST API integrations</li>
+            <li>Developed Microsoft Word add-ins on .NET, onboarding onto an unfamiliar stack to meet project needs</li>
+          </ul>
+        </div>
+
+        <div style="margin-bottom:36px;">
+          <div style="display:flex; flex-direction:column; gap:2px;">
+          <h3 style="font-size:18px; font-weight:600; line-height:1.3; margin:0;">Web Developer (Part-Time) / Intern — Mazaka Yazilim</h3>
+          <span style="font-size:14px; color:var(--muted);">Jul. 2022 – Dec. 2023</span>
+        </div>
+          <p style="font-size:14px; color:var(--muted); margin:0 0 12px;">Kayseri, Turkey</p>
+          <ul style="font-size:16px; line-height:1.7; margin:0; padding-left:20px; color:var(--text-soft);">
+            <li>Developed responsive React-based user interfaces and modernized legacy codebases, collaborating with cross-functional teams to deliver client-aligned features</li>
+            <li>Built a full-stack authentication system using React, Node.js, and JWT, implementing secure login workflows</li>
+          </ul>
+        </div>
+
+        <div style="margin-top:40px; padding-top:28px; border-top:1px solid var(--border);">
+          <h2 style="font-family:Lora,Georgia,serif; font-size:16px; font-weight:600; letter-spacing:0.04em; text-transform:uppercase; color:var(--muted); margin:0 0 16px;">Leadership &amp; Service</h2>
+
+          <div style="margin-bottom:18px;">
+            <div style="display:flex; flex-direction:column; gap:2px;">
+            <h3 style="font-size:16px; font-weight:600; line-height:1.3; margin:0;">Head of Event Management — AGU International Association Club</h3>
+            <span style="font-size:14px; color:var(--muted);">Sep. 2019 – May 2023</span>
+          </div>
+            <p style="font-size:15px; line-height:1.6; margin:6px 0 0; color:var(--text-soft);">Led a team coordinating campus-wide cultural and social events for the international student community.</p>
+          </div>
+
+          <div>
+            <div style="display:flex; flex-direction:column; gap:2px;">
+            <h3 style="font-size:16px; font-weight:600; line-height:1.3; margin:0;">Orientation Program Coordinator (Volunteer) — AGU International Office</h3>
+            <span style="font-size:14px; color:var(--muted);">Sep. 2020 – Jun. 2024</span>
+          </div>
+            <p style="font-size:15px; line-height:1.6; margin:6px 0 0; color:var(--text-soft);">Organized onboarding programs for incoming international students, facilitating their integration into university life.</p>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProjects }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="font-family:Lora,Georgia,serif; font-size:30px; font-weight:600; margin:0 0 36px;">Projects</h1>
+
+        <div style="padding:24px 0; border-bottom:1px solid var(--border);">
+          <image-slot id="proj-run" style="width:100%; height:220px; margin-bottom:16px;" shape="rounded" radius="4" placeholder="project screenshot"></image-slot>
+          <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:2px;">
+            <h3 style="font-size:19px; font-weight:600; line-height:1.3; margin:0;">Kayseri Social Run</h3>
+            <a href="https://kayserisocialrun.com" style="font-size:14px;">kayserisocialrun.com</a>
+          </div>
+          <p style="font-size:14px; color:var(--muted); margin:6px 0 12px;">Next.js · Postgres · Better Auth · Resend · Vercel</p>
+          <ul style="font-size:16px; line-height:1.7; margin:0; padding-left:20px; color:var(--text-soft);">
+            <li>Founded and built a community running club webapp from the ground up for a local Kayseri youth-led running community, including a public marketing site, authentication, and transactional email flows</li>
+            <li>Designed and shipped the full product independently: architecture, database schema, auth, and deployment</li>
+          </ul>
+        </div>
+
+        <div style="padding:24px 0;">
+          <image-slot id="proj-ml" style="width:100%; height:220px; margin-bottom:16px;" shape="rounded" radius="4" placeholder="project screenshot"></image-slot>
+          <h3 style="font-size:19px; font-weight:600; margin:0;">Machine Learning Research</h3>
+          <p style="font-size:14px; color:var(--muted); margin:6px 0 12px;">TensorFlow · Scikit-learn · TPU · Jun. 2023 – Present</p>
+          <ul style="font-size:16px; line-height:1.7; margin:0; padding-left:20px; color:var(--text-soft);">
+            <li>Competing in Kaggle ML competitions focused on regression and computer vision tasks</li>
+            <li>Designing data preprocessing pipelines and training neural networks with TPU acceleration for improved performance</li>
+          </ul>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isProducts }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:8px;">
+          <h1 style="font-family:Lora,Georgia,serif; font-size:30px; font-weight:600; margin:0;">Products</h1>
+          <sc-if value="{{ showNewProductButton }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ openNewProduct }}" style="padding:7px 14px; font-size:14px; border-radius:3px; border:none; background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;">+ New product</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ productListView }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <p style="font-size:16px; line-height:1.7; color:var(--text-soft); max-width:560px; margin:0 0 24px;">
+              Working website demos, built and ready to adapt. Open any one to try it, tick the ones that fit your business, and send them over in a single request.
+            </p>
+
+            <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:28px;">
+              <sc-for list="{{ productFilters }}" as="f" hint-placeholder-count="4">
+                <button onClick="{{ f.select }}" style="{{ f.style }}">{{ f.label }}</button>
+              </sc-for>
+            </div>
+
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(240px, 1fr)); gap:20px;">
+              <sc-for list="{{ productCards }}" as="p" hint-placeholder-count="4">
+                <div style="{{ p.cardStyle }}">
+                  <image-slot id="{{ p.slotId }}" style="width:100%; height:150px;" shape="rounded" radius="3" placeholder="{{ p.slotHint }}"></image-slot>
+                  <div style="padding:14px 16px 16px; display:flex; flex-direction:column; gap:8px; flex:1;">
+                    <div style="display:flex; justify-content:space-between; align-items:baseline; gap:10px;">
+                      <span style="font-size:11px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted);">{{ p.category }}</span>
+                      <span style="font-size:13px; color:var(--muted);">{{ p.priceLabel }}</span>
+                    </div>
+                    <h3 style="font-family:Lora,Georgia,serif; font-size:19px; font-weight:600; line-height:1.25; margin:0;">{{ p.name }}</h3>
+                    <p style="font-size:14px; line-height:1.6; color:var(--text-soft); margin:0;">{{ p.pitch }}</p>
+                    <p style="font-size:12px; color:var(--muted); margin:0;">{{ p.stack }}</p>
+                    <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:auto; padding-top:10px;">
+                      <button onClick="{{ p.openDemo }}" style="padding:7px 12px; font-size:13px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--text); cursor:pointer; font-family:inherit;">Open demo</button>
+                      <button onClick="{{ p.toggle }}" style="{{ p.pickStyle }}">{{ p.pickLabel }}</button>
+                      <sc-if value="{{ p.ownerControls }}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{ p.remove }}" style="background:none; border:none; padding:0; font-size:13px; color:var(--muted); text-decoration:underline; cursor:pointer; font-family:inherit;">Delete</button>
+                      </sc-if>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{ noProducts }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:32px; border:1px dashed var(--border); color:var(--muted-light); font-size:14px; text-align:center;">Nothing listed in this category yet.</div>
+            </sc-if>
+
+            <p style="font-size:13px; color:var(--muted); margin:28px 0 0;">Every demo is a starting point, not a fixed template — copy, colours, and features get rebuilt around your business.</p>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ productDemoView }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <button onClick="{{ closeDemo }}" style="background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; padding:0; margin:8px 0 20px;">← Back to Products</button>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:4px;">
+              <h2 style="font-family:Lora,Georgia,serif; font-size:26px; font-weight:600; margin:0;">{{ demoName }}</h2>
+              <span style="font-size:14px; color:var(--muted);">{{ demoPriceLabel }}</span>
+            </div>
+            <p style="font-size:15px; color:var(--muted); margin:0 0 20px;">{{ demoCategory }} · {{ demoStack }}</p>
+
+            <div style="border:1px solid var(--border); border-radius:4px; overflow:hidden; background:var(--panel);">
+              <div style="display:flex; align-items:center; gap:8px; padding:9px 12px; border-bottom:1px solid var(--border);">
+                <span style="width:9px; height:9px; border-radius:50%; background:#e2ded3;"></span>
+                <span style="width:9px; height:9px; border-radius:50%; background:#e2ded3;"></span>
+                <span style="width:9px; height:9px; border-radius:50%; background:#e2ded3;"></span>
+                <span style="font-size:12px; color:var(--muted); margin-left:8px;">{{ demoUrl }}</span>
+              </div>
+              <image-slot id="{{ demoSlotId }}" style="width:100%; height:340px;" shape="rect" placeholder="{{ demoSlotHint }}"></image-slot>
+            </div>
+
+            <div style="margin-top:24px; max-width:560px;">
+              <h3 style="font-size:15px; font-weight:600; margin:0 0 10px;">What's included</h3>
+              <sc-for list="{{ demoFeatures }}" as="f" hint-placeholder-count="3">
+                <p style="font-size:15px; line-height:1.6; color:var(--text-soft); margin:0 0 8px; padding-left:14px; border-left:2px solid var(--border);">{{ f.text }}</p>
+              </sc-for>
+              <button onClick="{{ demoToggle }}" style="{{ demoPickStyle }}">{{ demoPickLabel }}</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ productFormView }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:460px;">
+            <button onClick="{{ backToProducts }}" style="background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; padding:0; margin:8px 0 20px;">← Back to Products</button>
+            <h2 style="font-family:Lora,Georgia,serif; font-size:22px; font-weight:600; margin:0 0 6px;">Request these {{ pickedCountWord }}</h2>
+            <p style="font-size:15px; color:var(--muted); line-height:1.6; margin:0 0 8px;">{{ pickedNames }}</p>
+            <p style="font-size:14px; color:var(--muted); margin:0 0 22px;">Sara replies to inquiries within a couple of days. No obligation.</p>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div>
+                <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Your name</label>
+                <input type="text" value="{{ inqName }}" onChange="{{ onInqNameChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+              </div>
+              <div>
+                <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Business name</label>
+                <input type="text" value="{{ inqBusiness }}" onChange="{{ onInqBusinessChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+              </div>
+              <div>
+                <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Email</label>
+                <input type="email" value="{{ inqEmail }}" onChange="{{ onInqEmailChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+              </div>
+              <div>
+                <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">What do you need? (optional)</label>
+                <textarea rows="4" value="{{ inqMessage }}" onChange="{{ onInqMessageChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; resize:vertical; background:var(--input-bg); color:var(--text);"></textarea>
+              </div>
+              <button onClick="{{ submitInquiry }}" disabled="{{ inqDisabled }}" style="{{ inqButtonStyle }}">Send request</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ productSentView }}" hint-placeholder-val="{{ false }}">
+          <div style="max-width:460px; padding:28px 0;">
+            <svg viewBox="0 0 52 52" style="width:56px; height:56px; margin-bottom:16px; display:block;">
+              <circle cx="26" cy="26" r="24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="stroke-dasharray:151; stroke-dashoffset:151; animation:refCircle 0.6s ease-out forwards;"></circle>
+              <path d="M14,27 l8,8 l16,-16" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:36; stroke-dashoffset:36; animation:refCheck 0.4s 0.5s ease-out forwards;"></path>
+            </svg>
+            <p style="font-size:17px; font-weight:600; margin:0 0 8px;">Request sent.</p>
+            <p style="font-size:15px; line-height:1.6; color:var(--text-soft); margin:0 0 20px;">Sara has your details and the demos you picked. You'll hear back by email.</p>
+            <button onClick="{{ backToProducts }}" style="background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit;">Back to Products</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ productEditorView }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px; max-width:460px; margin-top:20px;">
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Name</label>
+              <input type="text" value="{{ pDraftName }}" onChange="{{ onPDraftName }}" placeholder="Salon booking site" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Category</label>
+              <input type="text" value="{{ pDraftCategory }}" onChange="{{ onPDraftCategory }}" placeholder="Booking" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">One-line pitch</label>
+              <input type="text" value="{{ pDraftPitch }}" onChange="{{ onPDraftPitch }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Stack</label>
+              <input type="text" value="{{ pDraftStack }}" onChange="{{ onPDraftStack }}" placeholder="Next.js · Postgres · Stripe" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Starting price</label>
+              <input type="text" value="{{ pDraftPrice }}" onChange="{{ onPDraftPrice }}" placeholder="from €900" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button onClick="{{ saveProduct }}" disabled="{{ pDraftDisabled }}" style="{{ pDraftButtonStyle }}">Add product</button>
+              <button onClick="{{ backToProducts }}" style="padding:10px 12px; font-size:15px; border:none; background:none; color:var(--muted); cursor:pointer; font-family:inherit; text-decoration:underline;">Cancel</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ showTray }}" hint-placeholder-val="{{ false }}">
+          <div style="position:sticky; bottom:16px; margin-top:28px; display:flex; align-items:center; justify-content:space-between; gap:14px; flex-wrap:wrap; padding:14px 18px; border:1px solid var(--border); border-radius:6px; background:var(--panel); box-shadow:0 4px 18px rgba(28,28,26,0.10);">
+            <div>
+              <p style="font-size:14px; font-weight:600; margin:0 0 2px;">{{ pickedCount }} selected</p>
+              <p style="font-size:13px; color:var(--muted); margin:0;">{{ pickedNames }}</p>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <button onClick="{{ clearPicks }}" style="background:none; border:none; padding:0; font-size:13px; color:var(--muted); text-decoration:underline; cursor:pointer; font-family:inherit;">Clear</button>
+              <button onClick="{{ openInquiry }}" style="padding:9px 16px; font-size:14px; border-radius:3px; border:none; background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit; white-space:nowrap;">Request info</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isResearch }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="font-family:Lora,Georgia,serif; font-size:30px; font-weight:600; margin:0 0 20px;">Research</h1>
+        <p style="font-size:16px; line-height:1.7; color:var(--text-soft); max-width:560px; margin:0 0 32px;">
+          Notes and writeups from Kaggle competitions and other machine learning work will go here.
+        </p>
+        <div style="padding:32px; border:1px dashed var(--border); color:var(--muted-light); font-size:14px; text-align:center;">
+          No entries yet — check back soon.
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isWriting }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <div style="display:flex; justify-content:space-between; align-items:baseline; gap:16px; flex-wrap:wrap; margin-bottom:8px;">
+          <h1 style="font-family:Lora,Georgia,serif; font-size:30px; font-weight:600; margin:0;">Blog</h1>
+          <sc-if value="{{ showNewPostButton }}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{ openNewPost }}" style="padding:7px 14px; font-size:14px; border-radius:3px; border:none; background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;">+ New post</button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ blogListView }}" hint-placeholder-val="{{ true }}">
+          <div>
+            <p style="font-size:15px; color:var(--muted); margin:0 0 28px;">Notes on engineering, side projects, and machine learning.</p>
+            <sc-for list="{{ postCards }}" as="post" hint-placeholder-count="2">
+              <div style="padding:24px 0; border-bottom:1px solid var(--border);">
+                <p style="font-size:13px; color:var(--muted); margin:0 0 6px;">{{ post.meta }}</p>
+                <h3 onClick="{{ post.open }}" style="font-family:Lora,Georgia,serif; font-size:22px; font-weight:600; margin:0 0 8px; cursor:pointer;">{{ post.title }}</h3>
+                <p style="font-size:15px; line-height:1.6; color:var(--text-soft); margin:0 0 10px;">{{ post.excerpt }}</p>
+                <div style="display:flex; gap:14px; align-items:center;">
+                  <button onClick="{{ post.open }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--accent); text-decoration:underline; cursor:pointer;">Read</button>
+                  <sc-if value="{{ post.ownerControls }}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{ post.remove }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--muted); text-decoration:underline; cursor:pointer;">Delete</button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noPosts }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:32px; border:1px dashed var(--border); color:var(--muted-light); font-size:14px; text-align:center;">No posts yet.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ blogEditorView }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:16px; margin-top:24px;">
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Title</label>
+              <input type="text" value="{{ draftTitle }}" onChange="{{ onDraftTitleChange }}" placeholder="What are you writing about?" style="width:100%; font-family:Lora,Georgia,serif; font-size:24px; padding:8px 0; border:none; border-bottom:1px solid var(--border); background:none; color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Cover image</label>
+              <image-slot id="draft-cover" style="width:100%; height:180px;" shape="rounded" radius="4" placeholder="drop a cover image"></image-slot>
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Summary</label>
+              <input type="text" value="{{ draftExcerpt }}" onChange="{{ onDraftExcerptChange }}" placeholder="One line that appears in the list" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Body — one paragraph per blank line</label>
+              <textarea rows="12" value="{{ draftBody }}" onChange="{{ onDraftBodyChange }}" style="width:100%; font-size:17px; line-height:1.7; padding:12px; border:1px solid var(--border); border-radius:3px; font-family:Lora,Georgia,serif; resize:vertical; background:var(--input-bg); color:var(--text);"></textarea>
+            </div>
+            <div style="display:flex; gap:10px; flex-wrap:wrap;">
+              <button onClick="{{ publishPost }}" disabled="{{ publishDisabled }}" style="{{ publishButtonStyle }}">Publish</button>
+              <button onClick="{{ saveDraftPost }}" disabled="{{ publishDisabled }}" style="padding:10px 20px; font-size:15px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--text); cursor:pointer; font-family:inherit;">Save as draft</button>
+              <button onClick="{{ cancelPost }}" style="padding:10px 12px; font-size:15px; border:none; background:none; color:var(--muted); cursor:pointer; font-family:inherit; text-decoration:underline;">Cancel</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ blogPostView }}" hint-placeholder-val="{{ false }}">
+          <div>
+            <button onClick="{{ closeSamplePost }}" style="background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; padding:0; margin:16px 0 24px;">← Back to Blog</button>
+            <image-slot id="blog-cover" style="width:100%; height:260px; margin-bottom:24px;" shape="rounded" radius="4" placeholder="cover image"></image-slot>
+            <h1 style="font-family:Lora,Georgia,serif; font-size:34px; font-weight:600; line-height:1.2; margin:0 0 12px;">{{ currentPostTitle }}</h1>
+            <p style="font-size:14px; color:var(--muted); margin:0 0 32px;">Sara Abouroumia · {{ currentPostMeta }}</p>
+            <div style="max-width:640px;">
+              <sc-for list="{{ currentPostParagraphs }}" as="para" hint-placeholder-count="3">
+                <p style="font-size:18px; line-height:1.8; color:var(--text-soft); margin:0 0 24px;">{{ para.text }}</p>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isContact }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="font-family:Lora,Georgia,serif; font-size:30px; font-weight:600; margin:0 0 28px;">Contact</h1>
+
+        <div style="max-width:440px;">
+          <div>
+            <sc-if value="{{ contactSent }}" hint-placeholder-val="{{ false }}">
+              <div style="padding:20px; border:1px solid var(--success-border); background:var(--success-bg); font-size:15px; line-height:1.6; color:var(--success-text);">
+                Your email client should now be open with this message addressed to Sara. If it didn't open, email her directly at saraabouroumia@gmail.com.
+              </div>
+            </sc-if>
+            <sc-if value="{{ contactNotSent }}" hint-placeholder-val="{{ true }}">
+              <div style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                  <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Your name</label>
+                  <input type="text" value="{{ contactName }}" onChange="{{ onNameChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:Inter,system-ui,sans-serif; background:var(--input-bg);">
+                </div>
+                <div>
+                  <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Your email</label>
+                  <input type="email" value="{{ contactEmail }}" onChange="{{ onEmailChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:Inter,system-ui,sans-serif; background:var(--input-bg);">
+                </div>
+                <div>
+                  <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Message</label>
+                  <textarea rows="5" value="{{ contactMessage }}" onChange="{{ onMessageChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:Inter,system-ui,sans-serif; resize:vertical; background:var(--input-bg);"></textarea>
+                </div>
+                <button onClick="{{ submitContact }}" disabled="{{ contactDisabled }}" style="{{ contactButtonStyle }}">Send message</button>
+              </div>
+            </sc-if>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="font-family:Lora,Georgia,serif; font-size:26px; font-weight:600; margin:0 0 4px;">Review</h1>
+        <p style="font-size:14px; color:var(--muted); margin:0 0 32px;">Product inquiries and reference requests. Only visible to you.</p>
+
+        <div style="margin-bottom:40px; padding:20px; border:1px solid var(--border); border-radius:4px;">
+          <h2 style="font-size:15px; font-weight:600; margin:0 0 12px;">Invite someone to write you a reference</h2>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <input type="text" value="{{ inviteName }}" onChange="{{ onInviteNameChange }}" placeholder="Recipient's name" style="flex:1; min-width:160px; font-size:14px; padding:8px 10px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            <button onClick="{{ copyInviteLink }}" style="padding:8px 16px; font-size:14px; border-radius:3px; border:none; background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;">{{ copyButtonLabel }}</button>
+            <button onClick="{{ previewInvite }}" style="padding:8px 16px; font-size:14px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--text); cursor:pointer; font-family:inherit;">Preview referee view</button>
+          </div>
+          <p style="font-size:13px; color:var(--muted); margin:10px 0 0; word-break:break-all;">{{ inviteLinkPreview }}</p>
+          <p style="font-size:13px; color:var(--muted); margin:8px 0 0;">Preview shows exactly what an invited referee sees. The uninvited version (with the screening questions) is reachable from the About page.</p>
+        </div>
+
+        <h2 style="font-size:15px; font-weight:600; margin:0 0 14px;">Product inquiries ({{ newInquiryCount }} new)</h2>
+        <sc-for list="{{ inquiryCards }}" as="inq" hint-placeholder-count="1">
+          <div style="{{ inq.cardStyle }}">
+            <div style="display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; margin-bottom:4px;">
+              <strong style="font-size:15px;">{{ inq.name }}{{ inq.businessSuffix }}</strong>
+              <span style="font-size:13px; color:var(--muted);">{{ inq.statusLabel }}</span>
+            </div>
+            <p style="font-size:13px; color:var(--muted); margin:0 0 8px;">{{ inq.email }} · wants {{ inq.products }}</p>
+            <sc-if value="{{ inq.hasMessage }}" hint-placeholder-val="{{ false }}">
+              <p style="font-size:15px; line-height:1.6; margin:0 0 12px; color:var(--text-soft);">{{ inq.message }}</p>
+            </sc-if>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <a href="{{ inq.mailto }}" style="padding:6px 14px; font-size:13px; border-radius:3px; background:var(--accent); color:var(--accent-fg); text-decoration:none;">Reply by email</a>
+              <button onClick="{{ inq.markContacted }}" style="padding:6px 14px; font-size:13px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--text); cursor:pointer; font-family:inherit;">Mark contacted</button>
+              <button onClick="{{ inq.archive }}" style="background:none; border:none; padding:0 6px; font-size:13px; color:var(--muted); text-decoration:underline; cursor:pointer; font-family:inherit;">Archive</button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noInquiries }}" hint-placeholder-val="{{ true }}">
+          <p style="font-size:14px; color:var(--muted);">No product inquiries yet.</p>
+        </sc-if>
+
+        <h2 style="font-size:15px; font-weight:600; margin:32px 0 14px;">References pending ({{ pendingCount }})</h2>
+        <sc-for list="{{ pendingRefs }}" as="ref" hint-placeholder-count="1">
+          <div style="padding:16px; border:1px solid var(--border); border-radius:4px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:6px;">
+              <strong style="font-size:15px;">{{ ref.name }}</strong>
+              <span style="font-size:13px; color:var(--muted);">{{ ref.relationship }}{{ ref.contextSuffix }}</span>
+            </div>
+            <p style="font-size:15px; line-height:1.6; margin:0 0 12px; color:var(--text-soft);">{{ ref.text }}</p>
+            <div style="display:flex; gap:8px;">
+              <button onClick="{{ ref.approve }}" style="padding:6px 14px; font-size:13px; border-radius:3px; border:none; background:var(--accent); color:var(--accent-fg); cursor:pointer;">Approve</button>
+              <button onClick="{{ ref.reject }}" style="padding:6px 14px; font-size:13px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--muted); cursor:pointer;">Reject</button>
+            </div>
+          </div>
+        </sc-for>
+        <sc-if value="{{ noPending }}" hint-placeholder-val="{{ false }}">
+          <p style="font-size:14px; color:var(--muted);">Nothing waiting on review.</p>
+        </sc-if>
+
+        <h2 style="font-size:15px; font-weight:600; margin:32px 0 14px;">Approved ({{ approvedCount }})</h2>
+        <sc-for list="{{ approvedRefsAdmin }}" as="ref" hint-placeholder-count="0">
+          <div style="padding:16px; border:1px solid var(--border); border-radius:4px; margin-bottom:12px;">
+            <div style="display:flex; justify-content:space-between; gap:12px; margin-bottom:6px;">
+              <strong style="font-size:15px;">{{ ref.name }}</strong>
+              <button onClick="{{ ref.reject }}" style="font-size:13px; background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-family:inherit;">Remove</button>
+            </div>
+            <p style="font-size:15px; line-height:1.6; margin:0; color:var(--text-soft);">{{ ref.text }}</p>
+          </div>
+        </sc-for>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div style="border-top:1px solid var(--border); background:var(--panel);">
+    <div style="max-width:880px; margin:0 auto; padding:44px 24px 20px; display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:32px;">
+
+      <div>
+        <div style="font-family:Lora,Georgia,serif; font-size:17px; font-weight:600; margin-bottom:6px;">Sara Abouroumia</div>
+        <p style="font-size:14px; line-height:1.6; color:var(--muted); margin:0;">Software Engineer<br>Kayseri, Turkey</p>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:8px; align-items:flex-start;">
+        <span style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted-light);">Pages</span>
+        <button onClick="{{ goAbout }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--muted); cursor:pointer;" style-hover="color:var(--accent);">About</button>
+        <button onClick="{{ goExperience }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--muted); cursor:pointer;" style-hover="color:var(--accent);">Experience</button>
+        <button onClick="{{ goProjects }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--muted); cursor:pointer;" style-hover="color:var(--accent);">Projects</button>
+        <button onClick="{{ goProducts }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--muted); cursor:pointer;" style-hover="color:var(--accent);">Products</button>
+        <button onClick="{{ goWriting }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:14px; color:var(--muted); cursor:pointer;" style-hover="color:var(--accent);">Blog</button>
+      </div>
+
+      <div style="display:flex; flex-direction:column; gap:10px; align-items:flex-start;">
+        <span style="font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted-light);">Elsewhere</span>
+        <div style="display:flex; gap:8px;">
+          <a href="mailto:saraabouroumia@gmail.com" aria-label="Email" style="width:34px; height:34px; border-radius:4px; border:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:center; text-decoration:none;" style-hover="border-color:var(--accent);">
+            <svg width="15" height="11" viewBox="0 0 24 18" fill="none"><rect x="1" y="1" width="22" height="16" rx="2" stroke="var(--muted)" stroke-width="1.6"></rect><path d="M2 2 L12 11 L22 2" stroke="var(--muted)" stroke-width="1.6" fill="none"></path></svg>
+          </a>
+          <a href="https://linkedin.com/in/sara-abouroumia-7b5665210" aria-label="LinkedIn" style="width:34px; height:34px; border-radius:4px; border:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:center; font-weight:700; font-size:13px; color:var(--muted); text-decoration:none;" style-hover="border-color:var(--accent); color:var(--accent);">in</a>
+          <a href="./assets/Sara_Abouroumia_Resume.pdf" target="_blank" aria-label="Resume" style="width:34px; height:34px; border-radius:4px; border:1px solid var(--border); background:var(--bg); display:flex; align-items:center; justify-content:center; font-size:13px; color:var(--muted); text-decoration:none;" style-hover="border-color:var(--accent); color:var(--accent);">CV</a>
+        </div>
+        <a href="mailto:saraabouroumia@gmail.com" style="font-size:14px; color:var(--muted); text-decoration:none;" style-hover="color:var(--accent);">saraabouroumia@gmail.com</a>
+      </div>
+
+    </div>
+    <div style="max-width:880px; margin:0 auto; padding:16px 24px 28px; border-top:1px solid var(--border); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; font-size:12px; color:var(--muted-light);">
+      <span>&copy; 2026 Sara Abouroumia</span>
+      <span style="display:flex; gap:14px; align-items:center;">
+        <span>Last updated September 2026</span>
+        <sc-if value="{{ showSignIn }}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{ openLogin }}" style="background:none; border:none; padding:0; font-family:inherit; font-size:12px; color:var(--muted-light); cursor:pointer; text-decoration:underline;">Owner sign in</button>
+        </sc-if>
+      </span>
+    </div>
+  </div>
+  </div>
+  </sc-if>
+
+  <sc-if value="{{ isLoginMode }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:32px 20px;">
+      <div style="width:100%; max-width:360px;">
+        <h1 style="font-family:Lora,Georgia,serif; font-size:24px; font-weight:600; margin:0 0 6px;">Owner sign in</h1>
+        <p style="font-size:14px; color:var(--muted); line-height:1.6; margin:0 0 24px;">Single-account access for Sara. References and drafts are managed here.</p>
+
+        <div style="display:flex; flex-direction:column; gap:14px;">
+          <div>
+            <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Email</label>
+            <input type="email" value="{{ loginEmail }}" onChange="{{ onLoginEmailChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+          </div>
+          <div>
+            <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Password</label>
+            <input type="password" value="{{ loginPassword }}" onChange="{{ onLoginPasswordChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+          </div>
+          <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+            <p style="font-size:13px; color:var(--accent); margin:0;">Enter both fields to continue.</p>
+          </sc-if>
+          <button onClick="{{ signIn }}" style="padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;">Sign in</button>
+          <button onClick="{{ cancelLogin }}" style="background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; align-self:flex-start; padding:0;">Back to the portfolio</button>
+        </div>
+
+        <p style="font-size:12px; line-height:1.6; color:var(--muted-light); margin:28px 0 0; padding-top:16px; border-top:1px solid var(--border);">Prototype: any credentials sign you in. In the real app this is one allowlisted account with an httpOnly session cookie, and the API routes for approving references and publishing posts check that session server-side.</p>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isReferenceMode }}" hint-placeholder-val="{{ false }}">
+    <div style="flex:1; display:flex; align-items:center; justify-content:center; padding:32px 20px;">
+      <div style="width:100%; max-width:480px;">
+
+        <div style="display:flex; flex-direction:column; text-align:center; margin-bottom:32px;">
+          <image-slot id="avatar" style="width:72px; height:72px; margin:0 auto 16px;" shape="circle" placeholder="photo"></image-slot>
+          <h1 style="font-family:Lora,Georgia,serif; font-size:26px; font-weight:600; margin:0 0 6px;">Sara Abouroumia</h1>
+
+          <sc-if value="{{ refStepGate }}" hint-placeholder-val="{{ false }}">
+            <p style="font-size:16px; color:var(--muted); margin:0;">Have you worked with Sara?</p>
+          </sc-if>
+          <sc-if value="{{ refStepForm }}" hint-placeholder-val="{{ false }}">
+            <p style="font-size:16px; color:var(--muted); margin:0;">Hi {{ reviewerNameDisplay }}, thanks for taking a moment to write Sara a reference.</p>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{ refStepGateInitial }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; gap:12px; justify-content:center;">
+            <button onClick="{{ gateYes }}" style="padding:10px 28px; font-size:15px; border-radius:3px; border:1px solid var(--border); background:var(--accent); color:var(--accent-fg); cursor:pointer;">Yes</button>
+            <button onClick="{{ gateNo }}" style="padding:10px 28px; font-size:15px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--text); cursor:pointer;">No</button>
+          </div>
+          <div style="text-align:center; margin-top:18px;">
+            <button onClick="{{ backToSite }}" style="background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit;">{{ exitLabel }}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ refStepDeclined }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;">
+            <p style="font-size:15px; line-height:1.6; color:var(--text-soft);">This page is for people who've worked directly with Sara. Thanks for stopping by!</p>
+            <button onClick="{{ backToSite }}" style="margin-top:12px; background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit;">Back to the portfolio</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ refStepClarify }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Your name</label>
+              <input type="text" value="{{ reviewerName }}" onChange="{{ onReviewerNameChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">How do you know Sara?</label>
+              <select value="{{ relationship }}" onChange="{{ onRelationshipChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+                <option value="">Select one</option>
+                <option value="Manager">I managed her</option>
+                <option value="Colleague">Colleague / teammate</option>
+                <option value="Client">Client</option>
+                <option value="Mentee">Mentee / student</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Where / how did you work together?</label>
+              <input type="text" value="{{ context }}" onChange="{{ onContextChange }}" placeholder="e.g. Nextarp, 2024–present" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+            </div>
+            <button onClick="{{ continueToForm }}" disabled="{{ clarifyDisabled }}" style="{{ continueButtonStyle }}">Continue</button>
+            <button onClick="{{ backToSite }}" style="background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; align-self:flex-start; padding:0;">{{ exitLabel }}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ refStepForm }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex; flex-direction:column; gap:14px;">
+            <sc-if value="{{ showReviewerNameField }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Your name</label>
+                <input type="text" value="{{ reviewerName }}" onChange="{{ onReviewerNameChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+              </div>
+            </sc-if>
+            <sc-if value="{{ showRelationshipField }}" hint-placeholder-val="{{ false }}">
+              <div>
+                <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">How do you know Sara?</label>
+                <select value="{{ relationship }}" onChange="{{ onRelationshipChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; background:var(--input-bg); color:var(--text);">
+                  <option value="">Select one</option>
+                  <option value="Manager">I managed her</option>
+                  <option value="Colleague">Colleague / teammate</option>
+                  <option value="Client">Client</option>
+                  <option value="Mentee">Mentee / student</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </sc-if>
+            <div>
+              <label style="font-size:13px; color:var(--muted); display:block; margin-bottom:5px;">Your reference — a couple of sentences is plenty</label>
+              <textarea rows="5" value="{{ reviewText }}" onChange="{{ onReviewTextChange }}" style="width:100%; font-size:15px; padding:9px 11px; border:1px solid var(--border); border-radius:3px; font-family:inherit; resize:vertical; background:var(--input-bg); color:var(--text);"></textarea>
+            </div>
+            <button onClick="{{ submitReference }}" disabled="{{ submitDisabled }}" style="{{ submitButtonStyle }}">Send reference</button>
+            <button onClick="{{ backToSite }}" style="background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit; align-self:flex-start; padding:0;">{{ exitLabel }}</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ refStepThanks }}" hint-placeholder-val="{{ false }}">
+          <div style="text-align:center;">
+            <svg viewBox="0 0 52 52" style="width:64px; height:64px; margin:0 auto 16px; display:block;">
+              <circle cx="26" cy="26" r="24" fill="none" stroke="var(--accent)" stroke-width="2.5" style="stroke-dasharray:151; stroke-dashoffset:151; animation:refCircle 0.6s ease-out forwards;"></circle>
+              <path d="M14,27 l8,8 l16,-16" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="stroke-dasharray:36; stroke-dashoffset:36; animation:refCheck 0.4s 0.5s ease-out forwards;"></path>
+            </svg>
+            <p style="font-size:17px; font-weight:600; margin:0 0 8px;">Thank you!</p>
+            <p style="font-size:15px; line-height:1.6; color:var(--text-soft); margin:0 0 20px;">This means a lot. Sara will review it before it appears on her portfolio.</p>
+            <button onClick="{{ backToSite }}" style="background:none; border:none; color:var(--accent); text-decoration:underline; cursor:pointer; font-size:14px; font-family:inherit;">Back to the portfolio</button>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showDuck&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Fun&quot;}}">
+class Component extends DCLogic {
+  state = {
+    page: 'about', contactName: '', contactEmail: '', contactMessage: '', contactSent: false,
+    isMobile: false, menuOpen: false, darkMode: false, isOwner: false, blogView: 'list',
+    posts: [], currentPostId: null, draftTitle: '', draftExcerpt: '', draftBody: '',
+    loginEmail: '', loginPassword: '', loginError: false,
+    products: [], inquiries: [], picks: [], productView: 'list', productFilter: 'All', currentProductId: null,
+    inqName: '', inqBusiness: '', inqEmail: '', inqMessage: '',
+    pDraftName: '', pDraftCategory: '', pDraftPitch: '', pDraftStack: '', pDraftPrice: '',
+    mode: 'site', refName: '', refStep: 'gateInitial', cameFromClarify: false,
+    reviewerName: '', relationship: '', context: '', reviewText: '',
+    references: [], inviteName: '', copyButtonLabel: 'Copy link',
+  };
+
+  componentDidMount() {
+    try {
+      const saved = window.localStorage.getItem('sara-portfolio-theme');
+      if (saved === 'dark') this.setState({ darkMode: true });
+    } catch (e) {}
+    this.checkWidth();
+    window.addEventListener('resize', this.checkWidth);
+    this.onDuckNav = (e) => this.setState({ mode: 'site', page: e.detail.page });
+    this.onDuckReference = () => this.startWriteReference();
+    window.addEventListener('duck-nav', this.onDuckNav);
+    window.addEventListener('duck-reference', this.onDuckReference);
+
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const refName = params.get('ref');
+      const savedOwner = window.localStorage.getItem('sara-portfolio-owner') === '1';
+      if (params.get('admin') || savedOwner) {
+        this.setState({ isOwner: true });
+      }
+      if (params.get('admin')) this.setState({ page: 'review' });
+      if (refName) {
+        this.setState({ mode: 'reference', refStep: 'form', refName, reviewerName: refName, cameFromClarify: false });
+      }
+      const stored = JSON.parse(window.localStorage.getItem('sara-portfolio-references') || '[]');
+      this.setState({ references: stored });
+      const storedPosts = JSON.parse(window.localStorage.getItem('sara-portfolio-posts') || 'null');
+      this.setState({ posts: storedPosts || this.seedPosts() });
+      const storedProducts = JSON.parse(window.localStorage.getItem('sara-portfolio-products') || 'null');
+      this.setState({ products: storedProducts || this.seedProducts() });
+      const storedInq = JSON.parse(window.localStorage.getItem('sara-portfolio-inquiries') || '[]');
+      this.setState({ inquiries: storedInq });
+    } catch (e) {}
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('resize', this.checkWidth);
+    window.removeEventListener('duck-nav', this.onDuckNav);
+    window.removeEventListener('duck-reference', this.onDuckReference);
+  }
+
+  checkWidth = () => {
+    const isMobile = window.innerWidth <= 940;
+    if (isMobile !== this.state.isMobile) this.setState({ isMobile, menuOpen: isMobile ? this.state.menuOpen : false });
+  };
+
+  toggleDarkMode = () => {
+    const next = !this.state.darkMode;
+    this.setState({ darkMode: next });
+    try { window.localStorage.setItem('sara-portfolio-theme', next ? 'dark' : 'light'); } catch (e) {}
+  };
+
+  seedPosts() {
+    return [
+      {
+        id: 'p1', title: 'Building an Agentic Development Pipeline', date: 'Sep 2026', status: 'published',
+        excerpt: 'Notes on the bots that review, test, and gate code before it ships — and what it took to get there.',
+        body: "Most teams talk about CI/CD as a pipeline for deployment. Ours grew into something closer to a review committee — a set of bots that read every change before a person does.\n\nThe system checks static analysis, secret scanning, and dependency vulnerabilities in sequence, and authenticates into our cloud environment through workload identity federation rather than a stored key. Nothing about it is exotic on its own; the interesting part was getting the stages to agree with each other, and with the humans still in the loop.\n\nZero-downtime deployment came later, once the gate itself was trustworthy enough to automate the last step. Automation is only as fast as the trust it is built on.",
+      },
+      {
+        id: 'p2', title: 'What Kaggle Taught Me About Data Pipelines', date: 'Aug 2026', status: 'published',
+        excerpt: 'Lessons from competing in regression and computer-vision competitions on TPUs.',
+        body: "Competition deadlines are unforgiving teachers. When a training run takes hours, every shortcut in preprocessing shows up twice: once in the metric, once in the time you lost.\n\nMost of my gains came from the least glamorous part of the work — cleaning inputs, making the pipeline reproducible, and being able to rerun an experiment without wondering what changed.\n\nThe modeling matters. It just matters less than being able to trust your own data.",
+      },
+    ];
+  }
+
+  seedProducts() {
+    return [
+      { id: 'pr1', name: 'Salon booking site', category: 'Booking',
+        pitch: 'Service menu, staff calendars, and self-serve appointments with reminders.',
+        stack: 'Next.js · Postgres · Stripe', price: 'from €900', url: 'salon.demo',
+        features: ['Clients pick a service, stylist, and slot without calling.', 'Staff see the day at a glance; no double bookings.', 'Deposits taken up front through Stripe.'] },
+      { id: 'pr2', name: 'Running club hub', category: 'Community',
+        pitch: 'Event calendar, member signups, and results — built from the real Kayseri Social Run.',
+        stack: 'Next.js · Postgres · Resend', price: 'from €750', url: 'runclub.demo',
+        features: ['Members register for runs and get email confirmations.', 'Organisers post routes, times, and results per event.', 'Public archive of past runs and photos.'] },
+      { id: 'pr3', name: 'Restaurant menu & orders', category: 'Hospitality',
+        pitch: 'Digital menu with photos, dietary tags, and takeaway ordering.',
+        stack: 'Next.js · Postgres · Stripe', price: 'from €850', url: 'menu.demo',
+        features: ['Menu edits go live instantly, no developer needed.', 'Takeaway orders paid online, printed in the kitchen.', 'Allergen and dietary tags on every dish.'] },
+      { id: 'pr4', name: 'Trainer & course portal', category: 'Education',
+        pitch: 'Course catalogue, enrolment, and attendance tracking for training providers.',
+        stack: 'Next.js · Postgres · Auth', price: 'from €1,200', url: 'courses.demo',
+        features: ['Learners enrol themselves and track their progress.', 'Trainers mark attendance and issue certificates.', 'Admin view of every cohort and its revenue.'] },
+      { id: 'pr5', name: 'Clinic appointments', category: 'Booking',
+        pitch: 'Patient intake forms, appointment slots, and automated reminders.',
+        stack: 'Next.js · Postgres · Twilio', price: 'from €1,100', url: 'clinic.demo',
+        features: ['Intake forms completed before the visit.', 'SMS reminders cut no-shows.', 'Practitioner calendars kept separate.'] },
+      { id: 'pr6', name: 'Portfolio & shop', category: 'Commerce',
+        pitch: 'Work gallery with a small storefront for prints or products.',
+        stack: 'Next.js · Stripe · CMS', price: 'from €700', url: 'shop.demo',
+        features: ['Gallery pages that stay fast with large images.', 'Checkout and inventory through Stripe.', 'Owner edits copy and prices without code.'] },
+    ];
+  }
+
+  saveProducts(list) {
+    try { window.localStorage.setItem('sara-portfolio-products', JSON.stringify(list)); } catch (e) {}
+    this.setState({ products: list });
+  }
+
+  saveInquiries(list) {
+    try { window.localStorage.setItem('sara-portfolio-inquiries', JSON.stringify(list)); } catch (e) {}
+    this.setState({ inquiries: list });
+  }
+
+  togglePick = (id) => {
+    const picks = this.state.picks.includes(id)
+      ? this.state.picks.filter(x => x !== id)
+      : [...this.state.picks, id];
+    this.setState({ picks });
+  };
+
+  submitInquiry = () => {
+    const { inqName, inqBusiness, inqEmail, inqMessage, picks, products, inquiries } = this.state;
+    const names = products.filter(p => picks.includes(p.id)).map(p => p.name);
+    const entry = { id: 'i' + Date.now(), name: inqName.trim(), business: inqBusiness.trim(),
+      email: inqEmail.trim(), message: inqMessage.trim(), products: names, status: 'new', ts: Date.now() };
+    this.saveInquiries([entry, ...inquiries]);
+    this.setState({ productView: 'sent', picks: [], inqName: '', inqBusiness: '', inqEmail: '', inqMessage: '' });
+  };
+
+  setInquiryStatus = (id, status) => {
+    this.saveInquiries(this.state.inquiries.map(i => i.id === id ? { ...i, status } : i));
+  };
+
+  addProduct = () => {
+    const { pDraftName, pDraftCategory, pDraftPitch, pDraftStack, pDraftPrice, products } = this.state;
+    const entry = { id: 'pr' + Date.now(), name: pDraftName.trim(), category: pDraftCategory.trim() || 'Other',
+      pitch: pDraftPitch.trim(), stack: pDraftStack.trim(), price: pDraftPrice.trim(),
+      url: pDraftName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '') + '.demo', features: [] };
+    this.saveProducts([entry, ...products]);
+    this.setState({ productView: 'list', pDraftName: '', pDraftCategory: '', pDraftPitch: '', pDraftStack: '', pDraftPrice: '' });
+  };
+
+  savePosts(list) {
+    try { window.localStorage.setItem('sara-portfolio-posts', JSON.stringify(list)); } catch (e) {}
+    this.setState({ posts: list });
+  }
+
+  openLogin = () => this.setState({ mode: 'login', loginError: false });
+  cancelLogin = () => this.setState({ mode: 'site', loginEmail: '', loginPassword: '', loginError: false });
+
+  signIn = () => {
+    if (!this.state.loginEmail.trim() || !this.state.loginPassword.trim()) {
+      this.setState({ loginError: true });
+      return;
+    }
+    this.setState({ isOwner: true, mode: 'site', page: 'review', loginEmail: '', loginPassword: '', loginError: false });
+    try { window.localStorage.setItem('sara-portfolio-owner', '1'); } catch (e) {}
+  };
+
+  signOut = () => {
+    this.setState({ isOwner: false, menuOpen: false, page: this.state.page === 'review' ? 'about' : this.state.page });
+    try { window.localStorage.setItem('sara-portfolio-owner', '0'); } catch (e) {}
+  };
+
+  addPost(status) {
+    const { draftTitle, draftExcerpt, draftBody, posts } = this.state;
+    const entry = {
+      id: 'p' + Date.now(), title: draftTitle.trim(), excerpt: draftExcerpt.trim(),
+      body: draftBody.trim(), date: 'Sep 2026', status,
+    };
+    this.savePosts([entry, ...posts]);
+    this.setState({ blogView: 'list', draftTitle: '', draftExcerpt: '', draftBody: '' });
+  }
+
+  relationshipLabel(v) {
+    return { Manager: 'managed her', Colleague: 'colleague', Client: 'client', Mentee: 'mentee' }[v] || (v ? 'collaborator' : '');
+  }
+
+  saveRefs(list) {
+    try { window.localStorage.setItem('sara-portfolio-references', JSON.stringify(list)); } catch (e) {}
+    this.setState({ references: list });
+  }
+
+  startWriteReference = () => {
+    this.setState({ mode: 'reference', refStep: 'gateInitial', refName: '', cameFromClarify: false, reviewerName: '', relationship: '', context: '', reviewText: '' });
+  };
+
+  backToSite = () => this.setState({ mode: 'site', page: this.state.isOwner ? 'review' : this.state.page });
+  gateYes = () => this.setState({ refStep: 'clarify' });
+  gateNo = () => this.setState({ refStep: 'declined' });
+  continueToForm = () => this.setState({ refStep: 'form', cameFromClarify: true });
+
+  submitReference = () => {
+    const { reviewerName, relationship, context, reviewText, references } = this.state;
+    const entry = {
+      id: 'r' + Date.now(), name: reviewerName.trim(), relationship, context: context.trim(),
+      text: reviewText.trim(), status: 'pending', ts: Date.now(),
+    };
+    this.saveRefs([...references, entry]);
+    this.setState({ refStep: 'thanks' });
+  };
+
+  approveRef = (id) => {
+    this.saveRefs(this.state.references.map(r => r.id === id ? { ...r, status: 'approved' } : r));
+  };
+  rejectRef = (id) => {
+    this.saveRefs(this.state.references.map(r => r.id === id ? { ...r, status: 'rejected' } : r));
+  };
+
+  copyInviteLink = () => {
+    const link = window.location.origin + window.location.pathname + '?ref=' + encodeURIComponent(this.state.inviteName.trim() || 'Friend');
+    if (navigator.clipboard) navigator.clipboard.writeText(link).catch(() => {});
+    this.setState({ copyButtonLabel: 'Copied!' });
+    setTimeout(() => this.setState({ copyButtonLabel: 'Copy link' }), 1500);
+  };
+
+  theme() {
+    return this.state.darkMode ? {
+      tBg: '#14161a', tPanel: '#1e2126', tBorder: '#2b2e33', tText: '#f1efe9', tTextSoft: '#d8d5cb',
+      tMuted: '#9b9789', tMutedLight: '#9c988c', tAccent: '#7fa8d1', tAccentHover: '#9cc0e6', tAccentFg: '#0d1116',
+      tInputBg: '#1a1c20', tSuccessBg: '#182018', tSuccessBorder: '#2c3a2c', tSuccessText: '#a9c9a4', themeLabel: 'Light'
+    } : {
+      tBg: '#ffffff', tPanel: '#f4f2ec', tBorder: '#e2ded3', tText: '#1c1c1a', tTextSoft: '#33322d',
+      tMuted: '#6b675c', tMutedLight: '#6b6860', tAccent: '#2c4a6e', tAccentHover: '#1a3350', tAccentFg: '#ffffff',
+      tInputBg: '#ffffff', tSuccessBg: '#f4f7f1', tSuccessBorder: '#dfe6da', tSuccessText: '#3a4a34', themeLabel: 'Dark'
+    };
+  }
+
+  navStyle(active) {
+    return active
+      ? "background:none; border:none; padding:6px 0; font-family:inherit; font-size:15px; text-align:left; cursor:pointer; color:var(--text); font-weight:600;"
+      : "background:none; border:none; padding:6px 0; font-family:inherit; font-size:15px; text-align:left; cursor:pointer; color:var(--muted);";
+  }
+
+  submitContact() {
+    const { contactName, contactEmail, contactMessage } = this.state;
+    const subject = encodeURIComponent('Portfolio contact from ' + (contactName || 'a visitor'));
+    const body = encodeURIComponent(
+      (contactMessage || '') + '\n\n— ' + (contactName || '') + (contactEmail ? ' (' + contactEmail + ')' : '')
+    );
+    window.location.href = 'mailto:saraabouroumia@gmail.com?subject=' + subject + '&body=' + body;
+    this.setState({ contactSent: true });
+  }
+
+  renderVals() {
+    const page = this.state.page;
+    const set = (p) => () => this.setState({ page: p });
+    const setClose = (p) => () => this.setState({ page: p, menuOpen: false });
+    const { contactName, contactEmail, contactMessage } = this.state;
+    const contactDisabled = !contactName.trim() || !contactEmail.trim() || !contactMessage.trim();
+    const { refStep, refName, reviewerName, relationship, context, reviewText, references, inviteName } = this.state;
+    const clarifyDisabled = !reviewerName.trim() || !relationship || !context.trim();
+    const submitDisabled = !reviewText.trim() || !reviewerName.trim() || !relationship;
+    const pending = references.filter(r => r.status === 'pending');
+    const approved = references.filter(r => r.status === 'approved');
+    const { products, picks, inquiries, productFilter } = this.state;
+    const cats = ['All', ...Array.from(new Set(products.map(p => p.category)))];
+    const shownProducts = productFilter === 'All' ? products : products.filter(p => p.category === productFilter);
+    const pickedProducts = products.filter(p => picks.includes(p.id));
+    const currentProduct = products.find(p => p.id === this.state.currentProductId) || null;
+    const liveInquiries = inquiries.filter(i => i.status !== 'archived');
+    const inqReady = this.state.inqName.trim() && this.state.inqEmail.trim() && picks.length > 0;
+    const pDraftReady = this.state.pDraftName.trim() && this.state.pDraftPitch.trim();
+    const pickStyle = (on) => on
+      ? "padding:7px 12px; font-size:13px; border-radius:3px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;"
+      : "padding:7px 12px; font-size:13px; border-radius:3px; border:1px solid var(--border); background:none; color:var(--muted); cursor:pointer; font-family:inherit;";
+
+    const visiblePosts = this.state.isOwner ? this.state.posts : this.state.posts.filter(p => p.status === 'published');
+    const currentPost = this.state.posts.find(p => p.id === this.state.currentPostId) || this.state.posts[0] || null;
+    const btnStyle = (disabled) => disabled
+      ? "padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--border); color:var(--muted-light); cursor:not-allowed; align-self:flex-start;"
+      : "padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--accent); color:var(--accent-fg); cursor:pointer; align-self:flex-start;";
+
+    return {
+      ...this.theme(),
+      isMobile: this.state.isMobile,
+      isDesktopNav: !this.state.isMobile,
+      menuOpen: this.state.isMobile && this.state.menuOpen,
+      openMenu: () => this.setState({ menuOpen: true }),
+      closeMenu: () => this.setState({ menuOpen: false }),
+
+      isSiteMode: this.state.mode === 'site',
+      isReferenceMode: this.state.mode === 'reference',
+      isAdmin: this.state.isOwner,
+      isLoginMode: this.state.mode === 'login',
+      showSignIn: !this.state.isOwner,
+      openLogin: this.openLogin,
+      cancelLogin: this.cancelLogin,
+      signIn: this.signIn,
+      signOut: this.signOut,
+      loginEmail: this.state.loginEmail,
+      loginPassword: this.state.loginPassword,
+      loginError: this.state.loginError,
+      onLoginEmailChange: (e) => this.setState({ loginEmail: e.target.value }),
+      onLoginPasswordChange: (e) => this.setState({ loginPassword: e.target.value }),
+      mapSrc: './VisitorMap.html?theme=' + (this.state.darkMode ? 'dark' : 'light'),
+      duckOn: this.props.showDuck ?? true,
+      duckTheme: this.state.darkMode ? 'dark' : 'light',
+      duckPage: this.state.mode === 'site' ? this.state.page : this.state.mode,
+      refStepGate: refStep === 'gateInitial',
+      refStepGateInitial: refStep === 'gateInitial',
+      refStepDeclined: refStep === 'declined',
+      refStepClarify: refStep === 'clarify',
+      refStepForm: refStep === 'form',
+      refStepThanks: refStep === 'thanks',
+      reviewerNameDisplay: reviewerName || refName || 'there',
+      showReviewerNameField: !this.state.cameFromClarify,
+      showRelationshipField: !this.state.cameFromClarify,
+      reviewerName, relationship, context, reviewText,
+      onReviewerNameChange: (e) => this.setState({ reviewerName: e.target.value }),
+      onRelationshipChange: (e) => this.setState({ relationship: e.target.value }),
+      onContextChange: (e) => this.setState({ context: e.target.value }),
+      onReviewTextChange: (e) => this.setState({ reviewText: e.target.value }),
+      gateYes: this.gateYes, gateNo: this.gateNo, continueToForm: this.continueToForm,
+      clarifyDisabled, continueButtonStyle: btnStyle(clarifyDisabled),
+      submitReference: this.submitReference,
+      submitDisabled, submitButtonStyle: btnStyle(submitDisabled),
+      backToSite: this.backToSite, startWriteReference: this.startWriteReference,
+      exitLabel: this.state.isOwner ? 'Exit preview' : 'Back to the portfolio',
+
+      approvedRefsPublic: approved.map(r => ({ name: r.name, text: r.text, relationshipSuffix: r.relationship ? ' · ' + this.relationshipLabel(r.relationship) : '' })),
+      noApprovedPublic: approved.length === 0,
+
+      inviteName,
+      onInviteNameChange: (e) => this.setState({ inviteName: e.target.value }),
+      copyInviteLink: this.copyInviteLink,
+      previewInvite: () => {
+        const n = this.state.inviteName.trim() || 'Friend';
+        this.setState({ mode: 'reference', refStep: 'form', refName: n, reviewerName: n, cameFromClarify: false, relationship: '', context: '', reviewText: '' });
+      },
+      copyButtonLabel: this.state.copyButtonLabel,
+      inviteLinkPreview: (typeof window !== 'undefined' ? window.location.origin + window.location.pathname : '') + '?ref=' + encodeURIComponent(inviteName.trim() || 'Friend'),
+      pendingCount: pending.length,
+      noPending: pending.length === 0,
+      approvedCount: approved.length,
+      pendingRefs: pending.map(r => ({ name: r.name, relationship: this.relationshipLabel(r.relationship), contextSuffix: r.context ? ' · ' + r.context : '', text: r.text, approve: () => this.approveRef(r.id), reject: () => this.rejectRef(r.id) })),
+      approvedRefsAdmin: approved.map(r => ({ name: r.name, text: r.text, reject: () => this.rejectRef(r.id) })),
+      contactName, contactEmail, contactMessage,
+      contactSent: this.state.contactSent,
+      contactNotSent: !this.state.contactSent,
+      onNameChange: (e) => this.setState({ contactName: e.target.value }),
+      onEmailChange: (e) => this.setState({ contactEmail: e.target.value }),
+      onMessageChange: (e) => this.setState({ contactMessage: e.target.value }),
+      contactDisabled,
+      submitContact: () => this.submitContact(),
+      contactButtonStyle: contactDisabled
+        ? "padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--border); color:var(--muted-light); cursor:not-allowed; align-self:flex-start;"
+        : "padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--accent); color:var(--accent-fg); cursor:pointer; align-self:flex-start;",
+      isAbout: page === 'about',
+      isExperience: page === 'experience',
+      isProjects: page === 'projects',
+      isResearch: page === 'research',
+      isWriting: page === 'writing',
+      isContact: page === 'contact',
+      isReview: page === 'review',
+      isProducts: page === 'products',
+      goProducts: set('products'),
+      goProductsClose: setClose('products'),
+      navStyleProducts: this.navStyle(page === 'products') + ' white-space:nowrap;',
+      drawerStyleProducts: this.navStyle(page === 'products'),
+
+      productListView: this.state.productView === 'list',
+      productDemoView: this.state.productView === 'demo',
+      productFormView: this.state.productView === 'form',
+      productSentView: this.state.productView === 'sent',
+      productEditorView: this.state.productView === 'new',
+      showNewProductButton: this.state.isOwner && this.state.productView === 'list',
+      openNewProduct: () => this.setState({ productView: 'new' }),
+      backToProducts: () => this.setState({ productView: 'list' }),
+      closeDemo: () => this.setState({ productView: 'list' }),
+      openInquiry: () => this.setState({ productView: 'form' }),
+      clearPicks: () => this.setState({ picks: [] }),
+      noProducts: shownProducts.length === 0,
+
+      productFilters: cats.map(c => ({
+        label: c,
+        select: () => this.setState({ productFilter: c }),
+        style: (c === productFilter
+          ? "padding:6px 13px; font-size:13px; border-radius:999px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;"
+          : "padding:6px 13px; font-size:13px; border-radius:999px; border:1px solid var(--border); background:none; color:var(--muted); cursor:pointer; font-family:inherit;"),
+      })),
+
+      productCards: shownProducts.map(p => ({
+        name: p.name, category: p.category, pitch: p.pitch, stack: p.stack,
+        priceLabel: p.price, slotId: 'prod-' + p.id, slotHint: p.name + ' screenshot',
+        cardStyle: 'display:flex; flex-direction:column; border:1px solid ' + (picks.includes(p.id) ? 'var(--accent)' : 'var(--border)') + '; border-radius:5px; overflow:hidden; background:var(--bg);',
+        pickStyle: pickStyle(picks.includes(p.id)),
+        pickLabel: picks.includes(p.id) ? '✓ Interested' : 'I want this',
+        toggle: () => this.togglePick(p.id),
+        openDemo: () => this.setState({ productView: 'demo', currentProductId: p.id }),
+        ownerControls: this.state.isOwner,
+        remove: () => this.saveProducts(this.state.products.filter(x => x.id !== p.id)),
+      })),
+
+      demoName: currentProduct ? currentProduct.name : '',
+      demoCategory: currentProduct ? currentProduct.category : '',
+      demoStack: currentProduct ? currentProduct.stack : '',
+      demoPriceLabel: currentProduct ? currentProduct.price : '',
+      demoUrl: currentProduct ? currentProduct.url : '',
+      demoSlotId: currentProduct ? 'demo-' + currentProduct.id : 'demo-none',
+      demoSlotHint: currentProduct ? currentProduct.name + ' — full page screenshot' : 'screenshot',
+      demoFeatures: currentProduct ? (currentProduct.features || []).map((t, i) => ({ text: t, key: i })) : [],
+      demoPickStyle: currentProduct ? (pickStyle(picks.includes(currentProduct.id)) + ' margin-top:16px;') : '',
+      demoPickLabel: currentProduct && picks.includes(currentProduct.id) ? '✓ Added to your request' : 'I want this one',
+      demoToggle: () => { if (currentProduct) this.togglePick(currentProduct.id); },
+
+      showTray: picks.length > 0 && (this.state.productView === 'list' || this.state.productView === 'demo'),
+      pickedCount: picks.length,
+      pickedCountWord: picks.length === 1 ? 'demo' : 'demos',
+      pickedNames: pickedProducts.map(p => p.name).join(', '),
+
+      inqName: this.state.inqName, inqBusiness: this.state.inqBusiness,
+      inqEmail: this.state.inqEmail, inqMessage: this.state.inqMessage,
+      onInqNameChange: (e) => this.setState({ inqName: e.target.value }),
+      onInqBusinessChange: (e) => this.setState({ inqBusiness: e.target.value }),
+      onInqEmailChange: (e) => this.setState({ inqEmail: e.target.value }),
+      onInqMessageChange: (e) => this.setState({ inqMessage: e.target.value }),
+      submitInquiry: this.submitInquiry,
+      inqDisabled: !inqReady,
+      inqButtonStyle: btnStyle(!inqReady),
+
+      pDraftName: this.state.pDraftName, pDraftCategory: this.state.pDraftCategory,
+      pDraftPitch: this.state.pDraftPitch, pDraftStack: this.state.pDraftStack, pDraftPrice: this.state.pDraftPrice,
+      onPDraftName: (e) => this.setState({ pDraftName: e.target.value }),
+      onPDraftCategory: (e) => this.setState({ pDraftCategory: e.target.value }),
+      onPDraftPitch: (e) => this.setState({ pDraftPitch: e.target.value }),
+      onPDraftStack: (e) => this.setState({ pDraftStack: e.target.value }),
+      onPDraftPrice: (e) => this.setState({ pDraftPrice: e.target.value }),
+      saveProduct: this.addProduct,
+      pDraftDisabled: !pDraftReady,
+      pDraftButtonStyle: btnStyle(!pDraftReady),
+
+      newInquiryCount: inquiries.filter(i => i.status === 'new').length,
+      noInquiries: liveInquiries.length === 0,
+      inquiryCards: liveInquiries.map(i => ({
+        name: i.name,
+        businessSuffix: i.business ? ' · ' + i.business : '',
+        email: i.email,
+        products: i.products.join(', ') || 'no demos listed',
+        message: i.message,
+        hasMessage: !!i.message,
+        statusLabel: i.status === 'new' ? 'New' : 'Contacted',
+        cardStyle: 'padding:16px; border:1px solid ' + (i.status === 'new' ? 'var(--accent)' : 'var(--border)') + '; border-radius:4px; margin-bottom:12px;',
+        mailto: 'mailto:' + i.email + '?subject=' + encodeURIComponent('Your request: ' + (i.products.join(', ') || 'website')),
+        markContacted: () => this.setInquiryStatus(i.id, 'contacted'),
+        archive: () => this.setInquiryStatus(i.id, 'archived'),
+      })),
+      pendingBadge: (pending.length + inquiries.filter(i => i.status === 'new').length) > 0 ? (' (' + (pending.length + inquiries.filter(i => i.status === 'new').length) + ')') : '',
+      blogListView: this.state.blogView === 'list',
+      blogPostView: this.state.blogView === 'post',
+      blogEditorView: this.state.blogView === 'new',
+      showNewPostButton: this.state.isOwner && this.state.blogView === 'list',
+      openNewPost: () => this.setState({ blogView: 'new' }),
+      cancelPost: () => this.setState({ blogView: 'list' }),
+      publishPost: () => this.addPost('published'),
+      saveDraftPost: () => this.addPost('draft'),
+      publishDisabled: !this.state.draftTitle.trim() || !this.state.draftBody.trim(),
+      publishButtonStyle: (!this.state.draftTitle.trim() || !this.state.draftBody.trim())
+        ? "padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--border); color:var(--muted-light); cursor:not-allowed; font-family:inherit;"
+        : "padding:10px 20px; font-size:15px; border:none; border-radius:3px; background:var(--accent); color:var(--accent-fg); cursor:pointer; font-family:inherit;",
+      draftTitle: this.state.draftTitle,
+      draftExcerpt: this.state.draftExcerpt,
+      draftBody: this.state.draftBody,
+      onDraftTitleChange: (e) => this.setState({ draftTitle: e.target.value }),
+      onDraftExcerptChange: (e) => this.setState({ draftExcerpt: e.target.value }),
+      onDraftBodyChange: (e) => this.setState({ draftBody: e.target.value }),
+      postCards: visiblePosts.map(p => ({
+        title: p.title, excerpt: p.excerpt,
+        meta: p.date + (p.status === 'draft' ? ' · Draft (only you can see this)' : ''),
+        ownerControls: this.state.isOwner,
+        open: () => this.setState({ blogView: 'post', currentPostId: p.id }),
+        remove: () => this.savePosts(this.state.posts.filter(x => x.id !== p.id)),
+      })),
+      noPosts: visiblePosts.length === 0,
+      currentPostTitle: currentPost ? currentPost.title : '',
+      currentPostMeta: currentPost ? currentPost.date : '',
+      currentPostParagraphs: currentPost ? currentPost.body.split('\n\n').map((t, i) => ({ text: t, key: i })) : [],
+      openSamplePost: () => this.setState({ blogView: 'post' }),
+      closeSamplePost: () => this.setState({ blogView: 'list' }),
+      goAbout: set('about'),
+      goExperience: set('experience'),
+      goProjects: set('projects'),
+      goResearch: set('research'),
+      goWriting: set('writing'),
+      goContact: set('contact'),
+      goReview: set('review'),
+      goAboutClose: setClose('about'),
+      goExperienceClose: setClose('experience'),
+      goProjectsClose: setClose('projects'),
+      goResearchClose: setClose('research'),
+      goWritingClose: setClose('writing'),
+      goContactClose: setClose('contact'),
+      goReviewClose: setClose('review'),
+      toggleDarkMode: this.toggleDarkMode,
+      drawerStyleAbout: this.navStyle(page === 'about'),
+      drawerStyleExperience: this.navStyle(page === 'experience'),
+      drawerStyleProjects: this.navStyle(page === 'projects'),
+      drawerStyleResearch: this.navStyle(page === 'research'),
+      drawerStyleWriting: this.navStyle(page === 'writing'),
+      drawerStyleContact: this.navStyle(page === 'contact'),
+      drawerStyleReview: this.navStyle(page === 'review'),
+      navStyleAbout: this.navStyle(page === 'about'),
+      navStyleExperience: this.navStyle(page === 'experience'),
+      navStyleProjects: this.navStyle(page === 'projects'),
+      navStyleResearch: this.navStyle(page === 'research'),
+      navStyleWriting: this.navStyle(page === 'writing'),
+      navStyleContact: this.navStyle(page === 'contact'),
+      navStyleReview: this.navStyle(page === 'review'),
+    };
+  }
+}
+</script>
+</body>
+</html>

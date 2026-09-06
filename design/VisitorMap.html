@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="https://unpkg.com/d3@7.9.0/dist/d3.min.js" integrity="sha384-CjloA8y00+1SDAUkjs099PVfnY2KmDC2BZnws9kh8D/lX1s46w6EPhpXdqMfjK6i" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/topojson-client@3.1.0/dist/topojson-client.min.js" integrity="sha384-Ukv1p/xTma6P4/2bY5KzWBw+ydSpXmhCMtyciIQVDJ1RmOxtCYNMF1uXT9T63H67" crossorigin="anonymous"></script>
+<style>
+  html,body{margin:0;background:transparent;font-family:Inter,system-ui,sans-serif;overflow:hidden;}
+</style>
+</head>
+<body>
+<div id="chart" style="position:relative;width:100%;"></div>
+<script>
+const params = new URLSearchParams(location.search);
+const dark = params.get('theme') === 'dark';
+const C = dark
+  ? { land: '#23272e', stroke: '#31363e', sphere: 'transparent', dot: '#7fa8d1' }
+  : { land: '#eceae2', stroke: '#e0ddd2', sphere: 'transparent', dot: '#2c4a6e' };
+
+const width = window.innerWidth, height = window.innerHeight;
+const svg = d3.select('#chart').append('svg').attr('width', width).attr('height', height).attr('viewBox', [0,0,width,height]);
+const projection = d3.geoNaturalEarth1().fitSize([width, height], {type:"Sphere"});
+const path = d3.geoPath(projection);
+
+const cities = [
+  [35.48, 38.73], [4.90, 52.37], [-74.01, 40.71], [-122.42, 37.77], [-0.13, 51.51],
+  [13.40, 52.52], [77.59, 12.97], [103.82, 1.35], [-46.63, -23.55], [-79.38, 43.65],
+  [139.69, 35.68], [31.24, 30.04]
+];
+
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2.0.2/countries-110m.json')
+  .then(r => r.json())
+  .then(topology => {
+    const countries = topojson.feature(topology, topology.objects.countries);
+    svg.append('g').selectAll('path').data(countries.features).join('path')
+      .attr('d', path).attr('fill', C.land).attr('stroke', C.stroke).attr('stroke-width', 0.6);
+    svg.append('g').selectAll('circle').data(cities).join('circle')
+      .attr('cx', d => projection(d)[0])
+      .attr('cy', d => projection(d)[1])
+      .attr('r', 4).attr('fill', C.dot).attr('fill-opacity', 0.55);
+  });
+</script>
+</body>
+</html>
