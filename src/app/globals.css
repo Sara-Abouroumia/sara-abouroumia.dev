@@ -13,10 +13,44 @@
   --accent: #2c4a6e;
   --accent-hover: #1a3350;
   --accent-fg: #ffffff;
+  /* Vivid burnt orange, as saturated as 12px uppercase text can go and still
+     clear 4.5:1 on --bg (4.76:1). Only 4.3:1 on --panel, so don't reuse it
+     there without darkening. */
+  --label: #c74a12;
   --input-bg: #ffffff;
   --success-bg: #f4f7f1;
   --success-border: #dfe6da;
   --success-text: #3a4a34;
+
+  /* Third-party brand colors, not part of the design palette above. Used as
+     button fills, so each ratio is that brand's -fg text ON the fill.
+     Hover darkens rather than lightens: lightening these reds and blues drops
+     white text under 4.5:1 well before the change is even visible. */
+  --brand-email: #c9402f; /* 4.9:1 */
+  --brand-email-hover: #a93526;
+  --brand-email-fg: #ffffff;
+  --brand-linkedin: #0a66c2; /* 5.7:1 */
+  --brand-linkedin-hover: #004182;
+  --brand-linkedin-fg: #ffffff;
+  --brand-github: #24292f; /* 14.7:1 */
+  --brand-github-hover: #14181d;
+  --brand-github-fg: #ffffff;
+
+  /* The live dot on the Now panel. Deep enough to clear 4.5:1 on --panel as a
+     solid dot, with the halo carrying the brighter, more saturated green — the
+     same split the skill marks use, and for the same reason: on a pale ground
+     a glow reads as a tinted shadow, so it needs its own colour. */
+  --live: #15803d;
+  --live-glow: #22c55e99;
+
+  /* Skill marks: the contact shadow that gives them lift, and how far the glow
+     spreads. The glow *colour* is per mark, set inline by <SkillsMarquee />.
+     Light keeps the lift soft — a hard neutral shadow here competes with the
+     tinted halo and greys it out — and spreads the glow wider to compensate
+     for a coloured halo having less to work with on a pale ground. */
+  --mark-lift: 0 2px 4px rgba(28, 28, 26, 0.16);
+  --mark-glow: 13px;
+  --mark-glow-hover: 20px;
 }
 
 .dark {
@@ -32,10 +66,38 @@
   --accent: #7fa8d1;
   --accent-hover: #9cc0e6;
   --accent-fg: #0d1116;
+  /* School-bus yellow, pulled back off full saturation so it sits on the dark
+     ground without glowing. 10.9:1 on --bg, and complementary to the blue
+     --accent rather than competing with it. */
+  --label: #f0c42b;
   --input-bg: #1a1c20;
   --success-bg: #182018;
   --success-border: #2c3a2c;
   --success-text: #a9c9a4;
+
+  /* Fills, unlike text, do not have to be light to work on a dark ground —
+     they only need to clear 3:1 against --bg as a shape. So these stay the
+     saturated brand colors (nudged up a touch from the light values) with
+     white on top, rather than the washed-out tints a text shade would need.
+     GitHub is the exception: its mark is monochrome and genuinely inverts. */
+  --brand-email: #cf4433; /* 4.6:1 on fill, 3.9:1 vs --bg */
+  --brand-email-hover: #b83a2b;
+  --brand-email-fg: #ffffff;
+  --brand-linkedin: #1372d4; /* 4.8:1 on fill, 3.8:1 vs --bg */
+  --brand-linkedin-hover: #0f63ba;
+  --brand-linkedin-fg: #ffffff;
+  --brand-github: #e6edf3; /* 16.0:1 on fill */
+  --brand-github-hover: #ffffff;
+  --brand-github-fg: #0d1116;
+
+  /* Brighter on the dark ground, where a glow genuinely reads as light. */
+  --live: #4ade80;
+  --live-glow: #4ade80b3;
+
+  /* Deeper on the dark ground, where the glow already reads as light. */
+  --mark-lift: 0 4px 7px rgba(0, 0, 0, 0.65);
+  --mark-glow: 9px;
+  --mark-glow-hover: 15px;
 }
 
 /* Class-based dark mode. Replaces v3's darkMode: 'class' config. */
@@ -54,10 +116,20 @@
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-fg: var(--accent-fg);
+  --color-label: var(--label);
   --color-input-bg: var(--input-bg);
   --color-success-bg: var(--success-bg);
   --color-success-border: var(--success-border);
   --color-success-text: var(--success-text);
+  --color-brand-email: var(--brand-email);
+  --color-brand-email-hover: var(--brand-email-hover);
+  --color-brand-email-fg: var(--brand-email-fg);
+  --color-brand-linkedin: var(--brand-linkedin);
+  --color-brand-linkedin-hover: var(--brand-linkedin-hover);
+  --color-brand-linkedin-fg: var(--brand-linkedin-fg);
+  --color-brand-github: var(--brand-github);
+  --color-brand-github-hover: var(--brand-github-hover);
+  --color-brand-github-fg: var(--brand-github-fg);
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-serif: var(--font-lora), Georgia, serif;
@@ -68,4 +140,110 @@
 body {
   background-color: var(--bg);
   color: var(--text);
+  /* The full-bleed strips (skills marquee, section bar) reach the viewport
+     edge with a negative margin, and below ~360px that lands a few pixels
+     past it — enough for the page to jiggle sideways. `clip` rather than
+     `hidden`: hidden would make this a scroll container and break the sticky
+     header and section bar; clip does not. */
+  overflow-x: clip;
+}
+
+/* Anchor jumps from the section rail glide instead of teleporting. Guarded
+   rather than unconditional: a forced smooth jump is disorienting for anyone
+   who has asked the OS for less motion. */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* Height of the sticky chrome a jumped-to heading has to clear. Measured, not
+   guessed — the header renders 77px narrow and 73px wide, and the chip bar
+   adds 49px below xl, where it replaces the gutter rail. Declared once because
+   three things depend on it: where <SectionBar /> pins, how far a section
+   offsets its own anchor, and the reading line in useActiveSection. */
+:root {
+  --header-h: 77px;
+  --anchor-offset: 134px;
+}
+@media (min-width: 1280px) {
+  :root {
+    --header-h: 73px;
+    --anchor-offset: 97px;
+  }
+}
+
+/* The "live" pulse on the Now panel. A ring expanding out of the dot and
+   fading, rather than the dot itself blinking — a blink reads as a fault
+   indicator, an expanding ring reads as a heartbeat. */
+@keyframes now-ping {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
+}
+
+@layer components {
+  .now-ping {
+    animation: now-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+  /* Nothing here is conveyed by the motion — the date beside it says the same
+     thing in words — so it simply stops, leaving the solid dot. */
+  @media (prefers-reduced-motion: reduce) {
+    .now-ping {
+      animation: none;
+      opacity: 0;
+    }
+  }
+}
+
+/* The skill marks themselves. One class rather than a utility string because
+   the filter stacks two drop-shadows and needs a theme variant either way.
+   drop-shadow (not box-shadow) so the glow traces the logo's silhouette.
+   Marks with no brand colour (the lettered fallbacks) get no glow: --glow is
+   unset for them, so it resolves to transparent. */
+@layer components {
+  .skill-mark {
+    --g: var(--glow, transparent);
+    color: var(--mark, currentColor);
+    filter: drop-shadow(var(--mark-lift))
+      drop-shadow(0 0 var(--mark-glow) var(--g));
+    transition:
+      transform 0.2s ease-out,
+      filter 0.2s ease-out;
+  }
+  .dark .skill-mark {
+    --g: var(--glow-dark, transparent);
+    color: var(--mark-dark, currentColor);
+  }
+  /* A wider radius reads as a brighter glow without needing a second alpha. */
+  .skill:hover .skill-mark {
+    transform: translateY(-3px) scale(1.06);
+    filter: drop-shadow(var(--mark-lift))
+      drop-shadow(0 0 var(--mark-glow-hover) var(--g));
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .skill-mark {
+      transition: none;
+    }
+    .skill:hover .skill-mark {
+      transform: none;
+    }
+  }
+}
+
+/* Browsers give <button> `cursor: default`, and Tailwind's preflight does not
+   override it — so without this every button on the site (theme toggle, the
+   resume chip, its dropdown) looks unclickable. Fixed once here rather than by
+   adding cursor-pointer at each call site and missing some. */
+@layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled) {
+    cursor: pointer;
+  }
 }

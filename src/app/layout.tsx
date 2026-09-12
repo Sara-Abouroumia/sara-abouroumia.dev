@@ -43,7 +43,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           <div className="flex min-h-screen flex-col">
             <SiteHeader />
-            <main className="mx-auto w-full max-w-[720px] flex-1 px-6 pt-14 pb-24">
+            {/* Same 880 as the header and footer, so the page h1 starts at the
+                same x as the site name above it. Long-form prose is capped
+                inside this column rather than by it — see PROSE in
+                components/section.tsx. */}
+            <main className="mx-auto w-full max-w-[880px] flex-1 px-6 pt-14 pb-24">
               {children}
             </main>
             <SiteFooter />

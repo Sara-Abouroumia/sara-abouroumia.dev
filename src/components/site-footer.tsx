@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { GitHubIcon } from "@/components/brand-icons";
+import { now } from "@/content/about";
 import { footerPages, site } from "@/content/site";
+import { formatMonth } from "@/lib/dates";
 
 const ICON_LINK =
   "flex h-[34px] w-[34px] items-center justify-center rounded border border-border bg-bg text-[13px] text-muted no-underline hover:border-accent hover:text-accent";
@@ -75,6 +78,15 @@ export function SiteFooter() {
               <span aria-hidden="true">in</span>
             </a>
             <a
+              href={site.github}
+              target="_blank"
+              rel="noopener"
+              className={ICON_LINK}
+            >
+              <span className="sr-only">GitHub profile</span>
+              <GitHubIcon />
+            </a>
+            <a
               href={site.resume}
               target="_blank"
               rel="noopener"
@@ -98,7 +110,13 @@ export function SiteFooter() {
           © {new Date().getFullYear()} {site.name}
         </span>
         <span className="flex items-center gap-3.5">
-          <span>Last updated September 2026</span>
+          {/* The same value the Now panel stamps itself with. Two hand-typed
+              dates on one page is precisely the drift a timestamp exists to
+              prevent, and on a personal site the Now note is the site update. */}
+          <span>
+            Last updated{" "}
+            <time dateTime={now.updated}>{formatMonth(now.updated)}</time>
+          </span>
         </span>
       </div>
     </footer>

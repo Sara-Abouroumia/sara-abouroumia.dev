@@ -4,24 +4,37 @@ export const site = {
   location: "İstanbul, Türkiye",
   email: "saraabouroumia@gmail.com",
   linkedin: "https://linkedin.com/in/sara-abouroumia-7b5665210",
+  github: "https://github.com/Sara-Abouroumia",
   resume: "/Sara_Abouroumia_Resume.pdf",
-  /** Drop a square photo in public/ and set the path here (e.g. "/sara.jpg").
+  /** Shown in the preview dialog header and used as the download filename. */
+  resumeFileName: "Sara_Abouroumia_Resume.pdf",
+  /** Drop a square photo in public/ and set the path here (e.g. "/sara.png").
    *  Until then <Avatar /> renders initials. */
-  avatar: null as string | null,
+  avatar: "/sara.png" as string | null, // null as string | null
 } as const;
 
+/**
+ * Experience is deliberately absent. It had its own route, but the About page
+ * carries the same timeline with every bullet already in the DOM, so the page
+ * was a second copy of content the reader had just scrolled past. Leadership &
+ * Service, which used to live only there, moved onto About with it.
+ */
+/**
+ * The nav label is "Research" while the page itself is headed "Research &
+ * Development". That is not drift: the full name is ~175px at 15px, and at the
+ * 941px breakpoint the desktop row has roughly 130px of slack once the
+ * wordmark, Resume chip and theme toggle take their share. The short label is
+ * what keeps the nav on one line at its tightest width.
+ */
 export const navItems = [
   { href: "/", label: "About" },
-  { href: "/experience", label: "Experience" },
   { href: "/projects", label: "Projects" },
   { href: "/products", label: "Products" },
   { href: "/research", label: "Research" },
-  { href: "/blog", label: "Blog" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
-// Deliberately a subset — matches the design's footer, which omits
-// Research and Contact.
+// Deliberately a subset, matching the design's footer, which omits Contact.
 export const footerPages = navItems.filter((i) =>
-  ["/", "/experience", "/projects", "/products", "/blog"].includes(i.href),
+  ["/", "/projects", "/products", "/research"].includes(i.href),
 );
