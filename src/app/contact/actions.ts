@@ -90,7 +90,7 @@ export async function submitContact(
         "",
         "—",
         `${parsed.data.name} <${parsed.data.email}>`,
-        "Sent from the contact form on saraabouroumia.com",
+        `Sent from the contact form on ${site.url.replace("https://", "")}`,
       ].join("\n"),
     });
 

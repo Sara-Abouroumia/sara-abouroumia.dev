@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { site } from "@/content/site";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -18,13 +19,31 @@ const lora = Lora({
   display: "swap",
 });
 
+const DESCRIPTION =
+  "Software engineer working across backend systems, web, and mobile.";
+
 export const metadata: Metadata = {
+  /**
+   * Resolves every relative URL in metadata (canonicals, OG images) against
+   * the real origin. Without it Next warns at build time and falls back to
+   * localhost, which ships broken absolute URLs to production.
+   */
+  metadataBase: new URL(site.url),
   title: {
-    default: "Sara Abouroumia",
-    template: "%s · Sara Abouroumia",
+    default: `${site.name} · ${site.role}`,
+    template: `%s · ${site.name}`,
   },
-  description:
-    "Software engineer working across backend systems, web, and mobile.",
+  description: DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    title: `${site.name} · ${site.role}`,
+    description: DESCRIPTION,
+    url: "/",
+    locale: "en_GB",
+  },
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

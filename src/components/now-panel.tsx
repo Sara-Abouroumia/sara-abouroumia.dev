@@ -26,9 +26,9 @@ export function NowPanel() {
   return (
     <div className={`${PROSE} rounded-[3px] bg-panel px-4 py-3.5`}>
       {/* One status line, read left to right: live, Now, as of when. The date
-          sits beside the label rather than at the far edge — on a 700px panel
-          a right-aligned stamp floats half a metre from the word it qualifies. */}
-      <div className="flex items-center gap-3">
+          is pushed to the far edge (justify-between) so it reads as a
+          timestamp on the panel, not a word tacked onto the label. */}
+      <div className="flex items-center justify-between">
         <span className="flex items-center gap-2.5">
           {/* Two stacked circles: a solid dot carrying a halo, and a ring that
               expands out of it and fades. --live is its own token rather than

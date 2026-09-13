@@ -2,6 +2,14 @@ export const site = {
   name: "Sara Abouroumia",
   role: "Software Engineer",
   location: "İstanbul, Türkiye",
+  /**
+   * Canonical origin, no trailing slash. Single source for metadataBase,
+   * canonical URLs, the sitemap, JSON-LD, and the contact email footer.
+   *
+   * .dev is on the HSTS preload list, so https is not a preference here:
+   * browsers refuse http for this TLD outright.
+   */
+  url: "https://sara-abouroumia.dev",
   email: "saraabouroumia@gmail.com",
   linkedin: "https://linkedin.com/in/sara-abouroumia-7b5665210",
   github: "https://github.com/Sara-Abouroumia",
