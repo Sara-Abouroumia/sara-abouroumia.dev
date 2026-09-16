@@ -103,9 +103,9 @@ export const skillGroups: SkillGroup[] = [
         image: "/logos/skills/react.svg",
         color: "#61DAFB",
       },
-      { name: "App Store", icon: "appstore" },
+      { name: "App Store Connect", icon: "appstore" },
       {
-        name: "Google Play",
+        name: "Google Play Console",
         image: "/logos/skills/googleplay.svg",
         color: "#00A0FF",
       },
