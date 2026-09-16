@@ -1,7 +1,7 @@
 export type Skill = {
   name: string;
   /**
-   * simple-icons slug, without the `si` prefix. Omitted where no mark exists —
+   * simple-icons slug, without the `si` prefix. Omitted where no mark exists,
    * Microsoft and Apple had theirs removed from the set over trademark policy,
    * and concepts like CI/CD were never going to have one. Those fall back to a
    * lettered tile, the same way <OrgLogo /> handles a missing company logo.

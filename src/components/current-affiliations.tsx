@@ -8,7 +8,7 @@ import { companies } from "@/content/experience";
  * own line once the row runs out of width.
  *
  * Derived from the experience and education lists rather than restated, so the
- * "Present" entry is the single source of truth — ending a role in one place
+ * "Present" entry is the single source of truth, ending a role in one place
  * removes it from here too.
  */
 export function CurrentAffiliations({
@@ -47,7 +47,7 @@ export function CurrentAffiliations({
           <OrgLogo src={item.logo} name={item.org} />
           <span className="font-semibold text-sm leading-snug">
             {item.org}
-            <span className="sr-only"> — {item.detail}</span>
+            <span className="sr-only">, {item.detail}</span>
           </span>
         </li>
       ))}

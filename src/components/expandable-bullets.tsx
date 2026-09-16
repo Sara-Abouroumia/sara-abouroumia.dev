@@ -10,7 +10,7 @@ const LIST = `${PROSE} list-disc space-y-1.5 pl-5 text-[15px] text-text-soft lea
  *
  * Everything is rendered into the DOM and the overflow is hidden rather than
  * unmounted, so the full text is in the page source for search engines and for
- * a reader who prints it — the "…more" is a reading affordance, not a fetch.
+ * a reader who prints it, the "…more" is a reading affordance, not a fetch.
  */
 export function ExpandableBullets({
   bullets,

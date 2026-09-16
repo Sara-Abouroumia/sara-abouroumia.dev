@@ -5,6 +5,7 @@ import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { site } from "@/content/site";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -19,9 +20,12 @@ const lora = Lora({
   display: "swap",
 });
 
-const DESCRIPTION =
-  "Software engineer working across backend systems, web, and mobile.";
-
+/**
+ * Site-wide defaults only. Canonical URLs and Open Graph belong to each page,
+ * set through pageMetadata() in lib/metadata.ts. Anything declared here is
+ * inherited by every route that does not override it, so a canonical here would
+ * be claimed by every page, including the 404.
+ */
 export const metadata: Metadata = {
   /**
    * Resolves every relative URL in metadata (canonicals, OG images) against
@@ -30,19 +34,10 @@ export const metadata: Metadata = {
    */
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} · ${site.role}`,
+    default: SITE_TITLE,
     template: `%s · ${site.name}`,
   },
-  description: DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: {
-    type: "website",
-    siteName: site.name,
-    title: `${site.name} · ${site.role}`,
-    description: DESCRIPTION,
-    url: "/",
-    locale: "en_GB",
-  },
+  description: SITE_DESCRIPTION,
   twitter: { card: "summary_large_image" },
 };
 
@@ -64,7 +59,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <SiteHeader />
             {/* Same 880 as the header and footer, so the page h1 starts at the
                 same x as the site name above it. Long-form prose is capped
-                inside this column rather than by it — see PROSE in
+                inside this column rather than by it, see PROSE in
                 components/section.tsx. */}
             <main className="mx-auto w-full max-w-[880px] flex-1 px-6 pt-14 pb-24">
               {children}

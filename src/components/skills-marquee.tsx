@@ -20,15 +20,15 @@ function lookup(slug?: string): IconRecord | null {
  * Brand colours, adjusted per theme.
  *
  * Brand hexes are chosen for a white page, and a good few of them are
- * effectively black — GitHub is #181717, Express and Next.js are #000000. Drop
+ * effectively black: GitHub is #181717, Express and Next.js are #000000. Drop
  * those onto the dark panel unchanged and the mark disappears. So each colour
  * is nudged in lightness until it clears a floor, keeping hue and saturation so
- * the brand still reads. Runs at build time — no cost in the browser.
+ * the brand still reads. Runs at build time, no cost in the browser.
  *
  * The floors are deliberately below the 3:1 WCAG figure for graphics. These
  * marks are decorative: every one carries its name in readable text directly
  * beneath, so nothing is conveyed by colour alone. Holding 3:1 would drag
- * JavaScript's yellow to olive and React's cyan to teal — destroying the brand
+ * JavaScript's yellow to olive and React's cyan to teal, destroying the brand
  * colours in the name of legibility they don't need. The floors below rescue
  * only what would otherwise be invisible.
  * ------------------------------------------------------------------------- */
@@ -137,7 +137,7 @@ function markColors(hex: string) {
      * pale brands (React's cyan, JavaScript's yellow) had almost nothing to
      * show against cream, while the ones darkened for legibility threw an
      * olive-ish smudge rather than a colour. Pinning lightness into a mid band
-     * gives every brand a saturated halo at the same strength — vivid enough to
+     * gives every brand a saturated halo at the same strength, vivid enough to
      * read on cream, dark enough to actually be there.
      */
     glowLight: `${clampLightness(brand, 0.3, 0.52)}${GLOW_ALPHA_LIGHT}`,
@@ -149,7 +149,7 @@ function markColors(hex: string) {
  * The house set: marks for the skills that are concepts rather than products.
  *
  * Drawn as line art, deliberately, so they never read as a brand mark for
- * something that has none — the difference from the solid vendor silhouettes
+ * something that has none, the difference from the solid vendor silhouettes
  * beside them is the honest signal. Each shape is the conventional one for its
  * idea, not an invention: a cylinder for a database, braces for an API
  * payload, a loop for a pipeline, a shield for a security gate.
@@ -207,7 +207,7 @@ function SkillItem({ skill }: { skill: Skill }) {
           : undefined
       }
       title={skill.name}
-      // No vertical padding here — the room the glow needs lives on the
+      // No vertical padding here, the room the glow needs lives on the
       // scroll container instead, since that is what clips it.
       className="skill group/skill flex w-[100px] shrink-0 flex-col items-center gap-2.5 px-1"
     >
@@ -248,7 +248,7 @@ function SkillItem({ skill }: { skill: Skill }) {
           <path d={GLYPHS[skill.glyph]} />
         </svg>
       ) : (
-        // No mark exists — Microsoft and Apple pulled theirs from the set,
+        // No mark exists, Microsoft and Apple pulled theirs from the set,
         // and CI/CD was never going to have one. Set the name instead, the
         // way <OrgLogo /> falls back to a monogram.
         <span
@@ -269,7 +269,7 @@ function SkillItem({ skill }: { skill: Skill }) {
  * The whole stack as one strip that drifts on its own and scrolls by hand.
  *
  * Two identical copies of the list, so <MarqueeScroller /> can wrap by half
- * the width and loop without a seam. The second copy is aria-hidden — it is
+ * the width and loop without a seam. The second copy is aria-hidden, it is
  * the same content twice, and a screen reader should hear the list once.
  *
  * This stays a server component so the brand-colour maths above runs at build
@@ -280,8 +280,8 @@ export function SkillsMarquee() {
 
   return (
     // py-7 is load-bearing, not styling. `overflow-x: auto` forces overflow-y
-    // to compute to auto too — CSS will not scroll one axis while the other
-    // stays visible — so this element clips vertically, and a drop-shadow
+    // to compute to auto too, CSS will not scroll one axis while the other
+    // stays visible, so this element clips vertically, and a drop-shadow
     // reaches roughly 1.2x its radius past the mark (24px at the 20px hover
     // radius). Less padding than that and the glow gets sliced off against the
     // container's top edge.

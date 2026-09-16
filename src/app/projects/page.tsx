@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { PageTitle, PROSE } from "@/components/section";
 import { projects } from "@/content/projects";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Projects",
   description:
     "Things Sara Abouroumia has designed, built and shipped end to end.",
-};
+  path: "/projects",
+});
 
 export default function ProjectsPage() {
   return (

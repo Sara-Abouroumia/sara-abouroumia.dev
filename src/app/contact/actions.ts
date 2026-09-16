@@ -88,7 +88,10 @@ export async function submitContact(
       text: [
         parsed.data.message,
         "",
-        "—",
+        // "-- " (dash, dash, space) on its own line is the standard signature
+        // delimiter (RFC 3676). Mail clients recognise it and set what follows
+        // apart from the message.
+        "-- ",
         `${parsed.data.name} <${parsed.data.email}>`,
         `Sent from the contact form on ${site.url.replace("https://", "")}`,
       ].join("\n"),

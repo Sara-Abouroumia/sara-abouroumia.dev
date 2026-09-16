@@ -15,8 +15,8 @@ import { site } from "@/content/site";
  * Crop window into the 800×800 source, in source pixels.
  *
  * Uncropped, the head runs y=94–525 and so fills 54% of the frame, which at
- * 88px leaves a ~32px face. This window is sized so the head fills ~68% —
- * conventional headshot framing — and is offset up and slightly left to sit on
+ * 88px leaves a ~32px face. This window is sized so the head fills ~68%
+ * (conventional headshot framing) and is offset up and slightly left to sit on
  * the face rather than the geometric centre of the hair and shoulders.
  */
 const SOURCE_SIZE = 800;

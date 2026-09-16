@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { EmptyState } from "@/components/empty-state";
 import { PageTitle, PROSE } from "@/components/section";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Research & Development",
   description:
     "Writeups from Kaggle competitions, machine learning work, and things Sara Abouroumia is figuring out in public.",
-};
+  path: "/research",
+});
 
 /**
  * This page absorbed what used to be the separate Blog tab.

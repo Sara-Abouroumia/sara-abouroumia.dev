@@ -9,7 +9,7 @@ import { sectionId } from "@/components/section";
  *
  * These two must not be set independently. An anchor jump parks a section
  * exactly at the offset, so a line even a pixel above it means the section you
- * just jumped to does not register and the marker lags one behind — which is
+ * just jumped to does not register and the marker lags one behind, which is
  * precisely what a hardcoded 132 against a 134 offset produced. Reading the
  * same value, plus a little slack, makes that impossible.
  */
@@ -30,8 +30,8 @@ function readLine() {
  * it. Asking "which heading has passed the line, and are we at the bottom" has
  * no such blind spot.
  *
- * `titles` must be a stable reference — a module-level const, not an array
- * built during render — or the listener is torn down and rebuilt every frame.
+ * `titles` must be a stable reference (a module-level const, not an array
+ * built during render) or the listener is torn down and rebuilt every frame.
  */
 export function useActiveSection(titles: readonly string[]) {
   const [active, setActive] = useState<string | null>(null);
@@ -71,7 +71,7 @@ export function useActiveSection(titles: readonly string[]) {
     };
 
     // Crossing the xl breakpoint swaps the chip bar for the gutter rail, which
-    // changes the offset — and so the line.
+    // changes the offset, and so the line.
     const onResize = () => {
       line = readLine();
       onScroll();

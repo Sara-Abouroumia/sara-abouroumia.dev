@@ -1,5 +1,5 @@
 /**
- * "Sep. 2026" from "2026-09" — the month form the site uses everywhere
+ * "Sep. 2026" from "2026-09", the month form the site uses everywhere
  * (experience and education dates, the Now panel, the footer stamp).
  *
  * Stored as ISO year-month so it can go in a <time dateTime> unchanged, and

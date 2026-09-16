@@ -8,7 +8,7 @@ import { useActiveSection } from "@/components/use-active-section";
  * The narrow-screen counterpart to <SectionNav />: a row of section labels
  * that pins under the site header.
  *
- * Same visual language as the gutter rail, turned on its side — a hairline
+ * Same visual language as the gutter rail, turned on its side, a hairline
  * with a 2px marker riding on it, uppercase labels, accent for current. The
  * rail's placement cannot come along (there is no gutter at 390px, and
  * floating it over the column would cover the thing being read), but its
@@ -17,7 +17,7 @@ import { useActiveSection } from "@/components/use-active-section";
  * It earns its place by where it sits rather than by appearing and
  * disappearing. Rendered in the flow directly above the first section, it is
  * simply below the fold while the intro is being read, then sticks for the
- * rest of the page — no scroll threshold to tune, and it works unhydrated.
+ * rest of the page, no scroll threshold to tune, and it works unhydrated.
  *
  * Hidden at xl, where the gutter rail takes over.
  */
@@ -56,8 +56,8 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
     return () => observer.disconnect();
   }, []);
 
-  // Keep the current label in view. With more sections than fit — the point at
-  // which this row starts scrolling — the active one would otherwise sit off
+  // Keep the current label in view. With more sections than fit (the point at
+  // which this row starts scrolling) the active one would otherwise sit off
   // the edge exactly when it matters.
   useEffect(() => {
     const track = trackRef.current;
@@ -93,7 +93,7 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
             sections than fit. Without it the bar is three bare words, and
             nothing says they are anything but a heading. Same wording as the
             gutter rail: the two are one feature in two orientations, and
-            nobody sees both at once to notice a difference — which is exactly
+            nobody sees both at once to notice a difference, which is exactly
             how two labels for one thing drift apart. */}
         <span
           id="section-bar-label"
@@ -103,7 +103,7 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
         </span>
         <ul
           ref={trackRef}
-          // This row scrolls on a phone — three labels want ~275px and a 390px
+          // This row scrolls on a phone, three labels want ~275px and a 390px
           // screen leaves ~240 once the "Jump to" label and the top control
           // take their share. That is the designed state, not a failure: it has
           // to scroll the moment a fourth section exists, which is why the
@@ -137,11 +137,11 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
 
         {/* Pinned to the end, outside the scrolling track, so it stays
             reachable once the labels start scrolling. A rule separates it from
-            the section list — it is a different kind of destination, not a
+            the section list, it is a different kind of destination, not a
             fourth section.
 
             Gated on `active` exactly as the rail's is. It is tempting to think
-            the bar's placement already guarantees this — it sits below the
+            the bar's placement already guarantees this, it sits below the
             intro, so on a phone it is off-screen until you have scrolled. On a
             tall tablet it is not: at 768x1024 the bar is on screen at scroll
             zero, and an unconditional arrow there offers to take you to the

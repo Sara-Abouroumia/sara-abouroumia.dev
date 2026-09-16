@@ -14,7 +14,7 @@ const DRAG_SLOP = 4;
  * An unbounded hover pause is the obvious design, and it is wrong here: the
  * strip spans the full column width across the middle of the page, so a cursor
  * simply left there while reading freezes it for good and the section looks
- * broken. Bounding it keeps the useful half — stop long enough to read a mark —
+ * broken. Bounding it keeps the useful half (stop long enough to read a mark)
  * and drops the failure. The timer restarts on every pointer move, so actively
  * moving along the row holds it still for as long as you are looking.
  */
@@ -24,7 +24,7 @@ const HOVER_HOLD = 2500;
  * A horizontally scrolling strip that drifts on its own but yields to the user.
  *
  * The drift advances scrollLeft from a rAF loop rather than animating a CSS
- * transform, because a transformed track cannot also be a scroll container —
+ * transform, because a transformed track cannot also be a scroll container,
  * and being a real scroll container is what makes wheel, trackpad, touch and
  * drag work natively.
  *
@@ -53,7 +53,7 @@ export function MarqueeScroller({
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
     /**
-     * Width of one copy — the distance to wrap by.
+     * Width of one copy, the distance to wrap by.
      *
      * Measured from the copy element itself, NOT from scrollWidth / 2. This
      * container carries horizontal padding, which scrollWidth includes, so
@@ -132,7 +132,7 @@ export function MarqueeScroller({
     // Native horizontal scroll (trackpad, touch) still needs to wrap, and
     // should pause the drift. But assigning scrollLeft above fires this same
     // event, so a position already matching `pos` is our own movement and must
-    // not pause — otherwise the strip would halt itself on the first frame.
+    // not pause, otherwise the strip would halt itself on the first frame.
     const onScroll = () => {
       if (dragging) return;
       const current = el.scrollLeft;

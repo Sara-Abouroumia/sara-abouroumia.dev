@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { Avatar } from "@/components/avatar";
 import { GitHubIcon, LinkedInIcon, MailIcon } from "@/components/brand-icons";
 import { CurrentAffiliations } from "@/components/current-affiliations";
@@ -13,13 +14,19 @@ import { bio } from "@/content/about";
 import { education } from "@/content/education";
 import { companies, service } from "@/content/experience";
 import { site } from "@/content/site";
+import { pageMetadata, SITE_DESCRIPTION } from "@/lib/metadata";
+
+export const metadata: Metadata = pageMetadata({
+  description: SITE_DESCRIPTION,
+  path: "/",
+});
 
 const QUICK_LINK =
   "inline-flex items-center gap-2 whitespace-nowrap rounded-[3px] border px-3.5 py-1.5 text-sm no-underline transition-colors";
 
 /**
  * Resume is not a third party, so it keeps the site's own accent hover. It is
- * also a split chip, so the padding lives on its two inner buttons instead —
+ * also a split chip, so the padding lives on its two inner buttons instead,
  * the divider has to run the full height between them.
  */
 const RESUME_CHIP =
@@ -39,7 +46,7 @@ const BRAND_LINK = {
 /**
  * Sections listed in the "on this page" rail, in page order.
  *
- * Adding one — Certificates, say — means adding it here and rendering a
+ * Adding one (Certificates, say) means adding it here and rendering a
  * <Section> with the identical title. The anchor is derived from the title by
  * sectionId(), so the two cannot fall out of step.
  */

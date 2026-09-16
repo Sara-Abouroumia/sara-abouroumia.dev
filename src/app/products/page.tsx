@@ -2,12 +2,14 @@ import type { Metadata } from "next";
 import { EmptyState } from "@/components/empty-state";
 import { PageTitle, PROSE } from "@/components/section";
 import { site } from "@/content/site";
+import { pageMetadata } from "@/lib/metadata";
 
-export const metadata: Metadata = {
+export const metadata: Metadata = pageMetadata({
   title: "Products",
   description:
     "Working website demos, built and ready to adapt for your business.",
-};
+  path: "/products",
+});
 
 export default function ProductsPage() {
   return (

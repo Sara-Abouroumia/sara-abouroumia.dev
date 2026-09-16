@@ -32,7 +32,7 @@ function parseMonth(value: string): Date | null {
 }
 
 /**
- * "1 yr 4 mos", the way LinkedIn counts it — inclusive of both end months, so
+ * "1 yr 4 mos", the way LinkedIn counts it, inclusive of both end months, so
  * Jun 2024 to Jun 2024 is 1 mo rather than 0.
  *
  * Note this resolves at build time for anything still "Present", so the figure
@@ -75,7 +75,7 @@ function companyTenure(company: Company): string | null {
  * content beside it.
  *
  * The connector is flex-1 inside a flex column, so it stretches to whatever
- * height the row's content happens to be — no fixed heights, and no absolutely
+ * height the row's content happens to be, no fixed heights, and no absolutely
  * positioned rule behind the list that has to be kept in sync.
  */
 function Row({
@@ -107,7 +107,7 @@ function Row({
 }
 
 /**
- * Space between top-level entries — no rule and no connector.
+ * Space between top-level entries, no rule and no connector.
  *
  * A rule made two employers read as separate sections of the page, and the
  * connector rail is reserved for positions *within* one employer, where the
@@ -258,7 +258,7 @@ export type TimelineEntry = {
   children: ReactNode;
 };
 
-/** The flat variant, for lists that never group — service, awards, and so on. */
+/** The flat variant, for lists that never group (service, awards, and so on). */
 export function Timeline({
   entries,
   logoSize = 40,

@@ -1,6 +1,6 @@
 export type Position = {
   title: string;
-  /** "Full-time", "Part-time", "Internship" — omitted when it adds nothing. */
+  /** "Full-time", "Part-time", "Internship". Omitted when it adds nothing. */
   employmentType?: string;
   start: string;
   end: string;
@@ -11,7 +11,7 @@ export type Position = {
 
 /**
  * Grouped by employer rather than by role, so a company someone held several
- * positions at renders once with its tenure nested underneath — the shape
+ * positions at renders once with its tenure nested underneath, the shape
  * LinkedIn uses, and the only way a promotion or a transition from intern to
  * staff reads as continuity instead of two unrelated jobs.
  */

@@ -2,7 +2,7 @@ import Image from "next/image";
 
 /**
  * Logos sit on a fixed white tile in both themes rather than on --bg. The marks
- * we carry are dark ink meant for a light ground — ITU's navy seal would all but
+ * we carry are dark ink meant for a light ground. ITU's navy seal would all but
  * vanish on the dark palette, and recoloring someone's mark is not an option.
  * White rather than cream so Nextarp's own white matte blends into the tile;
  * in light mode the tile disappears into the page entirely.

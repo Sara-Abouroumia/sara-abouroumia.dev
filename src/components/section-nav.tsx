@@ -15,7 +15,7 @@ import { useActiveSection } from "@/components/use-active-section";
  * globals.css, which yields to prefers-reduced-motion. Only the active
  * highlight needs JavaScript, and its absence costs nothing.
  *
- * Below xl there is no gutter to sit in — <SectionBar /> covers that case.
+ * Below xl there is no gutter to sit in, <SectionBar /> covers that case.
  */
 export function SectionNav({ titles }: { titles: readonly string[] }) {
   const active = useActiveSection(titles);
@@ -23,7 +23,7 @@ export function SectionNav({ titles }: { titles: readonly string[] }) {
   return (
     <nav
       // Named by the visible label rather than a separate aria-label, so the
-      // landmark a screen reader announces is the wording actually on screen —
+      // landmark a screen reader announces is the wording actually on screen,
       // and there is one string to keep in step with <SectionBar />, not two.
       aria-labelledby="section-nav-label"
       // h-full so the sticky child has the whole page to travel down.
@@ -62,7 +62,7 @@ export function SectionNav({ titles }: { titles: readonly string[] }) {
 
         {/* Deliberately outside the bordered list: it is not a section, and
             sitting on the same rail would claim it is. Hidden until a section
-            has actually been reached — at the top of the page there is nowhere
+            has actually been reached, at the top of the page there is nowhere
             to go back to, and `active` already knows that.
 
             href="#top" rather than a scripted scroll: the HTML spec sends that

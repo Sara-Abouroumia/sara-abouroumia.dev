@@ -59,7 +59,7 @@ const PATH_DOWNLOAD = "M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5M4 19h16";
 
 /**
  * Resume as an Outlook attachment chip: the body opens an in-page preview, and
- * the caret opens the same actions Outlook offers — preview, open, download.
+ * the caret opens the same actions Outlook offers: preview, open, download.
  *
  * The preview is a native <dialog> rather than a hand-rolled overlay, so the
  * focus trap, Esc-to-close, and inert background come from the platform.

@@ -2,7 +2,7 @@
  * Filled marks, sized to sit inline with 14px button text.
  *
  * LinkedIn and GitHub are the official brand paths, so they are drawn filled
- * rather than restyled as line art — a redrawn mark stops being the mark.
+ * rather than restyled as line art, a redrawn mark stops being the mark.
  * The envelope follows suit so the three read as one row.
  */
 

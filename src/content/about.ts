@@ -16,7 +16,7 @@ export type NowItem = {
  *
  * `updated` is load-bearing, not decoration. A now note with no date is
  * indistinguishable from one nobody has touched in two years, which is exactly
- * the doubt it exists to remove — so bump it whenever the items change, and if
+ * the doubt it exists to remove, so bump it whenever the items change, and if
  * it ever drifts more than a couple of months behind, that is the signal to
  * rewrite the items rather than the date.
  *

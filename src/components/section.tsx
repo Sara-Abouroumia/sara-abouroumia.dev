@@ -6,8 +6,8 @@ import type { ReactNode } from "react";
  * The main column is 880 so its left edge lines up with the header and footer.
  * Left uncapped, a paragraph would run the full 832px and read at ~90
  * characters a line, past the comfortable 45–75. Capping the text rather than
- * the column keeps the structural edges — headings, rules, the timeline's logo
- * rail — aligned with the chrome while the prose stays readable.
+ * the column keeps the structural edges (headings, rules, the timeline's logo
+ * rail) aligned with the chrome while the prose stays readable.
  *
  * Lives here rather than beside the components that use it: those include a
  * "use client" module, and a server component cannot import a plain value
@@ -18,7 +18,7 @@ export const PROSE = "max-w-[700px]";
 /**
  * The mark on the back-to-top control, shared by the rail and the chip bar.
  *
- * Both of those are client components; this module is not, which is fine —
+ * Both of those are client components; this module is not, which is fine,
  * a server component can be rendered inside a client one.
  */
 export function ArrowUpIcon() {

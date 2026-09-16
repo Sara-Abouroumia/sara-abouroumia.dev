@@ -3,7 +3,7 @@ import { type NowItem, now } from "@/content/about";
 import { formatMonth } from "@/lib/dates";
 
 /**
- * Line-leading marks, drawn rather than borrowed — these name kinds of
+ * Line-leading marks, drawn rather than borrowed. These name kinds of
  * activity, not products, so they follow the same line-art convention as the
  * house glyphs in the skills strip.
  */
