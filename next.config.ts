@@ -32,30 +32,36 @@ const isDev = process.env.NODE_ENV === "development";
  * "application/pdf">, and 'none' blocks that element outright. frame-src is
  * 'self' for the same feature: Chrome renders an embedded PDF inside a nested
  * browsing context, which frame-src governs.
+ *
+ * Those two directives only cover the page's side of the embed. The PDF's own
+ * response gets a vote too: frame-ancestors and X-Frame-Options are enforced
+ * on the document being framed, so if the PDF says "never frame me", no
+ * permission on the page overrides it. See pdfFrameHeaders below.
  */
-const csp = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
-  "style-src 'self' 'unsafe-inline'",
-  // next/font self-hosts Inter and Lora into /_next/static/media at build
-  // time, so no fonts.gstatic.com origin is needed here.
-  "font-src 'self'",
-  // data: and blob: cover the placeholder and optimised outputs of next/image.
-  "img-src 'self' data: blob:",
-  // Server Actions post back to this origin. ws: is the dev HMR socket.
-  `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
-  "object-src 'self'",
-  "frame-src 'self'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  "frame-ancestors 'none'",
-  "upgrade-insecure-requests",
-].join("; ");
+const policy = (frameAncestors: string) =>
+  [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'",
+    // next/font self-hosts Inter and Lora into /_next/static/media at build
+    // time, so no fonts.gstatic.com origin is needed here.
+    "font-src 'self'",
+    // data: and blob: cover the placeholder and optimised outputs of next/image.
+    "img-src 'self' data: blob:",
+    // Server Actions post back to this origin. ws: is the dev HMR socket.
+    `connect-src 'self'${isDev ? " ws: wss:" : ""}`,
+    "object-src 'self'",
+    "frame-src 'self'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    `frame-ancestors ${frameAncestors}`,
+    "upgrade-insecure-requests",
+  ].join("; ");
 
 const securityHeaders = [
   {
     key: "Content-Security-Policy",
-    value: csp,
+    value: policy("'none'"),
   },
   {
     /**
@@ -113,6 +119,15 @@ const securityHeaders = [
   },
 ];
 
+/**
+ * PDFs, and only PDFs, may be framed by this origin. Every other response keeps
+ * 'none' / DENY, so no page on the site can be framed, not even by itself.
+ */
+const pdfFrameHeaders = [
+  { key: "Content-Security-Policy", value: policy("'self'") },
+  { key: "X-Frame-Options", value: "SAMEORIGIN" },
+];
+
 const nextConfig: NextConfig = {
   // Next sets `X-Powered-By: Next.js` by default, which tells a scanner which
   // framework and therefore which CVE list to try. Nothing needs it.
@@ -121,10 +136,17 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        // Everything, including /public assets and the PDF. Headers are matched
-        // before the filesystem, so this covers static files too.
+        // Everything, including /public assets. Headers are matched before the
+        // filesystem, so this covers static files too.
         source: "/:path*",
         headers: securityHeaders,
+      },
+      {
+        // Must come after the rule above. When two rules set the same key on
+        // one path, the later rule wins, which is what lets this loosen the
+        // framing headers for PDFs without restating the others.
+        source: "/:path(.*\\.pdf)",
+        headers: pdfFrameHeaders,
       },
     ];
   },
