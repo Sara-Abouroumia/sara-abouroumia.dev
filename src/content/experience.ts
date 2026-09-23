@@ -26,8 +26,14 @@ export type Company = {
 export type Service = {
   title: string;
   org: string;
-  start: string;
-  end: string;
+  /** The org's own site, when it has one worth sending people to. */
+  orgHref?: string;
+  /**
+   * `start` alone is a one-off, and renders as a single date. Both make a
+   * range. Neither renders no date line at all.
+   */
+  start?: string;
+  end?: string;
   summary: string;
 };
 
@@ -80,6 +86,14 @@ export const companies: Company[] = [
   },
 ];
 
+/**
+ * The standfirst under the masthead. First person, because the section is
+ * about what she did rather than what the roles were called.
+ */
+export const serviceIntro =
+  "For five years, much of my time outside class went into AGU's international student community. I helped create the events that gave each year its rhythm, represented Egypt at the university's International Fest, and spent four years helping new international students navigate the transition to AGU, often starting before they arrived in Türkiye.";
+
+/** Oldest first: the front page reads left to right, then down. */
 export const service: Service[] = [
   {
     title: "Head of Event Management",
@@ -87,14 +101,31 @@ export const service: Service[] = [
     start: "Sep. 2019",
     end: "May 2023",
     summary:
-      "Led a team coordinating campus-wide cultural and social events for the international student community.",
+      "Led the volunteer team behind the club's cultural nights and campus-wide social events, setting the calendar each term, dividing responsibilities across the team, and running events that helped international students find their way into campus life.",
   },
   {
-    title: "Orientation Program Coordinator (Volunteer)",
-    org: "AGU International Office",
-    start: "Sep. 2020",
-    end: "Jun. 2024",
+    title: "Welcome Program Coordinator (Volunteer)",
+    org: "Abdullah Gül University International Office",
+    start: "Jul. 2020",
+    end: "Sep. 2024",
     summary:
-      "Organized onboarding programs for incoming international students, facilitating their integration into university life.",
+      "Coordinated the volunteer team for AGU's Newcomers Welcome Program, distributing responsibilities and helping incoming international students before and after arrival. Supported university and dormitory registration, course selection, IT, payments, insurance, immigration, transportation, and other practical processes; welcomed students arriving late at night; organized trips around Kayseri; and designed and led a campus tour for groups of about 50 students.",
+  },
+  {
+    title: "International Fest, Egypt Representative",
+    org: "Abdullah Gül University",
+    // A single-day role: it has a start and no end, and renders as one date.
+    start: "May 2022",
+    summary:
+      "Represented Egypt at AGU's International Fest, introducing visitors to the country's history and tourism through interactive activities and challenges organized with the International Office.",
+  },
+  {
+    title: "Developer & Pacer",
+    org: "Kayseri Social Run",
+    orgHref: "https://kayserisocialrun.com",
+    start: "Jan. 2026",
+    end: "Present",
+    summary:
+      "Built and maintain the club's web app end to end, while also pacing community runs around Kayseri.",
   },
 ];

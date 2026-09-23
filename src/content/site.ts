@@ -31,7 +31,8 @@ export const site = {
  * Experience is deliberately absent. It had its own route, but the About page
  * carries the same timeline with every bullet already in the DOM, so the page
  * was a second copy of content the reader had just scrolled past. Leadership &
- * Service, which used to live only there, moved onto About with it.
+ * Service, which used to live only there, moved onto About with it, and is
+ * currently commented out there pending References and Certifications.
  */
 /**
  * The nav label is "Research" while the page itself is headed "Research &

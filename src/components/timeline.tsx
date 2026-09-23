@@ -252,8 +252,9 @@ export type TimelineEntry = {
   title: string;
   org: string;
   logo?: string;
-  start: string;
-  end: string;
+  /** Both or neither: an entry with no dates simply shows none. */
+  start?: string;
+  end?: string;
   meta?: string;
   children: ReactNode;
 };
@@ -262,9 +263,17 @@ export type TimelineEntry = {
 export function Timeline({
   entries,
   logoSize = 40,
+  marks = true,
 }: {
   entries: TimelineEntry[];
   logoSize?: number;
+  /**
+   * The logo rail. Worth keeping where the marks are real logos, and worth
+   * dropping where they would all be monogram fallbacks: a column of grey
+   * squares spelling out initials is noise standing in for a picture that
+   * does not exist.
+   */
+  marks?: boolean;
 }) {
   return (
     <ol className="m-0 list-none p-0">
@@ -272,11 +281,14 @@ export function Timeline({
         return (
           <Row
             key={entry.key}
-            gap="gap-4"
+            // No rail, no gutter: the gap exists to clear the mark.
+            gap={marks ? "gap-4" : "gap-0"}
             className={i > 0 ? ENTRY_GAP : ""}
             connector={false}
             marker={
-              <OrgLogo src={entry.logo} name={entry.org} size={logoSize} />
+              marks ? (
+                <OrgLogo src={entry.logo} name={entry.org} size={logoSize} />
+              ) : null
             }
           >
             <h3 className="font-semibold text-base leading-snug">
@@ -285,7 +297,13 @@ export function Timeline({
             <p className="text-[15px] text-text-soft leading-snug">
               {entry.org}
             </p>
-            <DateLine start={entry.start} end={entry.end} className="mt-0.5" />
+            {entry.start && entry.end ? (
+              <DateLine
+                start={entry.start}
+                end={entry.end}
+                className="mt-0.5"
+              />
+            ) : null}
             {entry.meta ? (
               <p className="text-muted text-sm">{entry.meta}</p>
             ) : null}

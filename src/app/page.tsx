@@ -8,11 +8,13 @@ import { ResumePreview } from "@/components/resume-preview";
 import { PROSE, Section } from "@/components/section";
 import { SectionBar } from "@/components/section-bar";
 import { SectionNav } from "@/components/section-nav";
+// import { ServiceFrontPage } from "@/components/service-front-page";
 import { SkillsMarquee } from "@/components/skills-marquee";
-import { ExperienceTimeline, Timeline } from "@/components/timeline";
+import { ExperienceTimeline } from "@/components/timeline";
 import { bio } from "@/content/about";
 import { education } from "@/content/education";
-import { companies, service } from "@/content/experience";
+import { companies } from "@/content/experience";
+// import { service, serviceIntro } from "@/content/experience";
 import { site } from "@/content/site";
 import { pageMetadata, SITE_DESCRIPTION } from "@/lib/metadata";
 
@@ -54,7 +56,7 @@ const SECTIONS = [
   "Experience",
   "Education",
   "Skills",
-  "Leadership & Service",
+  // "Leadership & Service",
 ] as const;
 
 export default function Home() {
@@ -156,28 +158,17 @@ export default function Home() {
         <SkillsMarquee />
       </Section>
 
-      {/* Smaller marks than the roles above: these are monogram fallbacks with
-          no real logos behind them, and at 40px they would carry more visual
-          weight than the paid roles do. */}
-      <Section title="Leadership & Service">
-        <Timeline
-          logoSize={30}
-          entries={service.map((s) => ({
-            key: `${s.org}-${s.start}`,
-            title: s.title,
-            org: s.org,
-            start: s.start,
-            end: s.end,
-            children: (
-              <p
-                className={`${PROSE} text-[15px] text-text-soft leading-relaxed`}
-              >
-                {s.summary}
-              </p>
-            ),
-          }))}
-        />
-      </Section>
+      {/* Leadership & Service is parked, not deleted. It was the largest
+          section on the page, about 29% of it on desktop and 33% on a phone,
+          which put more weight on volunteering than on Experience, and the
+          plan is to give that space to References and Certifications instead.
+
+          Everything it needs is still here: <ServiceFrontPage /> in
+          components, `service` and `serviceIntro` in content/experience.ts.
+          To bring it back, uncomment the two imports at the top of this file,
+          the "Leadership & Service" entry in SECTIONS, and the line below.
+
+          <ServiceFrontPage entries={service} intro={serviceIntro} /> */}
     </div>
   );
 }

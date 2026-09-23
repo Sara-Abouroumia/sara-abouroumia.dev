@@ -48,7 +48,7 @@ const TEXTAREA = `${FIELD} min-h-[180px] resize-y py-3 leading-[1.6]`;
 const edge = (invalid: boolean) =>
   invalid ? "border-error" : "border-field-border hover:border-muted-light";
 
-const FIELD_ORDER: ContactField[] = ["name", "email", "message"];
+const FIELD_ORDER: ContactField[] = ["name", "surname", "email", "message"];
 
 const INITIAL: ContactState = { status: "idle" };
 
@@ -169,11 +169,14 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
         </div>
       </fieldset>
 
-      {/* Paired from sm up, stacked on a phone, as the canvas draws them. */}
+      {/* Name and surname share a row where there is room for two, and
+          stack below that. Email is never paired: addresses are the longest
+          thing typed into this form and the one most often mistyped, so it
+          gets the full column to show what was entered. */}
       <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
         <Field
           id="name"
-          label="Your name"
+          label="Name"
           error={errorFor("name")}
           input={(describedBy, invalid) => (
             <input
@@ -182,8 +185,8 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
               type="text"
               required
               maxLength={100}
-              autoComplete="name"
-              placeholder="Jane Doe"
+              autoComplete="given-name"
+              placeholder="Jane"
               defaultValue={values?.name}
               onChange={() => markEdited("name")}
               aria-invalid={invalid || undefined}
@@ -193,21 +196,20 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
           )}
         />
         <Field
-          id="email"
-          label="Your email"
-          error={errorFor("email")}
+          id="surname"
+          label="Surname"
+          error={errorFor("surname")}
           input={(describedBy, invalid) => (
             <input
-              id="email"
-              name="email"
-              type="email"
+              id="surname"
+              name="surname"
+              type="text"
               required
-              maxLength={200}
-              autoComplete="email"
-              inputMode="email"
-              placeholder="jane@company.com"
-              defaultValue={values?.email}
-              onChange={() => markEdited("email")}
+              maxLength={100}
+              autoComplete="family-name"
+              placeholder="Doe"
+              defaultValue={values?.surname}
+              onChange={() => markEdited("surname")}
               aria-invalid={invalid || undefined}
               aria-describedby={describedBy}
               className={`${INPUT} ${edge(invalid)}`}
@@ -215,6 +217,29 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
           )}
         />
       </div>
+
+      <Field
+        id="email"
+        label="Email"
+        error={errorFor("email")}
+        input={(describedBy, invalid) => (
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            maxLength={200}
+            autoComplete="email"
+            inputMode="email"
+            placeholder="jane@company.com"
+            defaultValue={values?.email}
+            onChange={() => markEdited("email")}
+            aria-invalid={invalid || undefined}
+            aria-describedby={describedBy}
+            className={`${INPUT} ${edge(invalid)}`}
+          />
+        )}
+      />
 
       <Field
         id="message"
@@ -311,6 +336,67 @@ function Field({
   );
 }
 
+/**
+ * Fires a burst from a point, twice, a beat apart.
+ *
+ * Loaded on demand rather than imported at the top: it is a few kB of canvas
+ * code that only runs on the one frame after a message sends, so there is no
+ * reason for it to sit in the bundle every visitor downloads.
+ *
+ * It draws on a canvas of our own with useWorker: false, rather than calling
+ * the library's default export. Left to itself canvas-confetti moves the
+ * animation into a Web Worker built from a blob: URL, and the site's CSP has
+ * no worker-src, so the browser blocks it and nothing appears. Widening the
+ * policy to allow blob: workers would be a real concession for a decorative
+ * effect; running on the main thread costs nothing at this scale.
+ */
+async function burst(from: { x: number; y: number }) {
+  const { default: confetti } = await import("canvas-confetti");
+
+  const canvas = document.createElement("canvas");
+  canvas.setAttribute("aria-hidden", "true");
+  // Fixed and click-through: it covers the page for a second and must not
+  // swallow a click meant for what is underneath.
+  canvas.style.cssText =
+    "position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:40";
+  document.body.append(canvas);
+
+  const fire = confetti.create(canvas, { resize: true, useWorker: false });
+  const shared = {
+    origin: from,
+    disableForReducedMotion: true,
+    colors: ["#2c4a6e", "#7da7d9", "#16a34a", "#4ade80", "#f0c42b"],
+  };
+
+  /**
+   * fire() hands back null rather than a promise when the library disables
+   * itself, which it does for a visitor who asked for reduced motion. Wrapping
+   * both calls in Promise.resolve keeps that from hanging the await, and so
+   * from leaving the canvas pinned over the page for the rest of the visit.
+   */
+  await Promise.all([
+    Promise.resolve(
+      fire({ ...shared, particleCount: 70, spread: 70, startVelocity: 38 }),
+    ),
+    new Promise<void>((done) => {
+      setTimeout(() => {
+        void Promise.resolve(
+          fire({
+            ...shared,
+            particleCount: 40,
+            spread: 110,
+            startVelocity: 26,
+            decay: 0.92,
+          }),
+        ).then(() => done());
+      }, 180);
+    }),
+  ]);
+
+  // fire() resolves when the last particle has gone, so the canvas can go
+  // with it rather than sitting over the page for the rest of the visit.
+  canvas.remove();
+}
 function Sent({
   name,
   email,
@@ -321,6 +407,7 @@ function Sent({
   onSendAnother: () => void;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
+  const markRef = useRef<HTMLSpanElement>(null);
 
   // The form that had focus has just been removed from the page, which drops
   // focus to <body> and leaves a screen reader silent. Moving it here reads
@@ -329,11 +416,26 @@ function Sent({
     headingRef.current?.focus();
   }, []);
 
+  // The burst comes out of the tick itself rather than the middle of the
+  // window, so the celebration points at the thing it is celebrating.
+  // confetti() takes an origin in fractions of the viewport.
+  useEffect(() => {
+    const mark = markRef.current;
+    if (!mark) return;
+    const box = mark.getBoundingClientRect();
+    void burst({
+      x: (box.left + box.width / 2) / window.innerWidth,
+      y: (box.top + box.height / 2) / window.innerHeight,
+    });
+  }, []);
+
   const firstName = name.trim().split(/\s+/)[0] || "there";
 
   return (
     <div className="flex flex-col items-start gap-4 py-4">
-      <CheckCircleIcon />
+      <span ref={markRef} className="inline-flex">
+        <CheckCircleIcon />
+      </span>
       <h2
         ref={headingRef}
         tabIndex={-1}
@@ -355,20 +457,6 @@ function Sent({
     </div>
   );
 }
-
-/**
- * The send glyph: a filled arrowhead with a V cut into its back edge, which
- * is what reads as a paper plane seen edge on.
- *
- * Four points, not a curve: the tip at the right, the two wing tips at the
- * left, and the notch between them set in about a fifth of the width. The
- * shape is stroked in its own fill colour so the joins come out rounded;
- * a bare fill would give three hard spikes.
- *
- * Solid, where the site's other marks are line art. A 16px outline of this
- * shape closes up into a grey lozenge at the size it is used, and the mark
- * has to hold its own against 15px semibold text beside it.
- */
 function SendIcon() {
   return (
     <svg
@@ -420,7 +508,7 @@ function CheckCircleIcon() {
       viewBox="0 0 24 24"
       fill="none"
       aria-hidden="true"
-      className="text-accent"
+      className="text-success-mark"
     >
       <circle cx="12" cy="12" r="9.5" stroke="currentColor" strokeWidth="2" />
       <path

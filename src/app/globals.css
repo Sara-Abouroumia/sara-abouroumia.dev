@@ -37,6 +37,17 @@
   --placeholder: #8a8780; /* 3.3:1 on the field */
   --form-label: #33322d;
   --form-hint: #6b6860;
+  /* The oversized 404 numeral: a shade off the page, enough to read as a
+     watermark and not enough to compete with the words in front of it. */
+  --ghost: #efece5;
+  /* Every other row of the 404 answer list, a step off --panel so the rows
+     read as a table without the stripe shouting. 1.11:1 against the panel it
+     sits in, with body text still at 13.8:1 on top. */
+  --row-alt: #eae7dd;
+  /* The tick on the sent confirmation. Vibrant where --success-text is tuned
+     to be read as body copy: this is a 40px mark, so it only has to clear 3:1
+     as a shape (3.3:1 here) and can be the green people expect. */
+  --success-mark: #16a34a;
   --success-bg: #f4f7f1;
   --success-border: #dfe6da;
   --success-text: #3a4a34;
@@ -119,6 +130,9 @@
   --placeholder: #686a73; /* 3.1:1 on the field */
   --form-label: #c4c5ca;
   --form-hint: #8e9097;
+  --ghost: #212227;
+  --row-alt: #17191e; /* 1.09:1 against --panel, text at 15.3:1 */
+  --success-mark: #4ade80; /* 10.4:1 on this ground */
   --success-bg: #182018;
   --success-border: #2c3a2c;
   --success-text: #a9c9a4;
@@ -182,6 +196,9 @@
   --color-placeholder: var(--placeholder);
   --color-form-label: var(--form-label);
   --color-form-hint: var(--form-hint);
+  --color-ghost: var(--ghost);
+  --color-row-alt: var(--row-alt);
+  --color-success-mark: var(--success-mark);
   --color-selected-border: var(--selected-border);
   --color-selected-bg: var(--selected-bg);
   --color-error: var(--error);

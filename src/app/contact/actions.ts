@@ -5,12 +5,13 @@ import { z } from "zod";
 import { site } from "@/content/site";
 import { MESSAGE_MAX, TOPIC_IDS, type TopicId, topicLabel } from "./topics";
 
-export type ContactField = "name" | "email" | "message";
+export type ContactField = "name" | "surname" | "email" | "message";
 
 export type ContactValues = {
   /** Absent while the topic chips are switched off in the form. */
   topic?: TopicId;
   name: string;
+  surname: string;
   email: string;
   message: string;
 };
@@ -29,6 +30,7 @@ export type ContactState =
 
 const schema = z.object({
   name: z.string().trim().min(1, "Please add your name.").max(100),
+  surname: z.string().trim().min(1, "Please add your surname.").max(100),
   email: z
     .string()
     .trim()
@@ -61,6 +63,7 @@ export async function submitContact(
   const values: ContactValues = {
     topic,
     name: String(formData.get("name") ?? ""),
+    surname: String(formData.get("surname") ?? ""),
     email: String(formData.get("email") ?? ""),
     message: String(formData.get("message") ?? ""),
   };
@@ -103,6 +106,8 @@ export async function submitContact(
     };
   }
 
+  const fullName = `${parsed.data.name} ${parsed.data.surname}`;
+
   try {
     const resend = new Resend(apiKey);
     const { error } = await resend.emails.send({
@@ -117,8 +122,8 @@ export async function submitContact(
       // A filter on "Portfolio contact" catches every one of these. The
       // topic is named only when the visitor chose one.
       subject: topic
-        ? `Portfolio contact: ${topicLabel(topic)} from ${parsed.data.name}`
-        : `Portfolio contact from ${parsed.data.name}`,
+        ? `Portfolio contact: ${topicLabel(topic)} from ${fullName}`
+        : `Portfolio contact from ${fullName}`,
       text: [
         parsed.data.message,
         "",
@@ -126,7 +131,7 @@ export async function submitContact(
         // delimiter (RFC 3676). Mail clients recognise it and set what follows
         // apart from the message.
         "-- ",
-        `${parsed.data.name} <${parsed.data.email}>`,
+        `${fullName} <${parsed.data.email}>`,
         `Sent from the contact form on ${site.url.replace("https://", "")}`,
       ].join("\n"),
     });
