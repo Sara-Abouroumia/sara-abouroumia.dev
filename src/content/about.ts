@@ -1,5 +1,5 @@
 /** The opening paragraph on the home page. */
-export const bio = `I'm a software engineer working across backend systems, web, and mobile. Right now I'm building full-stack products at Nextarp, from ERP and training-management systems to the CI/CD pipelines and security tooling that ship them. I studied Computer Engineering at Abdullah Gul University and am now pursuing an M.S. in the same field at Istanbul Technical University alongside work. Outside of that I compete in Kaggle machine learning competitions and build small products end to end.`;
+export const bio = `I'm a software engineer working across backend systems, web, and mobile, currently building full-stack products at Nextarp. My work spans production systems, CI/CD, security automation, and increasingly agentic AI workflows. Alongside work, I'm pursuing a thesis-based M.S. in Computer Engineering at Istanbul Technical University. Outside of work and research, I compete in Kaggle machine learning competitions and enjoy building products end to end.`;
 
 export type NowItem = {
   /** Which mark leads the line. See NOW_ICONS in <NowPanel />. */

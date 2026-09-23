@@ -23,8 +23,11 @@ const NOW_ICONS: Record<NowItem["icon"], string> = {
  * claim; the date is what makes it checkable.
  */
 export function NowPanel() {
+  // bg-panel-cool, not bg-panel: this is the one surface on the page meant to
+  // read as a recess rather than a warm card, so it takes the same cool tone
+  // as a contact field. See --panel-cool in globals.css.
   return (
-    <div className={`${PROSE} rounded-[3px] bg-panel px-4 py-3.5`}>
+    <div className={`${PROSE} rounded-[3px] bg-panel-cool px-4 py-3.5`}>
       {/* One status line, read left to right: live, Now, as of when. The date
           is pushed to the far edge (justify-between) so it reads as a
           timestamp on the panel, not a word tacked onto the label. */}
@@ -61,13 +64,18 @@ export function NowPanel() {
               strokeLinecap="round"
               strokeLinejoin="round"
               aria-hidden="true"
-              // Centres a 16px mark on the first line's 20.6px box (15px text
-              // at leading-snug): (20.6 − 16) / 2 ≈ 2px.
-              className="mt-0.5 h-4 w-4 shrink-0 text-muted"
+              // Centres a 14px mark on the first line's 19.25px box (14px text
+              // at leading-snug): (19.25 − 14) / 2 ≈ 2.6px, and mt-0.5 is 2px.
+              // The mark steps down with the text so it does not start
+              // outweighing the line it belongs to.
+              className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted"
             >
               <path d={NOW_ICONS[item.icon]} />
             </svg>
-            <span className="text-[15px] text-text-soft leading-snug">
+            {/* 14px against the 15px used for body copy elsewhere. The panel
+                is an aside, not prose, so it reads better a step under the
+                text around it. */}
+            <span className="text-[14px] text-text-soft leading-snug">
               {item.text}
             </span>
           </li>

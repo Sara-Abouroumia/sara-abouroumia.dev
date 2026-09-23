@@ -5,6 +5,20 @@
 
   --bg: #ffffff;
   --panel: #f4f2ec;
+  /*
+   * The cool counterpart to --panel, for a surface meant to read as a recess
+   * rather than a warm card. The Now panel uses it.
+   *
+   * Set to --input-bg's exact value rather than approximated, because the two
+   * are doing the same job, but kept as its own token so the form and the
+   * panel can part company later without one silently repainting the other.
+   *
+   * It also settles a contrast miss. On warm --panel the live dot (--live,
+   * #15803d) measures 4.48:1, a hair under the 4.5 it needs; every cooler
+   * shade at --panel's weight made that worse, and this lighter ground takes
+   * it to 4.68:1.
+   */
+  --panel-cool: #f6f7f9;
   --border: #e2ded3;
   --text: #1c1c1a;
   --text-soft: #33322d;
@@ -25,9 +39,9 @@
    * ground of the two.
    *
    * Cool, unlike --panel: blue sits three steps above red, the same direction
-   * dark's own field colour leans. A field is a place to put something, not
-   * a surface like the Now panel, so it reads better as a neutral recess than
-   * as another warm card.
+   * dark's own field colour leans. A field is a place to put something, so it
+   * reads better as a neutral recess than as another warm card. The Now panel
+   * has since taken the same tone; see --panel-cool.
    */
   --input-bg: #f6f7f9;
   /* Field text that is not the visitor's: the hint inside a field, the
@@ -111,6 +125,11 @@
 
   --bg: #14161a;
   --panel: #1e2126;
+  /* Dark's panel is already cool, so this is a step deeper rather than a
+     change of temperature: --input-bg's value again, 1.077 off the page where
+     --panel is 1.122. Every mark on it gains contrast, the live dot from
+     9.27:1 to 9.65:1. */
+  --panel-cool: #1c1d22;
   --border: #2b2e33;
   --text: #f1efe9;
   --text-soft: #d8d5cb;
@@ -178,6 +197,7 @@
 @theme inline {
   --color-bg: var(--bg);
   --color-panel: var(--panel);
+  --color-panel-cool: var(--panel-cool);
   --color-border: var(--border);
   --color-text: var(--text);
   --color-text-soft: var(--text-soft);
