@@ -3,33 +3,63 @@
 import { Resend } from "resend";
 import { z } from "zod";
 import { site } from "@/content/site";
+import { MESSAGE_MAX, TOPIC_IDS, type TopicId, topicLabel } from "./topics";
+
+export type ContactField = "name" | "email" | "message";
+
+export type ContactValues = {
+  /** Absent while the topic chips are switched off in the form. */
+  topic?: TopicId;
+  name: string;
+  email: string;
+  message: string;
+};
 
 export type ContactState =
   | { status: "idle" }
-  | { status: "success" }
+  /** Name and email come back so the confirmation can address the visitor. */
+  | { status: "success"; name: string; email: string }
   | {
       status: "error";
       message: string;
-      fieldErrors?: Partial<Record<"name" | "email" | "message", string>>;
+      fieldErrors?: Partial<Record<ContactField, string>>;
       /** Echoed back so a failed submit does not wipe what was typed. */
-      values?: { name: string; email: string; message: string };
+      values?: ContactValues;
     };
 
 const schema = z.object({
   name: z.string().trim().min(1, "Please add your name.").max(100),
-  email: z.email("That email address does not look right.").max(200),
+  email: z
+    .string()
+    .trim()
+    .min(1, "I need an email address to reply to.")
+    .pipe(z.email("That email does not look quite right.").max(200)),
   message: z
     .string()
     .trim()
-    .min(10, "A little more detail would help.")
-    .max(5000, "That is longer than this form can send."),
+    .min(10, "A few more words would help (at least 10 characters).")
+    .max(MESSAGE_MAX, `Please keep it under ${MESSAGE_MAX} characters.`),
 });
 
 export async function submitContact(
   _prev: ContactState,
   formData: FormData,
 ): Promise<ContactState> {
-  const values = {
+  /**
+   * Only used when the form actually offers the choice. A radio group can
+   * submit only its own values, so anything else was hand-crafted and is
+   * dropped rather than rejected: the topic shapes a subject line, nothing
+   * more. Absent means the subject simply does not mention one, which beats
+   * labelling every message with whichever chip happened to be default.
+   */
+  const raw = formData.get("topic");
+  const topic =
+    typeof raw === "string" && (TOPIC_IDS as readonly string[]).includes(raw)
+      ? (raw as TopicId)
+      : undefined;
+
+  const values: ContactValues = {
+    topic,
     name: String(formData.get("name") ?? ""),
     email: String(formData.get("email") ?? ""),
     message: String(formData.get("message") ?? ""),
@@ -42,7 +72,7 @@ export async function submitContact(
    * without the field.
    */
   if (String(formData.get("company") ?? "") !== "") {
-    return { status: "success" };
+    return { status: "success", name: values.name, email: values.email };
   }
 
   const parsed = schema.safeParse(values);
@@ -54,7 +84,7 @@ export async function submitContact(
     }
     return {
       status: "error",
-      message: "Please check the fields below.",
+      message: "Please fix the highlighted fields.",
       fieldErrors,
       values,
     };
@@ -84,7 +114,11 @@ export async function submitContact(
       from,
       to: site.email,
       replyTo: parsed.data.email,
-      subject: `Portfolio contact from ${parsed.data.name}`,
+      // A filter on "Portfolio contact" catches every one of these. The
+      // topic is named only when the visitor chose one.
+      subject: topic
+        ? `Portfolio contact: ${topicLabel(topic)} from ${parsed.data.name}`
+        : `Portfolio contact from ${parsed.data.name}`,
       text: [
         parsed.data.message,
         "",
@@ -105,7 +139,11 @@ export async function submitContact(
       };
     }
 
-    return { status: "success" };
+    return {
+      status: "success",
+      name: parsed.data.name,
+      email: parsed.data.email,
+    };
   } catch {
     return {
       status: "error",

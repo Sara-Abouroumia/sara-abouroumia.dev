@@ -3,6 +3,12 @@ export const site = {
   role: "Software Engineer",
   location: "İstanbul, Türkiye",
   /**
+   * Türkiye has stayed on UTC+3 all year since 2016, with no daylight
+   * saving, so this is right in every month and never needs a seasonal
+   * edit.
+   */
+  timezone: "GMT+3",
+  /**
    * Canonical origin, no trailing slash. Single source for metadataBase,
    * canonical URLs, the sitemap, JSON-LD, and the contact email footer.
    *

@@ -84,10 +84,26 @@ export function Section({
   );
 }
 
-/** The h1 used at the top of every page except the home page. */
-export function PageTitle({ children }: { children: ReactNode }) {
+/**
+ * The h1 used at the top of every page except the home page.
+ *
+ * `tight` is for a title that introduces a paragraph directly beneath it
+ * rather than a section of its own. The default 36px is the gap between two
+ * blocks, and at 30px of type that is 1.2x the title: it reads as a hole when
+ * the very next line belongs to the title.
+ */
+export function PageTitle({
+  children,
+  tight = false,
+}: {
+  children: ReactNode;
+  tight?: boolean;
+}) {
+  const gap = tight ? "mb-5" : "mb-9";
   return (
-    <h1 className="mb-9 font-serif text-[30px] font-semibold">{children}</h1>
+    <h1 className={`${gap} font-serif text-[30px] font-semibold`}>
+      {children}
+    </h1>
   );
 }
 

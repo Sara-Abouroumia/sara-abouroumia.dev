@@ -17,10 +17,52 @@
      clear 4.5:1 on --bg (4.76:1). Only 4.3:1 on --panel, so don't reuse it
      there without darkening. */
   --label: #c74a12;
-  --input-bg: #ffffff;
+  /*
+   * A shade off --bg, not equal to it. Dark has always done this (#1a1c20
+   * against a #14161a page) and it is what makes an empty field read as a
+   * box you can type into rather than an outline drawn on the page. 1.072
+   * separation here against dark's 1.062, since white is the less forgiving
+   * ground of the two.
+   *
+   * Cool, unlike --panel: blue sits three steps above red, the same direction
+   * dark's own field colour leans. A field is a place to put something, not
+   * a surface like the Now panel, so it reads better as a neutral recess than
+   * as another warm card.
+   */
+  --input-bg: #f6f7f9;
+  /* Field text that is not the visitor's: the hint inside a field, the
+     label above it, and the note under the form. Named rather than taken
+     from --muted-light and --text-soft, because the dark theme sets these
+     three from the design canvas and the global tones do not match it. */
+  --placeholder: #8a8780; /* 3.3:1 on the field */
+  --form-label: #33322d;
+  --form-hint: #6b6860;
   --success-bg: #f4f7f1;
   --success-border: #dfe6da;
   --success-text: #3a4a34;
+
+  /* Form controls. --border is the hairline for rules and cards; a field needs
+     a firmer edge than that to read as something you can type into. Still
+     1.65:1 against --bg in both themes, short of the 3:1 WCAG 1.4.11 asks of
+     a control boundary; the labels above each field carry identification. */
+  --field-border: #cfc9bc;
+  --focus-ring: rgba(44, 74, 110, 0.22);
+  /*
+   * The chosen topic. Baby blue rather than the navy --accent: against a
+   * white page the accent carries the same weight as the body text around
+   * it, so a chip outlined in it announced nothing.
+   *
+   * 2.57:1 against --bg, under the 3:1 WCAG 1.4.11 asks of a boundary, so
+   * the fill carries the state alongside it and the control is a labelled
+   * radio either way. Dark needs none of this: its accent is already a
+   * light blue that stands clear of that ground.
+   */
+  --selected-border: #5ba8e5;
+  --selected-bg: rgba(91, 168, 229, 0.1);
+  /* Two reds: the border only has to read as a shape, the message has to clear
+     4.5:1 as text (6.5:1 on --bg). */
+  --error: #c0392b;
+  --error-text: #b3261e;
 
   /* Third-party brand colors, not part of the design palette above. Used as
      button fills, so each ratio is that brand's -fg text ON the fill.
@@ -63,17 +105,31 @@
   --text-soft: #d8d5cb;
   --muted: #9b9789;
   --muted-light: #9c988c;
-  --accent: #7fa8d1;
+  /* The design canvas's --accent and --on-accent, to the digit. */
+  --accent: #7da7d9;
   --accent-hover: #9cc0e6;
-  --accent-fg: #0d1116;
+  --accent-fg: #0f1115;
   /* School-bus yellow, pulled back off full saturation so it sits on the dark
      ground without glowing. 10.9:1 on --bg, and complementary to the blue
      --accent rather than competing with it. */
   --label: #f0c42b;
-  --input-bg: #1a1c20;
+  /* From here down, the design canvas's own dark values: --field, --ph,
+     --body and --faint in its palette. */
+  --input-bg: #1c1d22;
+  --placeholder: #686a73; /* 3.1:1 on the field */
+  --form-label: #c4c5ca;
+  --form-hint: #8e9097;
   --success-bg: #182018;
   --success-border: #2c3a2c;
   --success-text: #a9c9a4;
+
+  --field-border: #3a3c44;
+  --focus-ring: rgba(125, 167, 217, 0.28); /* the canvas --ring */
+  /* The chosen chip is outlined in the accent itself, as the canvas has it. */
+  --selected-border: var(--accent);
+  --selected-bg: rgba(125, 167, 217, 0.16);
+  --error: #e07a7a;
+  --error-text: #f09a9a; /* 8.4:1 on --bg */
 
   /* Fills, unlike text, do not have to be light to work on a dark ground,
      they only need to clear 3:1 against --bg as a shape. So these stay the
@@ -121,6 +177,15 @@
   --color-success-bg: var(--success-bg);
   --color-success-border: var(--success-border);
   --color-success-text: var(--success-text);
+  --color-field-border: var(--field-border);
+  --color-focus-ring: var(--focus-ring);
+  --color-placeholder: var(--placeholder);
+  --color-form-label: var(--form-label);
+  --color-form-hint: var(--form-hint);
+  --color-selected-border: var(--selected-border);
+  --color-selected-bg: var(--selected-bg);
+  --color-error: var(--error);
+  --color-error-text: var(--error-text);
   --color-brand-email: var(--brand-email);
   --color-brand-email-hover: var(--brand-email-hover);
   --color-brand-email-fg: var(--brand-email-fg);
