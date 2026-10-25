@@ -17,6 +17,14 @@ import { z } from "zod";
 
 const DIR = path.join(process.cwd(), "src", "content", "research");
 
+/**
+ * What the section is, said once. The page's meta description, its visible
+ * intro, and the RSS channel all read this, because they had drifted into
+ * three different sentences, two of them still about Kaggle.
+ */
+export const RESEARCH_DESCRIPTION =
+  "Notes, experiments, and deep dives from my journey as a developer and Computer Engineering graduate student. A place to document what I learn, build, test, and occasionally break.";
+
 /** Average adult reading speed for prose on a screen, rounded to something honest. */
 const WORDS_PER_MINUTE = 200;
 

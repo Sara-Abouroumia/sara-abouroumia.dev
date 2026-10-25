@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { PinIcon } from "@/components/pin-icon";
 import { PageTitle } from "@/components/section";
 import { site } from "@/content/site";
 import { pageMetadata } from "@/lib/metadata";
@@ -79,7 +80,7 @@ export default function ContactPage() {
             a narrow phone, where centring would float it between the two. */}
         <div className="flex flex-col gap-2 text-[14px] leading-[22px]">
           <p className="m-0 flex items-start gap-2.5 text-text-soft">
-            <PinIcon />
+            <PinIcon className="mt-[3px] text-muted" />
             {site.location} ({site.timezone})
           </p>
           <p className="m-0 flex items-start gap-2.5 text-text-soft">
@@ -128,27 +129,6 @@ function ClockIcon() {
         strokeLinecap="round"
         strokeLinejoin="round"
       />
-    </svg>
-  );
-}
-
-function PinIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 24 24"
-      fill="none"
-      aria-hidden="true"
-      className="mt-[3px] shrink-0 text-muted"
-    >
-      <path
-        d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z"
-        stroke="currentColor"
-        strokeWidth="1.8"
-        strokeLinejoin="round"
-      />
-      <circle cx="12" cy="9" r="2.5" stroke="currentColor" strokeWidth="1.8" />
     </svg>
   );
 }

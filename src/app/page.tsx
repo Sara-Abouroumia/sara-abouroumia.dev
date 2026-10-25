@@ -7,6 +7,7 @@ import { ExpandableProse } from "@/components/expandable-prose";
 import { NowPanel } from "@/components/now-panel";
 import { OrgLogo } from "@/components/org-logo";
 import { PersonJsonLd } from "@/components/person-json-ld";
+import { PinIcon } from "@/components/pin-icon";
 import { ResumePreview } from "@/components/resume-preview";
 import { PROSE, Section } from "@/components/section";
 import { SectionBar } from "@/components/section-bar";
@@ -84,16 +85,32 @@ export default function Home() {
               for the document outline and for search. The hand is
               aria-hidden, or a screen reader announces "waving hand". */}
           <p className="mb-1 font-serif text-[17px] text-muted italic">
-            <span aria-hidden="true" className="wave not-italic">
+            {/* <span aria-hidden="true" className="wave not-italic">
               👋
-            </span>{" "}
-            Hi there, I&apos;m
+            </span>{" "} */}
+            Welcome, I&apos;m
           </p>
           <h1 className="font-serif text-[34px] font-semibold leading-[1.15]">
             {site.name}
           </h1>
-          <p className="mt-2 text-base text-muted">
-            {site.role} · {site.location}
+          {/* Two facts at two weights, in order of importance: the role is
+              the positioning, so it leads in --text-soft at medium weight;
+              the location is metadata, so it steps back a size and a shade
+              behind a pin, the way profile pages mark it. One flat grey line
+              gave both the same voice.
+
+              items-baseline lines the two texts up on their baselines despite
+              the size difference (centring sat the smaller one high). The
+              pin opts out with self-center, so the location's own baseline
+              is what the row aligns to. Wraps to two lines on a phone. */}
+          <p className="mt-2 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <span className="font-medium text-base text-text-soft">
+              {site.role}
+            </span>
+            <span className="inline-flex items-baseline gap-1.5 text-[15px] text-muted">
+              <PinIcon className="h-[15px] w-[15px] self-center" />
+              {site.location}
+            </span>
           </p>
         </div>
         <CurrentAffiliations className="w-full md:w-auto md:max-w-[230px]" />

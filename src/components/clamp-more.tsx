@@ -113,7 +113,14 @@ export function ClampMore({
             }
             // bottom-0 is the pre-measurement placement; once measured, the
             // inline top/height pin it to the last line's own box exactly.
-            className="toggle-glow group absolute right-0 bottom-0 flex items-center bg-bg pl-1 text-muted hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
+            //
+            // The after: box is the touch target. The visible control is one
+            // line tall (~30px), under the 44px a fingertip needs, so an
+            // invisible pseudo-element extends the hit area 7px each way
+            // without moving or resizing anything drawn. Pseudo-elements are
+            // part of their element for hit-testing, so a tap on it is a tap
+            // on the button.
+            className="toggle-glow group absolute right-0 bottom-0 flex items-center bg-bg pl-1 text-muted after:absolute after:-inset-x-1.5 after:-inset-y-[7px] after:content-[''] hover:text-accent focus-visible:text-accent focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
           >
             {/* The fade: the cut-off words dissolve into the control rather
                 than being sliced by a hard edge. Sits outside the button's
@@ -171,30 +178,47 @@ type Clamp = {
 function measureClamp(el: HTMLElement, lines: number): Clamp | null {
   const origin = el.getBoundingClientRect().top;
   const range = document.createRange();
-  const rows: { top: number; bottom: number }[] = [];
+  /** `block` is the <p> or <li> the line belongs to, for the rule below. */
+  const rows: { top: number; bottom: number; block: Element | null }[] = [];
   const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
 
   for (let node = walker.nextNode(); node; node = walker.nextNode()) {
     // Skip the control's own text, and the whitespace between tags.
     if (!node.textContent?.trim() || node.parentElement?.closest("button"))
       continue;
+    const block = node.parentElement?.closest("p, li") ?? null;
     range.selectNodeContents(node);
     for (const rect of range.getClientRects()) {
       if (rect.width === 0 || rect.height === 0) continue;
       const row = rows.find((r) => Math.abs(r.top - rect.top) < 2);
       if (row) row.bottom = Math.max(row.bottom, rect.bottom);
-      else rows.push({ top: rect.top, bottom: rect.bottom });
+      else rows.push({ top: rect.top, bottom: rect.bottom, block });
     }
   }
 
   rows.sort((a, b) => a.top - b.top);
+
+  /**
+   * Never end on a full stop. If line N is the last line of its paragraph or
+   * bullet, "… more" would sit after a finished sentence, which reads as an
+   * afterthought rather than a cut, the opposite of what the pattern is for.
+   * Showing one more line moves the cut into the next block, mid-sentence.
+   *
+   * Decided here, per render, rather than by tuning `lines` for each piece
+   * of content: any edit to the text or any change of width moves where
+   * blocks end, and a hand-picked number is only right for the copy and the
+   * screen it was picked on.
+   */
+  let shown = lines;
+  if (rows[shown]?.block !== rows[shown - 1]?.block) shown += 1;
+
   // A clamp that would hide a single line is not worth a click: "… more"
   // takes as much space as the line it hides, and makes the reader work for
   // it. Only clamp when at least MIN_HIDDEN lines would go out of view.
-  if (rows.length < lines + MIN_HIDDEN) return null;
+  if (rows.length < shown + MIN_HIDDEN) return null;
 
-  const last = rows[lines - 1];
-  const next = rows[lines];
+  const last = rows[shown - 1];
+  const next = rows[shown];
   return {
     // Halfway into the gap before the next line, so descenders on line N
     // survive and nothing of line N+1 peeks in.

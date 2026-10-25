@@ -1,5 +1,5 @@
 import { site } from "@/content/site";
-import { getPosts } from "@/lib/research";
+import { getPosts, RESEARCH_DESCRIPTION } from "@/lib/research";
 
 /**
  * RSS 2.0 for /research.
@@ -26,8 +26,7 @@ export const dynamic = "force-static";
 
 const FEED_PATH = "/research/rss.xml";
 const TITLE = `${site.name}: Research & Development`;
-const DESCRIPTION =
-  "Writeups from Kaggle competitions, machine learning work, and things figured out in public.";
+const DESCRIPTION = RESEARCH_DESCRIPTION;
 
 /**
  * XML has five reserved characters and no tolerance for any of them.

@@ -127,7 +127,10 @@ function DateLine({
   const duration = formatDuration(start, end);
   return (
     <p className={`text-muted text-sm ${className}`}>
-      {start} – {end}
+      {/* One date when they match: a year-only role ("2025") would otherwise
+          read as "2025 – 2025". It also has no months to count, so
+          formatDuration returns null and no duration follows. */}
+      {start === end ? start : `${start} – ${end}`}
       {duration ? ` · ${duration}` : ""}
     </p>
   );

@@ -37,7 +37,39 @@ export type Service = {
   summary: string;
 };
 
+/**
+ * Research and professional experience in one timeline, in the CV's order.
+ * Bullet text follows the CV (public/Sara_Abouroumia_Resume.pdf), which is
+ * the source of truth.
+ */
 export const companies: Company[] = [
+  /*
+   * PARKED until the MRGuardAI position is confirmed. To restore, delete this
+   * comment's opening and closing lines; the entry is complete and leads the
+   * timeline, since it is the current role. It also becomes the "current
+   * employer" again for the header and the JSON-LD (both read end: "Present"),
+   * and <CurrentAffiliations /> already shows İTÜ once, not twice, when the
+   * job and the degree are at the same place.
+  {
+    org: "Istanbul Technical University",
+    logo: "/logos/itu.png",
+    location: "İstanbul, Türkiye",
+    positions: [
+      {
+        title: "Graduate Researcher, MRGuardAI project",
+        employmentType: "Research",
+        start: "Oct. 2026",
+        end: "Present",
+        bullets: [
+          "Researching managed-runtime security for LLM agents with Doç. Dr. Mehmet Ali Ertürk: detecting unsafe agent behavior by instrumenting the JVM and .NET runtimes",
+          "Reviewed recent work on agent security, from tool-call guards to kernel-level monitors (eBPF), and narrowed the project's novelty to the managed-runtime layer between them",
+          "Drafted the 12-month research plan, with reference stacks on Spring AI (JDK 25) and Microsoft Agent Framework (.NET 10), targeting venues including IEEE ICC 2027 workshops and IEEE PIMRC 2027",
+          "Preparing agent behavior datasets for the first milestone, a JVM-based detection prototype",
+        ],
+      },
+    ],
+  },
+  */
   {
     org: "Nextarp B.V.",
     logo: "/logos/nextarp.png",
@@ -49,12 +81,29 @@ export const companies: Company[] = [
         start: "Jul. 2024",
         end: "Oct. 2026",
         bullets: [
-          "Architected and deployed full-stack web and mobile applications using Spring Boot, React, and React Native, serving production traffic for training management and ERP systems",
-          "Engineered backend microservices with Spring Boot integrating MySQL, Redis caching, and Stripe payment processing, improving response times through efficient data access patterns",
-          "Built an agentic development lifecycle (ADLC) system of automated bots managing code review, testing, and a multi-stage security gate (SAST, secrets scanning, SCA), authenticating into GCP without stored keys via Workload Identity Federation",
-          "Established CI/CD pipelines using Docker and GitHub Actions, automating zero-downtime deployments to GCP and Azure, and managed distribution through Microsoft Partner Center",
-          "Extended ERPNext/Frappe functionality through custom modules and REST API integrations",
-          "Developed Microsoft Word add-ins on .NET, onboarding onto an unfamiliar stack to meet project needs",
+          "Architected, deployed and maintained full-stack web and mobile applications (Spring Boot, React, React Native) serving production traffic for training management and ERP systems, owning each system from design to production",
+          "Built an agentic development lifecycle (ADLC) system of automated bots that handle code review, testing and a multi-stage security gate covering static analysis (SAST), secrets scanning and dependency vulnerability checks (SCA), authenticating to GCP without stored keys through Workload Identity Federation",
+          "Engineered Spring Boot backend services and RESTful APIs integrating MySQL, Redis caching and Stripe payments, using efficient data access patterns for low latency under real load",
+          "Set up CI/CD pipelines with Docker and GitHub Actions for zero-downtime deployments to GCP and Azure, and managed releases through Microsoft Partner Center, Google Play and the App Store",
+          "Extended ERPNext/Frappe with custom modules and REST integrations, and developed Microsoft Word add-ins on .NET, onboarding quickly onto an unfamiliar stack",
+        ],
+      },
+    ],
+  },
+  {
+    org: "Outlier",
+    logo: "/logos/outlier.png",
+    location: "Remote",
+    positions: [
+      {
+        title: "AI Model Evaluator",
+        employmentType: "Freelance",
+        // Year only, as on the CV. The timeline renders a matching start and
+        // end as one date rather than "2025 – 2025".
+        start: "2025",
+        end: "2025",
+        bullets: [
+          "Evaluated and wrote training data for large language models, including function-calling and code reasoning tasks; designed an original competitive programming problem for an evaluation assessment",
         ],
       },
     ],

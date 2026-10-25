@@ -4,12 +4,11 @@ import { EmptyState } from "@/components/empty-state";
 import { PageTitle, PROSE } from "@/components/section";
 import { formatDay } from "@/lib/dates";
 import { pageMetadata } from "@/lib/metadata";
-import { getPosts } from "@/lib/research";
+import { getPosts, RESEARCH_DESCRIPTION } from "@/lib/research";
 
 const base = pageMetadata({
   title: "Research & Development",
-  description:
-    "Notes, experiments, and deep dives from my journey as a developer and Computer Engineering graduate student. A place to document what I learn, build, test, and occasionally break.",
+  description: RESEARCH_DESCRIPTION,
   path: "/research",
 });
 
@@ -50,8 +49,7 @@ export default function ResearchPage() {
       <PageTitle>Research &amp; Development</PageTitle>
 
       <p className={`${PROSE} mb-6 text-[16px] text-text-soft leading-[1.7]`}>
-        Writeups from Kaggle competitions, notes from machine learning work, and
-        whatever I am currently taking apart to understand.
+        {RESEARCH_DESCRIPTION}
       </p>
 
       {posts.length === 0 ? (

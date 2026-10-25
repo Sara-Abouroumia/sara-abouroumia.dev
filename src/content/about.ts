@@ -5,21 +5,35 @@
  * leads, the engineering background explains where it came from, and the
  * home page shows only the first BIO_LINES lines before "… more". Keep the
  * opening sentence able to stand alone, since many visitors never expand.
+ *
+ * Voice: first person, as a personal site should be (third person on your
+ * own homepage reads as a press release). But the WORK is the grammatical
+ * subject wherever it can be, and no two paragraphs open the same way. A run
+ * of sentences starting "I'm…" is what makes a bio sound self-focused, far
+ * more than the number of times "I" appears.
  */
 export const bio = [
-  "I'm a thesis-track M.S. student in Computer Engineering at Istanbul Technical University, working with Prof. Dr. Abdul Halim Zaim on using AI to deal with cybersecurity threats. My thesis focuses on intrusion detection and network security, and I'm especially interested in models that can explain their decisions and hold up when someone is trying to fool them.",
-  "I'm also a graduate researcher on the MRGuardAI project, where we're looking at how to catch unsafe behavior in LLM agents by watching what happens inside the JVM and .NET runtimes. Right now I'm building the agent behavior datasets for our first prototype.",
-  "Before grad school I spent over two years as a full-stack and cloud engineer at Nextarp B.V., a startup based in the Netherlands. I owned systems from design to production: Spring Boot backends, React and React Native apps, CI/CD on GCP and Azure, and releases to the app stores. The project I liked most there was an agentic development pipeline with automated code review, testing, and a security gate (SAST, secrets scanning, dependency checks). It's a big part of why I moved toward security research.",
-  "I'm looking for R&D, research engineer, and applied ML or security roles where I can keep researching alongside my thesis. I'm also open to software engineering roles that touch AI, security, or cloud infrastructure.",
+  "I'm a thesis-track M.S. student in Computer Engineering at Istanbul Technical University, working with Prof. Dr. Abdul Halim Zaim on AI for cybersecurity. My thesis focuses on intrusion detection and network security, and in particular on models that can explain their decisions and hold up when someone is trying to fool them.",
+  // Describes the work, not a title: the MRGuardAI position is not confirmed
+  // yet (its Experience entry is parked in experience.ts). "Scoping phase" is
+  // the standard term for a project still defining its question, so this
+  // stays true whichever way the position goes. Said once: "early-stage",
+  // "initial stages" and "scoping" all name the same thing.
+  "Alongside the thesis, I'm exploring MRGuardAI, an İTÜ research project on detecting unsafe behavior in LLM agents by monitoring what happens inside the JVM and .NET runtimes. The project is in its scoping phase: reviewing the literature on agent security and shaping the research plan.",
+  "Before grad school, I spent over two years as a full-stack and cloud engineer at Nextarp B.V., a startup based in the Netherlands, owning systems from design to production: Spring Boot backends, React and React Native apps, CI/CD on GCP and Azure, and releases to the app stores. The highlight was an agentic development pipeline with automated code review, testing, and a security gate (SAST, secrets scanning, dependency checks), and it's a big part of what drew me to security research.",
+  // An invitation, not a search: "welcome" says the door is open without
+  // saying anyone is waiting at it. Collaborations lead; roles are implied by
+  // "R&D work" and "security engineering", so it stays true whether or not
+  // offers are already on the table.
+  "Research collaborations and R&D work where AI meets security are always welcome, from joint papers to applied ML and security engineering. If your work touches any of that, I'd be glad to talk.",
   "Outside of work, I co-founded Kayseri Social Run, a youth running community of 300+ members, and built its web platform.",
 ] as const;
 
 /**
  * Lines of `bio` shown before "… more". Four carries the thesis sentence on
- * any screen and cuts mid-paragraph, which is what makes "… more" read as a
- * continuation. Retune this whenever the bio's type size or first paragraph
- * changes: at 18px the first paragraph is exactly five lines on desktop, so a
- * clamp of five ended on a full stop and "… more" read as an afterthought.
+ * any screen. If the cut ever lands on a paragraph's last line, <ClampMore />
+ * shows one more on its own, so this does not need retuning when the copy or
+ * the type size changes.
  */
 export const BIO_LINES = 4;
 
@@ -51,7 +65,9 @@ export const now = {
   items: [
     {
       icon: "code",
-      text: "Building agent behavior datasets for MRGuardAI, catching unsafe LLM agents from inside the JVM and .NET runtimes",
+      // Matches the bio: the project is in scoping, so the line names that
+      // stage rather than prototype work that has not started.
+      text: "Scoping MRGuardAI, an early-stage İTÜ project on runtime security for LLM agents",
     },
     {
       // İTÜ with the Turkish dotted capital İ (U+0130) and Ü (U+00DC).

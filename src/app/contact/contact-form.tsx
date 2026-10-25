@@ -9,7 +9,15 @@ import {
 } from "react";
 import { track } from "@/lib/analytics";
 import { type ContactField, type ContactState, submitContact } from "./actions";
-import { DEFAULT_TOPIC, MESSAGE_MAX, TOPICS, type TopicId } from "./topics";
+import {
+  DEFAULT_TOPIC,
+  MESSAGE_MAX,
+  NEUTRAL_PLACEHOLDER,
+  SHOW_PLACEHOLDERS,
+  SHOW_TOPICS,
+  TOPICS,
+  type TopicId,
+} from "./topics";
 
 /**
  * Quiet: 13px at regular weight in --muted, not 14px medium in a body tone.
@@ -38,7 +46,7 @@ const RADIUS = "rounded-[3px]";
  * of an answer, not an answer, and Lora's large x-height makes it sit heavier
  * than its size suggests. The italic is what separates the two.
  */
-const FIELD = `w-full ${RADIUS} border bg-input-bg px-3.5 font-serif text-[17px] text-text transition-colors placeholder:text-[15px] placeholder:text-placeholder placeholder:italic focus-visible:border-accent focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-focus-ring`;
+const FIELD = `peer w-full ${RADIUS} border bg-input-bg px-3.5 font-serif text-[17px] text-text transition-colors placeholder:text-[15px] placeholder:text-placeholder placeholder:italic focus-visible:border-accent focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-focus-ring`;
 
 /** 48px on the canvas, and the height of the send button. */
 const INPUT = `${FIELD} h-12`;
@@ -50,6 +58,13 @@ const edge = (invalid: boolean) =>
   invalid ? "border-error" : "border-field-border hover:border-muted-light";
 
 const FIELD_ORDER: ContactField[] = ["name", "surname", "email", "message"];
+
+/**
+ * A field's example text, or nothing while SHOW_PLACEHOLDERS is off. React
+ * leaves the attribute out entirely for undefined, so no empty placeholder=""
+ * is rendered either.
+ */
+const hint = (text: string) => (SHOW_PLACEHOLDERS ? text : undefined);
 
 const INITIAL: ContactState = { status: "idle" };
 
@@ -116,9 +131,10 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
   }
 
   // The message hint follows the chosen topic, which is the one thing on
-  // screen that the topic changes.
-  const placeholder =
-    TOPICS.find((t) => t.id === topic)?.placeholder ?? TOPICS[0].placeholder;
+  // screen that the topic changes. With the chips off, a neutral one.
+  const placeholder = SHOW_TOPICS
+    ? (TOPICS.find((t) => t.id === topic)?.placeholder ?? TOPICS[0].placeholder)
+    : NEUTRAL_PLACEHOLDER;
 
   return (
     // noValidate: the browser's own required-field tooltips would fire first
@@ -148,27 +164,31 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
           baby blue in light, where the navy accent carried no more weight
           than the text beside it, and the accent in dark. See
           --selected-border. */}
-      <fieldset className="m-0 min-w-0 border-0 p-0">
-        <legend className={`${LABEL} mb-3 p-0`}>What is this about?</legend>
-        <div className="flex flex-wrap gap-2.5">
-          {TOPICS.map((t) => (
-            <label
-              key={t.id}
-              className={`inline-flex min-h-11 cursor-pointer items-center ${RADIUS} border border-field-border px-[18px] text-[14px] font-medium text-form-label transition-colors hover:border-muted-light has-checked:border-selected-border has-checked:bg-selected-bg has-checked:text-accent has-focus-visible:outline-2 has-focus-visible:outline-accent has-focus-visible:outline-offset-2`}
-            >
-              <input
-                type="radio"
-                name="topic"
-                value={t.id}
-                defaultChecked={t.id === topic}
-                onChange={() => setTopic(t.id)}
-                className="sr-only"
-              />
-              {t.label}
-            </label>
-          ))}
-        </div>
-      </fieldset>
+      {/* Switched off by SHOW_TOPICS in topics.ts. When off, no radio is in
+          the form, so no `topic` is submitted and the action omits it. */}
+      {SHOW_TOPICS ? (
+        <fieldset className="m-0 min-w-0 border-0 p-0">
+          <legend className={`${LABEL} mb-3 p-0`}>What is this about?</legend>
+          <div className="flex flex-wrap gap-2.5">
+            {TOPICS.map((t) => (
+              <label
+                key={t.id}
+                className={`inline-flex min-h-11 cursor-pointer items-center ${RADIUS} border border-field-border px-[18px] text-[14px] font-medium text-form-label transition-colors hover:border-muted-light has-checked:border-selected-border has-checked:bg-selected-bg has-checked:text-accent has-focus-visible:outline-2 has-focus-visible:outline-accent has-focus-visible:outline-offset-2`}
+              >
+                <input
+                  type="radio"
+                  name="topic"
+                  value={t.id}
+                  defaultChecked={t.id === topic}
+                  onChange={() => setTopic(t.id)}
+                  className="sr-only"
+                />
+                {t.label}
+              </label>
+            ))}
+          </div>
+        </fieldset>
+      ) : null}
 
       {/* Name and surname share a row where there is room for two, and
           stack below that. Email is never paired: addresses are the longest
@@ -187,7 +207,7 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
               required
               maxLength={100}
               autoComplete="given-name"
-              placeholder="Jane"
+              placeholder={hint("Jane")}
               defaultValue={values?.name}
               onChange={() => markEdited("name")}
               aria-invalid={invalid || undefined}
@@ -208,7 +228,7 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
               required
               maxLength={100}
               autoComplete="family-name"
-              placeholder="Doe"
+              placeholder={hint("Doe")}
               defaultValue={values?.surname}
               onChange={() => markEdited("surname")}
               aria-invalid={invalid || undefined}
@@ -232,7 +252,7 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
             maxLength={200}
             autoComplete="email"
             inputMode="email"
-            placeholder="jane@company.com"
+            placeholder={hint("jane@company.com")}
             defaultValue={values?.email}
             onChange={() => markEdited("email")}
             aria-invalid={invalid || undefined}
@@ -253,7 +273,7 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
             rows={7}
             required
             maxLength={MESSAGE_MAX}
-            placeholder={placeholder}
+            placeholder={hint(placeholder)}
             defaultValue={values?.message}
             onChange={() => markEdited("message")}
             aria-invalid={invalid || undefined}
@@ -303,29 +323,52 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
   );
 }
 
+/**
+ * The notched label: it sits ON the field's top border, in a gap cut out of
+ * the line, the outlined-field style Material popularised.
+ *
+ * The gap is a background, not a mask. The label's top half is painted the
+ * page colour and its bottom half the field's fill, split by a hard stop at
+ * 50%, and the label is centred on the border line (top-0, -translate-y-1/2).
+ * So the border vanishes behind the text while both surfaces carry on
+ * unbroken either side of it. Both colours are theme tokens, so the notch
+ * holds in dark mode with no second rule.
+ *
+ * The label comes AFTER the field in the DOM so it can read the field's state
+ * with `peer-*`: accent while the field has focus, error red while it is
+ * invalid. Visually it is still above the field, and htmlFor keeps the
+ * label-to-field association a screen reader announces, whatever the order.
+ */
+const NOTCH =
+  "absolute top-0 left-2.5 -translate-y-1/2 cursor-text px-1.5 text-[13px] leading-none transition-colors bg-[linear-gradient(to_bottom,var(--bg)_50%,var(--input-bg)_50%)]";
+
 function Field({
   id,
   label,
   error,
-  aside,
   input,
 }: {
   id: ContactField;
   label: string;
   error?: string;
-  aside?: ReactNode;
   input: (describedBy: string | undefined, invalid: boolean) => ReactNode;
 }) {
   const errorId = `${id}-error`;
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className={LABEL}>
+      <div className="relative">
+        {input(error ? errorId : undefined, Boolean(error))}
+        <label
+          htmlFor={id}
+          className={`${NOTCH} ${
+            error
+              ? "text-error-text"
+              : "text-muted peer-focus-visible:text-accent"
+          }`}
+        >
           {label}
         </label>
-        {aside}
       </div>
-      {input(error ? errorId : undefined, Boolean(error))}
       {error ? (
         // text-pretty: in a 200px column these messages run to two lines, and
         // without it the second is often a single stranded word.

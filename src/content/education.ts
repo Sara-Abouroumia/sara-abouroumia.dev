@@ -34,6 +34,7 @@ export const education: Education[] = [
       "Thesis on using AI to address cybersecurity threats, with an emphasis on intrusion detection and network security",
       "Supervised by Prof. Dr. Abdul Halim Zaim",
     ],
+    // "Current courses" on the CV: the degree is in its first term.
     coursework: [
       "Deep Learning",
       "Machine Learning",
@@ -51,16 +52,19 @@ export const education: Education[] = [
     end: "Jun. 2024",
     location: "Kayseri, Turkey",
     details: [
-      "3.74/4.00 GPA over the final two academic years",
+      "Final-year term GPAs of 3.80 and 4.00",
       "Capstone (A): Diabetic Foot Ulcer Classification Using CNN Transfer Learning and TPU Acceleration",
     ],
+    // As on the CV. The minus is U+2212, the typographic one, rather than a
+    // hyphen, which sits too low and too short beside a capital letter.
     coursework: [
       "Network Security (A)",
-      "Computer Networks (A-)",
-      "Machine Learning in Python (A-)",
+      "Computer Networks (A−)",
+      "Machine Learning in Python (A−)",
       "Probability and Statistics (A)",
+      "Linear Algebra (A)",
       "Operating Systems (A)",
-      "Analysis of Algorithms (B+)",
+      "Computer Organization (A)",
     ],
   },
 ];

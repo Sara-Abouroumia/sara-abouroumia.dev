@@ -22,20 +22,30 @@ export function CurrentAffiliations({
   const job = employer?.positions.find((p) => p.end === "Present");
   const study = education.find((e) => e.end === "Present");
 
+  // The current role and the current degree can be at the same place (a
+  // research post at the university you study at). One row then, not the
+  // same logo and name twice.
+  const sameOrg = employer?.org === study?.institution;
+
+  // Ternaries, not `&&`: a failed `&&` evaluates to `false`, which the filter
+  // below (looking for undefined) would let through to the render.
   const items = [
-    employer &&
-      job && {
-        key: "job",
-        org: employer.org,
-        detail: job.title,
-        logo: employer.logo,
-      },
-    study && {
-      key: "study",
-      org: study.institution,
-      detail: study.degree,
-      logo: study.logo,
-    },
+    employer && job && !sameOrg
+      ? {
+          key: "job",
+          org: employer.org,
+          detail: job.title,
+          logo: employer.logo,
+        }
+      : undefined,
+    study
+      ? {
+          key: "study",
+          org: study.institution,
+          detail: study.degree,
+          logo: study.logo,
+        }
+      : undefined,
   ].filter((item) => item !== undefined);
 
   if (items.length === 0) return null;

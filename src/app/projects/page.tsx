@@ -6,7 +6,7 @@ import { pageMetadata } from "@/lib/metadata";
 export const metadata: Metadata = pageMetadata({
   title: "Projects",
   description:
-    "Things Sara Abouroumia has designed, built and shipped end to end.",
+    "Research and engineering projects by Sara Abouroumia, from security gates for AI-written code to explainable intrusion detection and shipped web platforms.",
   path: "/projects",
 });
 
@@ -46,9 +46,13 @@ export default function ProjectsPage() {
               ) : null}
             </div>
 
+            {/* One meta line from whatever the entry has, in reading order:
+                where, with what, when. Joined rather than concatenated so a
+                missing part leaves no stray separator. */}
             <p className="mt-1.5 mb-3 text-muted text-sm">
-              {p.stack.join(" · ")}
-              {p.period ? ` · ${p.period}` : ""}
+              {[p.context, p.stack?.join(" · "), p.period]
+                .filter(Boolean)
+                .join(" · ")}
             </p>
 
             <ul
