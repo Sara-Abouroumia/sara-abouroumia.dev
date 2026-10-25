@@ -1,3 +1,4 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
 
 const isDev = process.env.NODE_ENV === "development";
@@ -152,4 +153,73 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+/**
+ * MDX, for the writeups under /research.
+ *
+ * Every plugin is named by STRING rather than imported. That is not a style
+ * choice: this project builds with Turbopack (the banner on `next build` says
+ * so), and Turbopack runs the MDX pipeline across a JS/Rust boundary that only
+ * serializable values cross. An imported plugin is a JavaScript function, and a
+ * function cannot be handed to Rust, so the documented form is the plugin's
+ * package name plus a plain-object options bag. It also means these packages
+ * never enter this config's module graph.
+ *
+ * The consequence to remember: any plugin whose options include a callback
+ * (rehype-pretty-code's onVisitLine, for instance) cannot be configured here
+ * at all. Everything below is strings, booleans and objects for that reason.
+ *
+ * pageExtensions is deliberately NOT set. It exists to let .mdx files act as
+ * routes, and these are not routes: they live in src/content/research and are
+ * imported by a [slug] page. Leaving it alone also means a stray .mdx dropped
+ * into src/app cannot quietly become a public page.
+ */
+const withMDX = createMDX({
+  options: {
+    remarkPlugins: [
+      // Parses the --- YAML block into a node the renderer has no handler
+      // for, which is how the frontmatter stops being printed as body text.
+      // Without it, MDX reads --- as a thematic break and the metadata would
+      // render as a horizontal rule followed by "title: ..." in the prose.
+      "remark-frontmatter",
+      // Tables, strikethrough, task lists, literal URLs: the parts of
+      // "markdown" people assume are markdown but are actually GitHub's
+      // extensions to it.
+      "remark-gfm",
+    ],
+    rehypePlugins: [
+      // id="..." on every heading, so the table of contents and any deep link
+      // into a post have something to point at.
+      "rehype-slug",
+      [
+        "rehype-pretty-code",
+        {
+          /**
+           * Both themes are compiled in at build time. Shiki emits every token
+           * twice, as --shiki-light and --shiki-dark custom properties, and
+           * globals.css picks between them off the same .dark class the rest
+           * of the site uses. The alternative, one theme, means code that is
+           * either washed out or glaring in whichever theme it was not chosen
+           * for.
+           */
+          theme: { light: "github-light", dark: "github-dark-dimmed" },
+          // Shiki's own background would be a third surface colour competing
+          // with --panel and --input-bg. The block takes the site's instead.
+          keepBackground: false,
+          /**
+           * Scoped to `block` on purpose. As a bare string this option is
+           * applied to inline code as well, which made every backticked word
+           * in a sentence its own highlighted <figure>: a block-level element
+           * spliced into the middle of a paragraph.
+           *
+           * With it scoped, an unlabelled fence still renders (as plain text
+           * rather than a build error), and inline code is left alone unless a
+           * post opts in per-span with the `code`{:ts} syntax.
+           */
+          defaultLang: { block: "text" },
+        },
+      ],
+    ],
+  },
+});
+
+export default withMDX(nextConfig);

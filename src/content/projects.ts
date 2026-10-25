@@ -19,7 +19,7 @@ export const projects: Project[] = [
     urlLabel: "kayserisocialrun.com",
     stack: ["Next.js", "Postgres", "Better Auth", "Resend", "Vercel"],
     bullets: [
-      "Founded and built a community running club webapp from the ground up for a local Kayseri youth-led running community, including a public marketing site, authentication, and transactional email flows",
+      "Co-founded and built a community running club webapp from the ground up for a local Kayseri youth-led running community, including a public marketing site, authentication, and transactional email flows",
       "Designed and shipped the full product independently: architecture, database schema, auth, and deployment",
     ],
   },

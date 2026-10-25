@@ -4,7 +4,7 @@ import { site } from "@/content/site";
 export const SITE_TITLE = `${site.name} · ${site.role}`;
 
 export const SITE_DESCRIPTION =
-  "Software engineer working across backend systems, web, and mobile.";
+  "Graduate researcher at Istanbul Technical University working on AI for cybersecurity: intrusion detection and LLM agent security. Full-stack and cloud engineer by background.";
 
 /**
  * Per-page metadata: title, description, canonical URL and Open Graph.
@@ -27,17 +27,27 @@ export function pageMetadata({
   title,
   description,
   path,
+  publishedTime,
 }: {
   title?: string;
   description: string;
   path: `/${string}`;
+  /**
+   * YYYY-MM-DD. Supplying it switches og:type from "website" to "article" and
+   * adds og:article:published_time, which is what a preview card needs to
+   * show a date. Passing a date is the only signal that something is an
+   * article, so the two cannot get out of step.
+   */
+  publishedTime?: string;
 }): Metadata {
   return {
     ...(title ? { title } : {}),
     description,
     alternates: { canonical: path },
     openGraph: {
-      type: "website",
+      ...(publishedTime
+        ? { type: "article" as const, publishedTime }
+        : { type: "website" as const }),
       siteName: site.name,
       locale: "en_GB",
       // The template in the layout only applies to <title>, not to og:title,

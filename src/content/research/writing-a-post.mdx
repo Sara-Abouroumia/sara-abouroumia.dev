@@ -1,0 +1,96 @@
+---
+title: Writing a post
+summary: Every element the research pipeline renders, in one place. Marked as a draft, so it never appears on the live site.
+date: 2026-09-23
+draft: true
+tags:
+  - meta
+---
+
+This file is a template and a reference. It is marked `draft: true`, which
+means it renders on localhost and on preview deployments but never on the
+production site. Copy it, rename it, delete everything below, and write.
+
+The filename becomes the URL. This one is `writing-a-post.mdx`, so it lives at
+`/research/writing-a-post`.
+
+## Frontmatter
+
+The block at the top of the file is required and validated at build time. A
+missing or misspelled key fails the build with the filename in the message,
+rather than shipping a post with a blank summary.
+
+| Key | Required | Notes |
+| --- | --- | --- |
+| `title` | yes | Used as the h1, the page title, and the feed entry title |
+| `summary` | yes | The card, the meta description, and the RSS description |
+| `date` | yes | `YYYY-MM-DD`. Sorts the index, newest first |
+| `draft` | no | Defaults to `false`. `true` hides it in production only |
+| `tags` | no | Defaults to none |
+
+## Headings
+
+Start at `##`. The title in the frontmatter is already the page's only `h1`,
+so a `#` here would create a second one and break the document outline for
+screen readers and search engines alike.
+
+### Third level
+
+Every heading gets an `id` automatically, so any of them can be linked to
+directly.
+
+## Text
+
+Normal prose, with **bold**, *italic*, and `inline code`. Links come in two
+kinds and are treated differently: an [internal one](/contact) navigates
+normally, and an [external one](https://nextjs.org) gets `target="_blank"` and
+`rel="noopener"` without the author having to remember.
+
+> A blockquote, for quoting a paper or a reviewer.
+
+- An unordered list
+- Whose second item runs long enough to wrap, so you can see that the second
+  line aligns with the first rather than tucking under the bullet
+- A third item
+
+1. An ordered list
+2. A second step
+3. A third
+
+## Code
+
+Fenced blocks are highlighted at build time. There is no syntax-highlighting
+library in the browser: the colours are baked into the HTML, in both themes at
+once, and the page picks the right set.
+
+```python
+import pandas as pd
+
+def load(path: str) -> pd.DataFrame:
+    frame = pd.read_csv(path, parse_dates=["timestamp"])
+    return frame.set_index("timestamp").sort_index()
+```
+
+```ts
+type Split = { train: number[]; test: number[] };
+
+export function chronological(rows: number[], ratio = 0.8): Split {
+  const cut = Math.floor(rows.length * ratio);
+  return { train: rows.slice(0, cut), test: rows.slice(cut) };
+}
+```
+
+A block with no language set still renders, it just is not coloured:
+
+```
+kaggle competitions download -c titanic
+```
+
+---
+
+## Reading time
+
+Counted from the prose only. Code blocks, import lines and JSX are stripped
+before counting, because thirty lines of Python is not thirty lines of
+reading. The figure in the byline is words divided by 200, rounded, with a
+floor of one minute.

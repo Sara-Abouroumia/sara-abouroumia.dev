@@ -44,10 +44,10 @@ export const companies: Company[] = [
     location: "Netherlands · Remote",
     positions: [
       {
-        title: "Software Engineer",
+        title: "Full Stack Software Engineer (Cloud & DevOps)",
         employmentType: "Full-time",
-        start: "Jun. 2024",
-        end: "Present",
+        start: "Jul. 2024",
+        end: "Oct. 2026",
         bullets: [
           "Architected and deployed full-stack web and mobile applications using Spring Boot, React, and React Native, serving production traffic for training management and ERP systems",
           "Engineered backend microservices with Spring Boot integrating MySQL, Redis caching, and Stripe payment processing, improving response times through efficient data access patterns",

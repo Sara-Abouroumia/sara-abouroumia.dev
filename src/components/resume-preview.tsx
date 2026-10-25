@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { FileIcon } from "@/components/brand-icons";
 import { site } from "@/content/site";
+import { track } from "@/lib/analytics";
 
 const TOOL_BUTTON =
   "inline-flex items-center gap-1.5 rounded-[3px] border border-border px-2.5 py-1 text-[13px] text-text-soft no-underline hover:border-accent hover:text-accent";
@@ -172,7 +173,10 @@ export function ResumePreview({ className = "" }: { className?: string }) {
               role="menuitem"
               href={site.resume}
               download={site.resumeFileName}
-              onClick={() => setMenuOpen(false)}
+              onClick={() => {
+                setMenuOpen(false);
+                track("cv_downloaded");
+              }}
               className={MENU_ITEM}
             >
               <MenuIcon d={PATH_DOWNLOAD} />
@@ -205,6 +209,7 @@ export function ResumePreview({ className = "" }: { className?: string }) {
           <a
             href={site.resume}
             download={site.resumeFileName}
+            onClick={() => track("cv_downloaded")}
             className={TOOL_BUTTON}
           >
             Download
@@ -250,6 +255,7 @@ export function ResumePreview({ className = "" }: { className?: string }) {
                 <a
                   href={site.resume}
                   download={site.resumeFileName}
+                  onClick={() => track("cv_downloaded")}
                   className={TOOL_BUTTON}
                 >
                   Download the PDF

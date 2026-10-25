@@ -29,3 +29,18 @@ export function formatMonth(isoYearMonth: string) {
     throw new Error(`Expected YYYY-MM, got "${isoYearMonth}"`);
   return `${name} ${year}`;
 }
+
+/**
+ * "23 Sep. 2026" from "2026-09-23", for a post's byline.
+ *
+ * Posts need the day where everything else on the site needs only the month,
+ * so this is a second formatter rather than a parameter on the first: the two
+ * take different input shapes and neither should accept the other's.
+ */
+export function formatDay(isoDate: string) {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  const name = MONTHS[month - 1];
+  if (!name || !year || !day)
+    throw new Error(`Expected YYYY-MM-DD, got "${isoDate}"`);
+  return `${day} ${name} ${year}`;
+}

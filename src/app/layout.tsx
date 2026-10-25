@@ -1,5 +1,6 @@
+import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Inter, Lora } from "next/font/google";
+import { Inter, Lora, Source_Serif_4 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
@@ -17,6 +18,19 @@ const lora = Lora({
   subsets: ["latin", "latin-ext"],
   style: ["normal", "italic"],
   variable: "--font-lora",
+  display: "swap",
+});
+
+/**
+ * The long-form reading face, for prose meant to be read rather than scanned
+ * (the bio now, research posts next). Lora stays the display serif for names
+ * and headings; Source Serif is the one built for paragraphs, with an optical
+ * size axis that tightens it at body sizes. It is the same family Medium sets
+ * its articles in, which is the register this text is after.
+ */
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin", "latin-ext"],
+  variable: "--font-source-serif",
   display: "swap",
 });
 
@@ -46,7 +60,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${lora.variable}`}
+      className={`${inter.variable} ${lora.variable} ${sourceSerif.variable}`}
     >
       <body className="font-sans antialiased">
         <ThemeProvider
@@ -66,6 +80,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </main>
             <SiteFooter />
           </div>
+          {/* Renders nothing. Loads Vercel's page-view script and is the
+              transport for track() in lib/analytics.ts, which does nothing
+              without it. Served from /_vercel/insights on this origin, so the
+              existing script-src 'self' and connect-src 'self' already cover
+              it and the CSP needs no widening. */}
+          <Analytics />
         </ThemeProvider>
       </body>
     </html>

@@ -1,65 +1,38 @@
-"use client";
-
-import { useId, useState } from "react";
+import { ClampMore } from "@/components/clamp-more";
 import { PROSE } from "@/components/section";
 
-const LIST = `${PROSE} list-disc space-y-1.5 pl-5 text-[15px] text-text-soft leading-[1.65]`;
+const TYPE = "text-[15px] text-text-soft leading-[1.65]";
+const LIST = "list-disc space-y-1.5 pl-5";
 
 /**
- * Bullet list that shows the first few and hides the rest behind a toggle.
+ * A bullet list, optionally cut off after `maxLines` lines with an inline
+ * "… more" (see <ClampMore />).
  *
- * Everything is rendered into the DOM and the overflow is hidden rather than
- * unmounted, so the full text is in the page source for search engines and for
- * a reader who prints it, the "…more" is a reading affordance, not a fetch.
+ * Lines, not bullets: a cap of "two bullets" shows four lines on a desktop
+ * and ten on a phone, and always ends on a complete sentence, which reads as
+ * the end of the list rather than as a cut.
  */
 export function ExpandableBullets({
   bullets,
-  max,
+  maxLines,
 }: {
   bullets: string[];
-  /** Omit to render every bullet with no toggle. */
-  max?: number;
+  /** Omit to render every bullet with no clamp. */
+  maxLines?: number;
 }) {
-  const [open, setOpen] = useState(false);
-  const hiddenId = useId();
+  const list = (
+    <ul className={LIST}>
+      {bullets.map((b) => (
+        <li key={b}>{b}</li>
+      ))}
+    </ul>
+  );
 
-  const limit = max ?? bullets.length;
-  const visible = bullets.slice(0, limit);
-  const rest = bullets.slice(limit);
-
-  if (rest.length === 0) {
-    return (
-      <ul className={LIST}>
-        {bullets.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-    );
-  }
+  if (!maxLines) return <div className={`${PROSE} ${TYPE}`}>{list}</div>;
 
   return (
-    <div>
-      <ul className={LIST}>
-        {visible.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-
-      <ul className={`${LIST} mt-1.5`} id={hiddenId} hidden={!open}>
-        {rest.map((b) => (
-          <li key={b}>{b}</li>
-        ))}
-      </ul>
-
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls={hiddenId}
-        className="mt-2 text-muted text-sm hover:text-accent"
-      >
-        {open ? "see less" : `…more (${rest.length})`}
-      </button>
-    </div>
+    <ClampMore lines={maxLines} className={`${PROSE} ${TYPE}`}>
+      {list}
+    </ClampMore>
   );
 }

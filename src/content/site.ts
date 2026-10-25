@@ -1,6 +1,12 @@
 export const site = {
   name: "Sara Abouroumia",
-  role: "Software Engineer",
+  /**
+   * Short on purpose. It is the second half of every <title>, the og:title on
+   * link previews, the footer, and the photo's alt text, so it has to survive
+   * truncation in a browser tab. The long LinkedIn-style headline lives in the
+   * bio instead, where there is room for it.
+   */
+  role: "AI Security R&D Engineer",
   location: "İstanbul, Türkiye",
   /**
    * Türkiye has stayed on UTC+3 all year since 2016, with no daylight

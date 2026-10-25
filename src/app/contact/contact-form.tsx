@@ -7,6 +7,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { track } from "@/lib/analytics";
 import { type ContactField, type ContactState, submitContact } from "./actions";
 import { DEFAULT_TOPIC, MESSAGE_MAX, TOPICS, type TopicId } from "./topics";
 
@@ -408,6 +409,13 @@ function Sent({
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   const markRef = useRef<HTMLSpanElement>(null);
+
+  // <Sent /> mounts only once the server has accepted the message, so mount is
+  // exactly the success event. Sending a second message unmounts and remounts
+  // this, which is what makes two sends count as two.
+  useEffect(() => {
+    track("contact_sent");
+  }, []);
 
   // The form that had focus has just been removed from the page, which drops
   // focus to <body> and leaves a screen reader silent. Moving it here reads

@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import { Avatar } from "@/components/avatar";
 import { GitHubIcon, LinkedInIcon, MailIcon } from "@/components/brand-icons";
 import { CurrentAffiliations } from "@/components/current-affiliations";
+import { ExpandableBullets } from "@/components/expandable-bullets";
+import { ExpandableProse } from "@/components/expandable-prose";
 import { NowPanel } from "@/components/now-panel";
 import { OrgLogo } from "@/components/org-logo";
+import { PersonJsonLd } from "@/components/person-json-ld";
 import { ResumePreview } from "@/components/resume-preview";
 import { PROSE, Section } from "@/components/section";
 import { SectionBar } from "@/components/section-bar";
@@ -11,7 +14,7 @@ import { SectionNav } from "@/components/section-nav";
 // import { ServiceFrontPage } from "@/components/service-front-page";
 import { SkillsMarquee } from "@/components/skills-marquee";
 import { ExperienceTimeline } from "@/components/timeline";
-import { bio } from "@/content/about";
+import { BIO_LINES, bio } from "@/content/about";
 import { education } from "@/content/education";
 import { companies } from "@/content/experience";
 // import { service, serviceIntro } from "@/content/experience";
@@ -62,6 +65,11 @@ const SECTIONS = [
 export default function Home() {
   return (
     <div className="relative">
+      {/* Structured data, not UI: it renders a <script> and nothing visible.
+          Lives on this page rather than the root layout because it describes
+          Sara, and the home page is the one page that is about her. */}
+      <PersonJsonLd />
+
       <SectionNav titles={SECTIONS} />
       {/* Header. The visitor map slots in behind this in Phase 3. */}
       {/* The name block takes the slack (flex-1), so the affiliations settle
@@ -70,6 +78,17 @@ export default function Home() {
       <div className="mb-7 flex flex-wrap items-center gap-5">
         <Avatar />
         <div className="min-w-0 flex-1">
+          {/* The greeting, kept out of the bio on purpose: the bio's first
+              line is the most-read sentence on the site and has a job to do.
+              A <p>, not part of the <h1>, so the heading stays the name alone
+              for the document outline and for search. The hand is
+              aria-hidden, or a screen reader announces "waving hand". */}
+          <p className="mb-1 font-serif text-[17px] text-muted italic">
+            <span aria-hidden="true" className="wave not-italic">
+              👋
+            </span>{" "}
+            Hi there, I&apos;m
+          </p>
           <h1 className="font-serif text-[34px] font-semibold leading-[1.15]">
             {site.name}
           </h1>
@@ -110,7 +129,11 @@ export default function Home() {
           run of body text on the page shares one right edge. The 620 the bio
           used to carry predates the 880 column and left it ending 212px short
           of the rule above it. */}
-      <p className={`${PROSE} mb-5 text-[17px] leading-[1.7]`}>{bio}</p>
+      <ExpandableProse
+        paragraphs={bio}
+        lines={BIO_LINES}
+        className={`${PROSE} mb-5`}
+      />
 
       <NowPanel />
 
@@ -118,12 +141,12 @@ export default function Home() {
           from the first section onward. See <SectionBar />. */}
       <SectionBar titles={SECTIONS} />
 
-      {/* Two bullets, then "…more (n)". Nothing is truncated away:
-          ExpandableBullets renders every bullet into the DOM and hides the
-          overflow, so the full text is in the page source for search and for
-          print. The cap is a scanning affordance, not a second page. */}
+      {/* Three lines, then an inline "… more". Nothing is truncated away:
+          every bullet is in the DOM and only clipped, so the full text is in
+          the page source for search and for print. The cap is a scanning
+          affordance, not a second page. */}
       <Section title="Experience" className="mt-7">
-        <ExperienceTimeline companies={companies} maxBullets={2} />
+        <ExperienceTimeline companies={companies} maxLines={3} />
       </Section>
 
       {/* Same logo rail as Experience, so the two sections read as one system.
@@ -148,6 +171,27 @@ export default function Home() {
                 <p className="mt-0.5 text-muted text-sm">
                   {e.start} – {e.end} · {e.location}
                 </p>
+                {/* Same spacing and list style as an experience entry, so a
+                    degree with details reads like a role with bullets. */}
+                {e.details?.length ? (
+                  <div className="mt-3">
+                    <ExpandableBullets bullets={e.details} />
+                  </div>
+                ) : null}
+                {/* One line, comma-separated, rather than more bullets: a
+                    course name is a keyword to scan for, not a sentence to
+                    read, and six of them as bullets would outweigh the
+                    degree they belong to. */}
+                {e.coursework?.length ? (
+                  <p
+                    className={`${PROSE} mt-2 text-[15px] text-text-soft leading-[1.65]`}
+                  >
+                    <span className="font-semibold text-text">
+                      Relevant coursework:
+                    </span>{" "}
+                    {e.coursework.join(", ")}
+                  </p>
+                ) : null}
               </div>
             </li>
           ))}

@@ -5,20 +5,6 @@
 
   --bg: #ffffff;
   --panel: #f4f2ec;
-  /*
-   * The cool counterpart to --panel, for a surface meant to read as a recess
-   * rather than a warm card. The Now panel uses it.
-   *
-   * Set to --input-bg's exact value rather than approximated, because the two
-   * are doing the same job, but kept as its own token so the form and the
-   * panel can part company later without one silently repainting the other.
-   *
-   * It also settles a contrast miss. On warm --panel the live dot (--live,
-   * #15803d) measures 4.48:1, a hair under the 4.5 it needs; every cooler
-   * shade at --panel's weight made that worse, and this lighter ground takes
-   * it to 4.68:1.
-   */
-  --panel-cool: #f6f7f9;
   --border: #e2ded3;
   --text: #1c1c1a;
   --text-soft: #33322d;
@@ -39,9 +25,9 @@
    * ground of the two.
    *
    * Cool, unlike --panel: blue sits three steps above red, the same direction
-   * dark's own field colour leans. A field is a place to put something, so it
-   * reads better as a neutral recess than as another warm card. The Now panel
-   * has since taken the same tone; see --panel-cool.
+   * dark's own field colour leans. A field is a place to put something, not
+   * a surface like the Now panel, so it reads better as a neutral recess than
+   * as another warm card.
    */
   --input-bg: #f6f7f9;
   /* Field text that is not the visitor's: the hint inside a field, the
@@ -125,11 +111,6 @@
 
   --bg: #14161a;
   --panel: #1e2126;
-  /* Dark's panel is already cool, so this is a step deeper rather than a
-     change of temperature: --input-bg's value again, 1.077 off the page where
-     --panel is 1.122. Every mark on it gains contrast, the live dot from
-     9.27:1 to 9.65:1. */
-  --panel-cool: #1c1d22;
   --border: #2b2e33;
   --text: #f1efe9;
   --text-soft: #d8d5cb;
@@ -197,7 +178,6 @@
 @theme inline {
   --color-bg: var(--bg);
   --color-panel: var(--panel);
-  --color-panel-cool: var(--panel-cool);
   --color-border: var(--border);
   --color-text: var(--text);
   --color-text-soft: var(--text-soft);
@@ -235,6 +215,8 @@
 
   --font-sans: var(--font-inter), system-ui, sans-serif;
   --font-serif: var(--font-lora), Georgia, serif;
+  /* `font-reading`: long-form prose. See sourceSerif in layout.tsx. */
+  --font-reading: var(--font-source-serif), Georgia, serif;
 
   --breakpoint-menu: 941px;
 }
@@ -304,6 +286,80 @@ body {
   }
 }
 
+/* The greeting's wave: once, on load, then still. A wave that keeps going
+   pulls the eye off the name it is introducing. Pivots near the wrist
+   (70% 70%), which is what makes it read as a hand rather than a wobble. */
+@keyframes wave {
+  0%,
+  60%,
+  100% {
+    transform: rotate(0deg);
+  }
+  10%,
+  30% {
+    transform: rotate(14deg);
+  }
+  20% {
+    transform: rotate(-8deg);
+  }
+  40% {
+    transform: rotate(-4deg);
+  }
+  50% {
+    transform: rotate(10deg);
+  }
+}
+
+@layer components {
+  .wave {
+    display: inline-block;
+    transform-origin: 70% 70%;
+  }
+  /* Opt-in rather than opt-out: the hand only moves for visitors who have
+     not asked their OS for less motion. */
+  @media (prefers-reduced-motion: no-preference) {
+    .wave {
+      animation: wave 1.8s ease-in-out 0.4s 1;
+    }
+  }
+}
+
+/* The hover glow on <ExpandToggle />. A text-shadow on the label and a
+   drop-shadow on the chevron, both tinted from --accent, so the glow is the
+   button's own colour bleeding outward rather than a separate highlight. It
+   also follows the theme for free: navy and soft in light mode, where a
+   strong halo would look smudged, brighter blue in dark mode, where light
+   text on a dark ground is what actually reads as a glow. */
+@layer components {
+  .toggle-glow {
+    --toggle-glow: color-mix(in srgb, var(--accent) 35%, transparent);
+    transition:
+      color 0.15s ease-out,
+      text-shadow 0.2s ease-out;
+  }
+  .toggle-glow svg {
+    transition: filter 0.2s ease-out;
+  }
+  /* The chevron flips instantly for anyone who asked for less motion; the
+     glow is a fade, not movement, so it stays. */
+  @media (prefers-reduced-motion: no-preference) {
+    .toggle-glow svg {
+      transition:
+        transform 0.3s ease-out,
+        filter 0.2s ease-out;
+    }
+  }
+  .dark .toggle-glow {
+    --toggle-glow: color-mix(in srgb, var(--accent) 60%, transparent);
+  }
+  .toggle-glow:hover {
+    text-shadow: 0 0 10px var(--toggle-glow);
+  }
+  .toggle-glow:hover svg {
+    filter: drop-shadow(0 0 4px var(--toggle-glow));
+  }
+}
+
 /* The skill marks themselves. One class rather than a utility string because
    the filter stacks two drop-shadows and needs a theme variant either way.
    drop-shadow (not box-shadow) so the glow traces the logo's silhouette.
@@ -348,4 +404,53 @@ body {
   [role="button"]:not(:disabled) {
     cursor: pointer;
   }
+}
+
+/* ----------------------------------------------------- MDX code blocks
+   rehype-pretty-code (configured in next.config.ts) highlights at BUILD time
+   and ships no JavaScript. It compiles both palettes into the markup at once:
+   every token span carries --shiki-light and --shiki-dark as inline custom
+   properties, and the two rules below choose which one becomes `color` off the
+   same .dark class the rest of the site uses. That is why switching theme
+   recolours code instantly with nothing to re-highlight.
+
+   The markup it emits is:
+     figure[data-rehype-pretty-code-figure] > pre[data-language] > code
+       > span[data-line] > span[style="--shiki-light:..;--shiki-dark:.."]
+
+   keepBackground:false drops Shiki's own background so a block sits on the
+   site's field colour rather than introducing a third surface. */
+[data-rehype-pretty-code-figure] {
+  margin: 24px 0;
+}
+
+[data-rehype-pretty-code-figure] pre {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 3px;
+  background: var(--input-bg);
+  /* Vertical padding only. The horizontal padding goes on each line instead,
+     see below. */
+  padding: 14px 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  tab-size: 2;
+}
+
+/* Indent the lines, not the <pre>.
+   The plugin sets `display: grid` on <code>, making every line a grid row that
+   spans the full scroll width. Padding the <pre> would scroll away from the
+   left edge as soon as a line overflowed; padding the line keeps the gutter
+   fixed and lets a full-width line background (a highlighted line, a text
+   selection) reach both edges. */
+[data-rehype-pretty-code-figure] [data-line] {
+  padding: 0 16px;
+}
+
+[data-rehype-pretty-code-figure] span {
+  color: var(--shiki-light);
+}
+
+.dark [data-rehype-pretty-code-figure] span {
+  color: var(--shiki-dark);
 }

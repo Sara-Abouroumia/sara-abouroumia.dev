@@ -140,11 +140,11 @@ function DateLine({
  */
 export function ExperienceTimeline({
   companies,
-  maxBullets,
+  maxLines,
 }: {
   companies: Company[];
-  /** Bullets shown before the "…more" toggle. Omit to show all. */
-  maxBullets?: number;
+  /** Lines of bullets shown before "… more". Omit to show all. */
+  maxLines?: number;
 }) {
   return (
     <ol className="m-0 list-none p-0">
@@ -178,7 +178,7 @@ export function ExperienceTimeline({
                 </p>
               ) : null}
               <div className="mt-3">
-                <ExpandableBullets bullets={role.bullets} max={maxBullets} />
+                <ExpandableBullets bullets={role.bullets} maxLines={maxLines} />
               </div>
             </Row>
           );
@@ -234,7 +234,7 @@ export function ExperienceTimeline({
                   <div className="mt-2.5">
                     <ExpandableBullets
                       bullets={role.bullets}
-                      max={maxBullets}
+                      maxLines={maxLines}
                     />
                   </div>
                 </Row>
