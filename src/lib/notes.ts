@@ -2,28 +2,44 @@ import fs from "node:fs";
 import path from "node:path";
 import matter from "gray-matter";
 import { z } from "zod";
+import { CATEGORY_IDS } from "@/lib/notes-common";
 
 /**
- * The research post index: everything about a post except its body.
+ * The notes index: everything about a note except its body.
  *
  * Read straight off the filesystem with gray-matter rather than by importing
  * the MDX modules. The listing page, the RSS feed and the sitemap all need
- * titles and dates for every post and the body of none of them, and importing
+ * titles and dates for every note and the body of none of them, and importing
  * an .mdx file compiles it. This way the index costs a directory read.
  *
  * The body is a separate concern, loaded by the [slug] page through a dynamic
- * import so the bundler compiles exactly the one post being rendered.
+ * import so the bundler compiles exactly the one note being rendered.
+ *
+ * This section was called Research until 2026-10. It was renamed because the
+ * name promised original work (papers, results) where the content is study
+ * notes and summaries; "Research" is kept in reserve for real publications.
+ * next.config.ts redirects the old /research URLs here.
  */
 
-const DIR = path.join(process.cwd(), "src", "content", "research");
+const DIR = path.join(process.cwd(), "src", "content", "notes");
 
 /**
  * What the section is, said once. The page's meta description, its visible
- * intro, and the RSS channel all read this, because they had drifted into
- * three different sentences, two of them still about Kaggle.
+ * intro, and the RSS channel all read this.
  */
-export const RESEARCH_DESCRIPTION =
-  "Notes, experiments, and deep dives from my journey as a developer and Computer Engineering graduate student. A place to document what I learn, build, test, and occasionally break.";
+export const NOTES_DESCRIPTION =
+  "Lecture notes, paper summaries, and things worth writing down, for my future self and anyone studying the same ground.";
+
+// The path helpers and category list live in notes-common.ts so the browser
+// can use them too; re-exported here so server code has one place to import
+// from.
+export {
+  CATEGORIES,
+  type CategoryId,
+  categoryLabel,
+  NOTES_PATH,
+  noteHref,
+} from "@/lib/notes-common";
 
 /** Average adult reading speed for prose on a screen, rounded to something honest. */
 const WORDS_PER_MINUTE = 200;
@@ -32,12 +48,13 @@ const WORDS_PER_MINUTE = 200;
  * Frontmatter, validated rather than trusted.
  *
  * A typo in a YAML key is silent: `sumary:` just means `summary` is undefined,
- * and the post ships with a blank description in the feed, the card and the
+ * and the note ships with a blank description in the feed, the card and the
  * meta tag. Parsing here turns that into a build failure naming the file.
  */
 const Frontmatter = z.object({
   title: z.string().min(1),
   summary: z.string().min(1),
+  category: z.enum(CATEGORY_IDS),
   /**
    * Accepts a Date because YAML does. `date: 2026-09-23` unquoted is parsed
    * into a JS Date by the YAML spec, while `date: "2026-09-23"` stays a
@@ -48,7 +65,7 @@ const Frontmatter = z.object({
   tags: z.array(z.string()).default([]),
 });
 
-export type Post = z.infer<typeof Frontmatter> & {
+export type Note = z.infer<typeof Frontmatter> & {
   slug: string;
   readingMinutes: number;
 };
@@ -65,7 +82,7 @@ function toIsoDay(value: string | Date): string {
  *
  * Code, JSX and import lines are stripped before counting. A fenced block of
  * thirty lines of Python is not thirty lines of reading, and leaving it in
- * makes a short post with one long snippet claim eight minutes. Link syntax
+ * makes a short note with one long snippet claim eight minutes. Link syntax
  * keeps its visible text and drops the URL, for the same reason.
  *
  * Rounded up to a floor of one, because "0 min read" is not a thing.
@@ -93,8 +110,8 @@ function readingMinutes(body: string): number {
  */
 const SHOW_DRAFTS = process.env.VERCEL_ENV !== "production";
 
-/** All posts, newest first, drafts included only where they should be. */
-export function getPosts(): Post[] {
+/** All notes, newest first, drafts included only where they should be. */
+export function getNotes(): Note[] {
   if (!fs.existsSync(DIR)) return [];
 
   return fs
@@ -109,7 +126,7 @@ export function getPosts(): Post[] {
         // Naming the file matters: the stack trace of a failed build points at
         // this module, which is not where the mistake is.
         throw new Error(
-          `Invalid frontmatter in src/content/research/${file}:\n${z.prettifyError(parsed.error)}`,
+          `Invalid frontmatter in src/content/notes/${file}:\n${z.prettifyError(parsed.error)}`,
         );
       }
 
@@ -119,11 +136,11 @@ export function getPosts(): Post[] {
         readingMinutes: readingMinutes(content),
       };
     })
-    .filter((post) => SHOW_DRAFTS || !post.draft)
+    .filter((note) => SHOW_DRAFTS || !note.draft)
     .sort((a, b) => b.date.localeCompare(a.date));
 }
 
-/** One post's metadata, or undefined when the slug does not resolve. */
-export function getPost(slug: string): Post | undefined {
-  return getPosts().find((post) => post.slug === slug);
+/** One note's metadata, or undefined when the slug does not resolve. */
+export function getNote(slug: string): Note | undefined {
+  return getNotes().find((note) => note.slug === slug);
 }

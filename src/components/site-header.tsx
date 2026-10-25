@@ -7,6 +7,11 @@ import { useState } from "react";
 import { navItems, site } from "@/content/site";
 import { ThemeToggle } from "./theme-toggle";
 
+/** "sara-abouroumia.dev" split at its last dot: "sara-abouroumia" + ".dev". */
+const HOST = new URL(site.url).host;
+const DOMAIN_NAME = HOST.slice(0, HOST.lastIndexOf("."));
+const DOMAIN_TLD = HOST.slice(HOST.lastIndexOf("."));
+
 function isActive(pathname: string, href: string) {
   return href === "/" ? pathname === "/" : pathname.startsWith(href);
 }
@@ -18,11 +23,23 @@ export function SiteHeader() {
   return (
     <header className="sticky top-0 z-10 border-b border-border bg-bg">
       <div className="mx-auto flex max-w-[880px] items-center justify-between gap-4 px-6 py-5">
+        {/* The wordmark is the domain, taken from site.url so it cannot drift
+            from the real one. The name leads and the TLD steps back a shade,
+            so it still reads as a name first and an address second.
+
+            aria-label, because a screen reader would otherwise spell the
+            link out as "sara hyphen abouroumia dot dev"; what it is, is
+            Sara's home page.
+
+            17px, down from the 19px the name used: the domain is four
+            characters longer, and at 19 it outweighed the nav beside it. */}
         <Link
           href="/"
-          className="shrink-0 whitespace-nowrap font-serif text-[19px] font-semibold tracking-[0.01em] text-text no-underline"
+          aria-label={`${site.name}, home`}
+          className="shrink-0 whitespace-nowrap font-serif text-[17px] font-semibold tracking-[0.01em] text-text no-underline"
         >
-          {site.name}
+          {DOMAIN_NAME}
+          <span className="text-muted">{DOMAIN_TLD}</span>
         </Link>
 
         {/* Desktop nav */}

@@ -23,7 +23,7 @@ const lora = Lora({
 
 /**
  * The long-form reading face, for prose meant to be read rather than scanned
- * (the bio now, research posts next). Lora stays the display serif for names
+ * (the bio now, notes next). Lora stays the display serif for names
  * and headings; Source Serif is the one built for paragraphs, with an optical
  * size axis that tightens it at body sizes. It is the same family Medium sets
  * its articles in, which is the register this text is after.

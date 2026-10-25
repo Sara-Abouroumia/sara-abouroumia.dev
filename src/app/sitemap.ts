@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 import { now } from "@/content/about";
 import { navItems, site } from "@/content/site";
-import { getPosts } from "@/lib/research";
+import { getNotes, noteHref } from "@/lib/notes";
 
 /**
  * Generated from navItems rather than a hand-kept list, so a page added to the
@@ -17,7 +17,7 @@ import { getPosts } from "@/lib/research";
  *
  *   - Home carries the Now panel's date: that stamp is bumped whenever the
  *     page's content is, and it is the same date the footer shows.
- *   - Posts carry their own publish date (below).
+ *   - Notes carry their own publish date (below).
  *   - Other pages carry none. Git history was the alternative, but Vercel
  *     builds from a shallow clone, where `git log` can report the clone's
  *     cut-off instead of the real last edit: wrong in a new way.
@@ -33,24 +33,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }));
 
   /**
-   * Research posts, which navItems cannot know about: they are files, not nav
+   * Notes, which navItems cannot know about: they are files, not nav
    * entries.
    *
-   * Drafts are filtered unconditionally rather than relying on getPosts()'s
+   * Drafts are filtered unconditionally rather than relying on getNotes()'s
    * environment rule. That rule exists so drafts are readable on a preview
    * deployment, and a preview deployment still generates a sitemap; an
-   * unfinished post does not belong in one anywhere.
+   * unfinished note does not belong in one anywhere.
    *
-   * lastModified is the post's own date, so it means something.
+   * lastModified is the note's own date, so it means something.
    */
-  const posts: MetadataRoute.Sitemap = getPosts()
-    .filter((post) => !post.draft)
-    .map((post) => ({
-      url: new URL(`/research/${post.slug}`, site.url).toString(),
-      lastModified: new Date(`${post.date}T00:00:00Z`),
+  const notes: MetadataRoute.Sitemap = getNotes()
+    .filter((note) => !note.draft)
+    .map((note) => ({
+      url: new URL(noteHref(note.slug), site.url).toString(),
+      lastModified: new Date(`${note.date}T00:00:00Z`),
       changeFrequency: "yearly",
       priority: 0.6,
     }));
 
-  return [...pages, ...posts];
+  return [...pages, ...notes];
 }

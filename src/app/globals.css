@@ -10,8 +10,19 @@
   --text-soft: #33322d;
   --muted: #6b675c;
   --muted-light: #6b6860;
-  --accent: #2c4a6e;
-  --accent-hover: #1a3350;
+  /* Search-match highlight on the Notes cards: a classic highlighter yellow.
+     Body text on it measures 13.7:1, so a match reads as marked, never as
+     faded. */
+  --highlight: #fde68a;
+  /* The accent: Claude's terracotta, hue 16. Not its exact #d97757 here: that
+     is 3.1:1 on white, a fail for the small text the accent sets (11px
+     category labels, 13px links). #ad4f2d is the same hue taken darker until
+     every use clears 4.5:1: 5.3:1 on --bg, 4.8:1 on --panel, and 5.3:1 for
+     white text on an accent button. The exact orange returns where its
+     lightness is an asset: as dark mode's accent, and as the selected edge
+     below. (One step lighter, #b4532f, fails on --panel at 4.45:1.) */
+  --accent: #ad4f2d;
+  --accent-hover: #8f3f22;
   --accent-fg: #ffffff;
   /* Vivid burnt orange, as saturated as 12px uppercase text can go and still
      clear 4.5:1 on --bg (4.76:1). Only 4.3:1 on --panel, so don't reuse it
@@ -57,19 +68,19 @@
      1.65:1 against --bg in both themes, short of the 3:1 WCAG 1.4.11 asks of
      a control boundary; the labels above each field carry identification. */
   --field-border: #cfc9bc;
-  --focus-ring: rgba(44, 74, 110, 0.22);
+  --focus-ring: rgba(173, 79, 45, 0.22);
   /*
-   * The chosen topic. Baby blue rather than the navy --accent: against a
-   * white page the accent carries the same weight as the body text around
-   * it, so a chip outlined in it announced nothing.
+   * The chosen chip, tab or topic. Claude's exact orange, lighter than the
+   * deep --accent: against a white page the accent reads with the weight of
+   * body text, so an edge drawn in it announced little. The brighter orange
+   * is what makes "selected" visible at a glance.
    *
-   * 2.57:1 against --bg, under the 3:1 WCAG 1.4.11 asks of a boundary, so
-   * the fill carries the state alongside it and the control is a labelled
-   * radio either way. Dark needs none of this: its accent is already a
-   * light blue that stands clear of that ground.
+   * 3.1:1 against --bg, which clears the 3:1 WCAG 1.4.11 asks of a control
+   * boundary (the baby blue this replaced was 2.6:1, just under it).
    */
-  --selected-border: #5ba8e5;
-  --selected-bg: rgba(91, 168, 229, 0.1);
+  --selected-border: #d97757;
+  /* 6%: a tint you notice, not a fill you see. */
+  --selected-bg: rgba(217, 119, 87, 0.06);
   /* Two reds: the border only has to read as a shape, the message has to clear
      4.5:1 as text (6.5:1 on --bg). */
   --error: #c0392b;
@@ -116,13 +127,18 @@
   --text-soft: #d8d5cb;
   --muted: #9b9789;
   --muted-light: #9c988c;
-  /* The design canvas's --accent and --on-accent, to the digit. */
-  --accent: #7da7d9;
-  --accent-hover: #9cc0e6;
+  /* A deep amber, not a bright yellow: dark mode's text is light, and light
+     text on bright yellow is unreadable. Text on it measures 7.5:1, and the
+     mark still stands clear of the page at 2.1:1. */
+  --highlight: #5c4a12;
+  /* Claude's terracotta exactly. On a dark ground its lightness is what makes
+     it readable: 5.8:1 on --bg, 5.2:1 on --panel, and dark text on an accent
+     button at 6.1:1. */
+  --accent: #d97757;
+  --accent-hover: #e6916f;
   --accent-fg: #0f1115;
   /* School-bus yellow, pulled back off full saturation so it sits on the dark
-     ground without glowing. 10.9:1 on --bg, and complementary to the blue
-     --accent rather than competing with it. */
+     ground without glowing. 10.9:1 on --bg. */
   --label: #f0c42b;
   /* From here down, the design canvas's own dark values: --field, --ph,
      --body and --faint in its palette. */
@@ -138,10 +154,11 @@
   --success-text: #a9c9a4;
 
   --field-border: #3a3c44;
-  --focus-ring: rgba(125, 167, 217, 0.28); /* the canvas --ring */
-  /* The chosen chip is outlined in the accent itself, as the canvas has it. */
+  --focus-ring: rgba(217, 119, 87, 0.3);
+  /* The chosen chip is outlined in the accent itself: dark's accent is
+     already the bright orange that light mode needs a separate token for. */
   --selected-border: var(--accent);
-  --selected-bg: rgba(125, 167, 217, 0.16);
+  --selected-bg: rgba(217, 119, 87, 0.1);
   --error: #e07a7a;
   --error-text: #f09a9a; /* 8.4:1 on --bg */
 
@@ -183,6 +200,7 @@
   --color-text-soft: var(--text-soft);
   --color-muted: var(--muted);
   --color-muted-light: var(--muted-light);
+  --color-highlight: var(--highlight);
   --color-accent: var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-accent-fg: var(--accent-fg);
@@ -327,9 +345,9 @@ body {
 /* The hover glow on <ExpandToggle />. A text-shadow on the label and a
    drop-shadow on the chevron, both tinted from --accent, so the glow is the
    button's own colour bleeding outward rather than a separate highlight. It
-   also follows the theme for free: navy and soft in light mode, where a
-   strong halo would look smudged, brighter blue in dark mode, where light
-   text on a dark ground is what actually reads as a glow. */
+   also follows the theme for free: deep and soft in light mode, where a
+   strong halo would look smudged, brighter in dark mode, where light text on
+   a dark ground is what actually reads as a glow. */
 @layer components {
   .toggle-glow {
     --toggle-glow: color-mix(in srgb, var(--accent) 35%, transparent);

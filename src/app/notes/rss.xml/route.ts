@@ -1,8 +1,14 @@
 import { site } from "@/content/site";
-import { getPosts, RESEARCH_DESCRIPTION } from "@/lib/research";
+import {
+  categoryLabel,
+  getNotes,
+  NOTES_DESCRIPTION,
+  NOTES_PATH,
+  noteHref,
+} from "@/lib/notes";
 
 /**
- * RSS 2.0 for /research.
+ * RSS 2.0 for /notes.
  *
  * A route handler rather than a page, because the response is XML and has to
  * carry its own Content-Type. It takes no request input and reads only the
@@ -16,7 +22,7 @@ import { getPosts, RESEARCH_DESCRIPTION } from "@/lib/research";
  * GET route handlers stopped being statically cached by default after Next 14,
  * so without this line the build marks the feed "ƒ (Dynamic)" and every poll
  * from every feed reader wakes a server function to re-read the filesystem and
- * rebuild identical XML. The content only changes when a post is added, which
+ * rebuild identical XML. The content only changes when a note is added, which
  * is a deploy.
  *
  * It also keeps true the claim the CSP in next.config.ts rests on, that every
@@ -24,9 +30,9 @@ import { getPosts, RESEARCH_DESCRIPTION } from "@/lib/research";
  */
 export const dynamic = "force-static";
 
-const FEED_PATH = "/research/rss.xml";
-const TITLE = `${site.name}: Research & Development`;
-const DESCRIPTION = RESEARCH_DESCRIPTION;
+const FEED_PATH = `${NOTES_PATH}/rss.xml`;
+const TITLE = `${site.name}: Notes`;
+const DESCRIPTION = NOTES_DESCRIPTION;
 
 /**
  * XML has five reserved characters and no tolerance for any of them.
@@ -49,18 +55,18 @@ export function GET() {
   /**
    * Drafts are filtered here regardless of environment.
    *
-   * getPosts() shows drafts outside production so they can be previewed, but a
+   * getNotes() shows drafts outside production so they can be previewed, but a
    * feed is not a preview surface: a reader that polls a branch deployment
    * would copy the draft into someone's inbox, and RSS has no retraction. The
    * rule for the feed is simply "published or absent".
    */
-  const posts = getPosts().filter((post) => !post.draft);
+  const notes = getNotes().filter((note) => !note.draft);
 
-  const items = posts
-    .map((post) => {
-      const url = `${site.url}/research/${post.slug}`;
+  const items = notes
+    .map((note) => {
+      const url = `${site.url}${noteHref(note.slug)}`;
       return `    <item>
-      <title>${escapeXml(post.title)}</title>
+      <title>${escapeXml(note.title)}</title>
       <link>${url}</link>
       <!-- isPermaLink=true says the guid IS the URL, so a reader that has
            seen the link will not show the item a second time. -->
@@ -68,16 +74,18 @@ export function GET() {
       <!-- RSS dates are RFC 822, which is what toUTCString produces. An ISO
            date here is silently ignored by most readers and the item shows up
            undated. -->
-      <pubDate>${new Date(`${post.date}T00:00:00Z`).toUTCString()}</pubDate>
-      <description>${escapeXml(post.summary)}</description>
+      <pubDate>${new Date(`${note.date}T00:00:00Z`).toUTCString()}</pubDate>
+      <description>${escapeXml(note.summary)}</description>
+      <!-- RSS's own category element, so a reader can group notes by kind. -->
+      <category>${escapeXml(categoryLabel(note.category))}</category>
     </item>`;
     })
     .join("\n");
 
-  // lastBuildDate comes from the newest post, not from Date.now(). A build
+  // lastBuildDate comes from the newest note, not from Date.now(). A build
   // timestamp changes on every deploy, which makes the feed look updated when
   // nothing was written, and makes the output non-deterministic between builds.
-  const newest = posts[0];
+  const newest = notes[0];
   const lastBuild = newest
     ? new Date(`${newest.date}T00:00:00Z`).toUTCString()
     : undefined;
@@ -86,7 +94,7 @@ export function GET() {
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>${escapeXml(TITLE)}</title>
-    <link>${site.url}/research</link>
+    <link>${site.url}${NOTES_PATH}</link>
     <description>${escapeXml(DESCRIPTION)}</description>
     <language>en-GB</language>
     <!-- Tells a reader where this feed canonically lives, so a copy served

@@ -1,4 +1,4 @@
-# Sara Abouroumia portfolio — stack, architecture, and build order (rev. 2)
+# Sara Abouroumia portfolio: stack, architecture, and build order (rev. 2)
 
 ## Context
 
@@ -6,30 +6,30 @@ The design is finished. `Portfolio.dc.html` is the output of a long design conve
 settles the look, the copy, the token palette, the page set, and the behaviour of every flow. It is
 a prototype on Claude Design's runtime: all state in `localStorage`, a sign-in that accepts any
 credentials, a `?admin=1` query param that grants owner rights, and a world map with invented
-visitor data. It runs — `support.js` self-loads React, ReactDOM and Babel from unpkg, so serving the
+visitor data. It runs: `support.js` self-loads React, ReactDOM and Babel from unpkg, so serving the
 project folder over any local HTTP server gives a fully clickable demo.
 
 This plan covers building the **real, public portfolio** with the prototype as the visual spec. It
 does not re-implement the prototype; that artifact already exists and serves its purpose as a
 reference.
 
-**What changed since rev. 1 of this plan** — everything below is now in the prototype and was
+**What changed since rev. 1 of this plan**: everything below is now in the prototype and was
 missing from the earlier exploration:
 
-- **Products marketplace** (`/products`) — a catalogue of working website demos businesses can
+- **Products marketplace** (`/products`): a catalogue of working website demos businesses can
   request, with a multi-select "interest tray" that funnels into one inquiry form, a per-product
   demo view, category filters, and owner-side add/delete.
-- **Product inquiries** — a second moderation queue with `new → contacted → archived` status,
+- **Product inquiries**: a second moderation queue with `new → contacted → archived` status,
   merged into the same owner Review page as references, with a mailto reply action.
-- **Owner sign-in via footer link** — the `?admin=1` toggle was replaced by an explicit "Owner sign
+- **Owner sign-in via footer link**: the `?admin=1` toggle was replaced by an explicit "Owner sign
   in" screen (single account), a Sign out button in the nav, and owner-only controls that appear
   in-place (Review tab, "+ New post", "+ New product", Delete links).
-- **Blog authoring** — an in-page editor (title, cover, summary, body) with Publish / Save as
+- **Blog authoring**: an in-page editor (title, cover, summary, body) with Publish / Save as
   draft; drafts visible only to the owner.
 - **The assistant is now Mochi, an original chibi pink cat** (`assistant.js`, element
   `<site-assistant>`), not Romario the duck. `duck.js` no longer exists. She peeks in from the right
   screen edge and is coaxed out over three taps; there is no egg.
-- Drawer breakpoint is **940px**, not 720 — the nav gained Products and Review and no longer fits
+- Drawer breakpoint is **940px**, not 720: the nav gained Products and Review and no longer fits
   at tablet widths.
 - The visitor map is a background behind the About header, not a page.
 - Footer was rebuilt: name/role column, page links, icon links (email, LinkedIn, CV), copyright
@@ -44,12 +44,12 @@ missing from the earlier exploration:
 | Visitor map | Real country-level visitor counts, not decorative |
 | References | Keep **both** invite-only and the uninvited screening flow |
 | Owner auth | GitHub OAuth with an email allowlist |
-| Products | Real feature, not decoration — inquiries are leads and must never be lost |
+| Products | Real feature, not decoration: inquiries are leads and must never be lost |
 | Product demos | Each is a separately deployed site on a subdomain; the portfolio links out |
 | Assistant | Port `assistant.js` as-is; do not rewrite in React |
 
 Three of these (real map data, keeping the screening flow, a public inquiry endpoint) are the more
-expensive options and this plan carries their full cost — two public write endpoints need bot
+expensive options and this plan carries their full cost: two public write endpoints need bot
 defence, real geo data needs a privacy notice and caching discipline, and inquiries are commercial
 leads that make the site a lead-generation page (see the Vercel Hobby caveat under Cost).
 
@@ -69,7 +69,7 @@ needs real URLs:
 /products/[slug]          Product detail ("demo view": framed screenshot, features, pick)
 /products/request         Inquiry form (reads picks from client state / URL)
 /products/request/sent    Confirmation
-/research                 Research
+/notes                    Notes (was /research; 308 redirect from the old URLs)
 /blog                     Blog index
 /blog/[slug]              Post
 /contact                  Contact
@@ -85,8 +85,8 @@ needs real URLs:
 /api/auth/[...all]        Better Auth handler
 ```
 
-Nav items become `<Link>` with `aria-current="page"`, not `<button>`. Everything else — tokens,
-type scale, spacing, the cat — ports across close to as-is.
+Nav items become `<Link>` with `aria-current="page"`, not `<button>`. Everything else (tokens,
+type scale, spacing, the cat) ports across close to as-is.
 
 **Delete on sight:** the `?admin=1` grant and the `sara-portfolio-owner` localStorage flag
 (`componentDidMount`, around `Portfolio.dc.html:800-806`), and the `signIn` that accepts any
@@ -105,32 +105,32 @@ Versions verified against the npm registry on 2026-09-06.
 | Framework | Next.js App Router + TypeScript strict | **16.3.4** | Current LTS line. |
 | Styling | Tailwind CSS | **4.3.3** | Prototype's custom properties lift straight into `@theme inline`. |
 | Theme | `next-themes` | 0.4.6 | Is the anti-FOUC inline script; don't hand-roll one. |
-| Fonts | `next/font/google` | — | Self-hosts Lora + Inter, kills the CDN round-trip and CLS. |
+| Fonts | `next/font/google` | n/a | Self-hosts Lora + Inter, kills the CDN round-trip and CLS. |
 | Blog content | MDX + `gray-matter` + `rehype-pretty-code` | 0.14.5 | Real syntax highlighting, zero client JS. |
 | Blog editor | `@keystatic/core` + `@keystatic/next` | 0.6.9 / 5.0.5 | Browser editor that commits MDX to GitHub. |
-| Products content | **Keystatic collection** (`content/products/*.yaml`) | — | Same editor, same commit flow; no DB row for catalogue data. |
+| Products content | **Keystatic collection** (`content/products/*.yaml`) | n/a | Same editor, same commit flow; no DB row for catalogue data. |
 | Database | Neon Postgres + Drizzle ORM | drizzle 0.45.2 | References, invites, **inquiries**, visit counts, rate limits. |
 | Auth | Better Auth, GitHub OAuth + allowlist | **1.7.2** | Pin and watch it. |
-| Email | Resend | — | Contact form, inquiry alerts, reference alerts. |
-| Bot defence | Cloudflare Turnstile + honeypot | — | Required by the uninvited reference flow **and** the inquiry form. |
-| Dialogs / drawer | `@radix-ui/react-dialog` | — | Focus trap, Escape, scroll lock — for the mobile drawer only. |
-| Client state | `zustand` (tiny) or React context | — | For the products interest tray only; nothing else needs it. |
+| Email | Resend | n/a | Contact form, inquiry alerts, reference alerts. |
+| Bot defence | Cloudflare Turnstile + honeypot | n/a | Required by the uninvited reference flow **and** the inquiry form. |
+| Dialogs / drawer | `@radix-ui/react-dialog` | n/a | Focus trap, Escape, scroll lock, for the mobile drawer only. |
+| Client state | `zustand` (tiny) or React context | n/a | For the products interest tray only; nothing else needs it. |
 | Lint/format | Biome | 2.5.12 | One binary, one config. |
-| E2E | Playwright | — | Three specs, not a suite. |
+| E2E | Playwright | n/a | Three specs, not a suite. |
 
 **Skip:** Upstash, Vitest initially, Sentry, Contentlayer, a headless CMS, Stripe (products are
-inquiry-based, not checkout — do not add a payment rail to a portfolio).
+inquiry-based, not checkout; do not add a payment rail to a portfolio).
 
 ### Next 16 gotchas that will bite on day one
 
 - `middleware.ts` → `proxy.ts`. Codemod: `npx @next/codemod@canary middleware-to-proxy .`
 - `next lint` removed. Use Biome.
-- `next/dynamic` with `ssr: false` throws in a Server Component — the cat's import lives in a
+- `next/dynamic` with `ssr: false` throws in a Server Component: the cat's import lives in a
   `'use client'` wrapper.
 - `params` / `searchParams` are async.
-- `NextRequest.geo` / `.ip` removed — use `geolocation(request)` from `@vercel/functions`.
+- `NextRequest.geo` / `.ip` removed; use `geolocation(request)` from `@vercel/functions`.
 
-### Tailwind v4 dark mode — the one way that works
+### Tailwind v4 dark mode: the one way that works
 
 ```css
 :root { --color-bg:#ffffff; --color-accent:#2c4a6e; /* light set */ }
@@ -139,7 +139,7 @@ inquiry-based, not checkout — do not add a payment rail to a portfolio).
 @custom-variant dark (&:where(.dark, .dark *));
 ```
 
-Both palettes are final in the `theme()` method (`Portfolio.dc.html:~995-1021`) — 14 tokens each:
+Both palettes are final in the `theme()` method (`Portfolio.dc.html:~995-1021`), 14 tokens each:
 `bg, panel, border, text, textSoft, muted, mutedLight, accent, accentHover, accentFg, inputBg,
 successBg, successBorder, successText`. Lift the hex values verbatim; `--muted-light` is `#6b6860`
 light / `#9c988c` dark specifically so small text clears 4.5:1. Add `suppressHydrationWarning` to
@@ -151,23 +151,23 @@ light / `#9c988c` dark specifically so small text clears 4.5:1. Add `suppressHyd
 
 Three kinds of content, three homes. Getting this split right is most of the architecture.
 
-**1. Typed content modules (git, TypeScript, Zod-validated)** — things that change a few times a
+**1. Typed content modules (git, TypeScript, Zod-validated)**: things that change a few times a
 year and have no editor need: `content/experience.ts`, `content/projects.ts`,
 `content/education.ts`, `content/skills.ts`, `content/now.ts` (the "Now" note on About),
 `content/site.ts` (name, role, location, email, LinkedIn, resume path). Source of truth is the CV
 PDF; derive "Last updated" from git rather than hardcoding it.
 
-**2. Keystatic collections (git, YAML/MDX, browser editor)** — things Sara edits herself without a
+**2. Keystatic collections (git, YAML/MDX, browser editor)**: things Sara edits herself without a
 deploy:
 
-- `blog` — MDX posts. `draft: true` filtered when `VERCEL_ENV === 'production'`, so drafts show on
+- `blog`: MDX posts. `draft: true` filtered when `VERCEL_ENV === 'production'`, so drafts show on
   preview deploys: that is the owner-only draft view from the prototype, for free.
-- `products` — one YAML per demo: `name, slug, category, pitch, stack[], priceFrom, demoUrl,
+- `products`: one YAML per demo: `name, slug, category, pitch, stack[], priceFrom, demoUrl,
   features[], cover (image), status: listed | hidden, order`. This replaces the prototype's
   `seedProducts()` / `addProduct` / localStorage and the `/admin/products` route becomes a Keystatic
   collection page. Categories are derived from the data, as the prototype does.
 
-**3. Postgres (Neon)** — things written by strangers or that must survive independently of a deploy:
+**3. Postgres (Neon)**: things written by strangers or that must survive independently of a deploy:
 references, invites, inquiries, visit counts, rate limits.
 
 **Conditional sections:** render the Recommendations block only when there is ≥1 approved
@@ -197,7 +197,7 @@ rate_limits(key, window_start, count)
 - **References:** `pending | approved`. **Hard-delete rejections.**
 - **Inquiries:** keep `archived` rows (they are business records, and the inquirer consented to be
   contacted about a service), but schedule a purge at 24 months and say so in the privacy notice.
-  `product_slugs` is an array of Keystatic slugs, not FKs — the catalogue is in git, not the DB.
+  `product_slugs` is an array of Keystatic slugs, not FKs: the catalogue is in git, not the DB.
   It stays indexed and queryable (`WHERE 'salon-booking' = ANY(product_slugs)` answers "which demo
   draws the most interest"). `products_snapshot` captures `{slug, name, priceFrom}[]` at submission
   time so the record still reads correctly after the catalogue is renamed or repriced. Both columns,
@@ -211,7 +211,7 @@ contact details for follow-up makes her one twice over.
 
 - Referee form: explicit consent checkbox with wording + version stored.
 - Inquiry form: a one-line notice ("Sara will reply by email about the demos you picked; your
-  details are not shared") is sufficient — contract/legitimate-interest basis — but state the
+  details are not shared") is sufficient (contract/legitimate-interest basis), but state the
   retention period.
 - Removal path in the privacy notice; honour it.
 - Visitor map: legitimate interest, no cookie banner needed (nothing read/written on device).
@@ -228,7 +228,7 @@ This is the one feature with a commercial purpose, so it gets the most careful t
 **Catalogue.** Server-rendered from the Keystatic `products` collection. Filter chips are
 `<Link href="/products?category=Booking">` so filtered views are shareable and crawlable; read
 `searchParams` on the server. Cards link to `/products/[slug]`. "Open demo" is an external
-`<a target="_blank" rel="noopener">` to `demoUrl` — each demo is its own deployed site
+`<a target="_blank" rel="noopener">` to `demoUrl`: each demo is its own deployed site
 (`salon.saraabouroumia.dev` or similar), **not** an iframe. The prototype's framed "browser window"
 detail view stays as the design for `/products/[slug]`: URL bar showing the real demo host, a
 `next/image` screenshot, the features list, and the pick button.
@@ -248,7 +248,7 @@ thank-you.
 
 **Owner queue.** `/admin/review` shows inquiries above references, exactly as the prototype:
 `new` outlined in accent, meta line (`email · wants X, Y`), optional message, actions
-**Reply by email** (`mailto:` with prefilled subject, as prototyped — this is intentionally not an
+**Reply by email** (`mailto:` with prefilled subject, as prototyped; this is intentionally not an
 in-app composer), **Mark contacted**, **Archive**. Both status changes are Server Actions that
 re-check the session. The nav "Review (n)" badge counts `new` inquiries + `pending` references,
 fetched in the root layout for the signed-in owner only.
@@ -257,11 +257,11 @@ fetched in the root layout for the signed-in owner only.
 custom form. The prototype's "+ New product" and "Delete" become a link to Keystatic and a
 `status: hidden` toggle.
 
-### References — both flows ship
+### References: both flows ship
 
 Invite-only: owner generates a link at `/admin/review` → `/reference/[token]` → personalised
 greeting, name pre-filled. Keep the owner's **"Preview referee view"** as `/reference/preview?name=X`
-behind auth — it is the same page component rendered with a synthetic invite and a "Exit preview"
+behind auth: it is the same page component rendered with a synthetic invite and a "Exit preview"
 link instead of "Back to the portfolio".
 
 Uninvited: `/reference` → gate ("Have you worked with Sara?" Yes / No) → clarifying fields → form.
@@ -278,12 +278,12 @@ Better Auth, GitHub provider, allowlist on `session.user.email`. Routes:
   about "single account, httpOnly cookie" becomes true rather than a disclaimer.
 - Success → `/admin/review`. Signed-in state adds **Review (n)** to the nav and drawer, **Sign out**
   in the utility group, and owner-only affordances in place (Keystatic links on Blog and Products).
-- `proxy.ts` redirects `/admin/*` and `/keystatic` when unauthenticated — a convenience only. **Every
+- `proxy.ts` redirects `/admin/*` and `/keystatic` when unauthenticated: a convenience only. **Every
   Server Action and route handler re-checks the session.** Middleware is not the boundary
   (CVE-2025-29927).
 - Keystatic needs its own GitHub App for commits; the Better Auth OAuth app is separate.
 
-### Visitor map — real data
+### Visitor map: real data
 
 Build-time pre-render of `countries-110m` through `geoNaturalEarth1()` into inline SVG paths from a
 Server Component; only the country dots are dynamic. `/api/beacon` reads `geolocation(request)`,
@@ -293,28 +293,28 @@ land/dot colours from `VisitorMap.html`. `aria-hidden` on the map; a scrim behin
 name always clears contrast against land fill. Neon scale-to-zero: the About page must never query
 on request.
 
-### Blog — MDX + Keystatic
+### Blog: MDX + Keystatic
 
 `content/blog/*.mdx`, `generateStaticParams`, `remark-gfm` + `rehype-pretty-code` + `rehype-slug`,
 RSS at `app/blog/rss.xml/route.ts`. Derive **reading time** from the MDX word count at build
 (`reading-time` or ten lines of your own) and show it in the post meta line, as the prototype's
-"4 min read" does. Related posts wait for V2 — they need a tag taxonomy and enough posts for
+"4 min read" does. Related posts wait for V2: they need a tag taxonomy and enough posts for
 relationships to exist. The prototype's post layout (cover, serif title, byline,
 640px measure) is the `/blog/[slug]` template. Owner sees Keystatic's editor instead of the
-prototype's inline one; the "Draft — only you can see this" label maps onto preview deployments.
+prototype's inline one; the "Draft (only you can see this)" label maps onto preview deployments.
 
 ### Mochi, the assistant
 
 **`assistant.js` is finished and does not need to be built.** It is a complete, dependency-free
 `<site-assistant>` custom element. Integration, not creation.
 
-What the file already contains (symbol references — line numbers drift):
+What the file already contains (symbol references; line numbers drift):
 
 | Piece | Where |
 |---|---|
 | Copy: `QUIPS`, `TIPS` (per-page comment), `HELP` (per-page question) | top of file |
-| `ACTIVITIES` — wave / groom / look on an 8–14s idle timer; independent blinking | after `HELP` |
-| Per-theme palettes `LIGHT` / `DARK` — coat, inner ear, snout, **eyes: sun-yellow ↔ night-blue** | after `ACTIVITIES` |
+| `ACTIVITIES`: wave / groom / look on an 8–14s idle timer; independent blinking | after `HELP` |
+| Per-theme palettes `LIGHT` / `DARK`: coat, inner ear, snout, **eyes: sun-yellow ↔ night-blue** | after `ACTIVITIES` |
 | Peek intro: head + paw from the right edge, `stir` nag every 2.8s, three taps → `wake()` | `.bed` markup, `setPeek()`, `nudge()`, `wake()` |
 | Artwork: chibi head, bunny ears (right one resting at 72°), slit pupils, cat mouth, whiskers | `.cat` SVG |
 | Rig: single rAF loop driving body/head/ears/tail/paw/pupils/blush/tongue/blink | `tick` |
@@ -326,7 +326,7 @@ What the file already contains (symbol references — line numbers drift):
 **Integration steps:**
 
 1. Copy the file unchanged to `src/components/assistant/site-assistant.js`. Do not rewrite it in
-   React — it is imperative rAF animation mutating SVG attributes directly.
+   React: it is imperative rAF animation mutating SVG attributes directly.
 2. `'use client'` wrapper `<Mochi />`: `import('./site-assistant.js')` in a `useEffect`, render
    `<site-assistant theme={resolvedTheme} page={pageKey} />`. `theme` from `next-themes`; `page`
    from `usePathname()` mapped onto `TIPS` keys (`/` → `about`, `/blog/*` → `writing`,
@@ -337,16 +337,16 @@ What the file already contains (symbol references — line numbers drift):
    optional and touches two lines in each file.)
 4. Mount in the root layout so she survives navigation. Guards: `ssr:false` inside the client
    wrapper; hide below 640px (she overlaps the drawer trigger); `inert` + `aria-hidden` on the
-   host so she is out of the tab order — except the balloon's action buttons, which should stay
+   host so she is out of the tab order, except the balloon's action buttons, which should stay
    reachable, so scope `inert` to the artwork only; persist `awake` and `hidden` in `localStorage`
    so a returning visitor is not asked to coax her out again; leave the
    `prefers-reduced-motion` branch intact (she should appear already out, no idle motion).
-5. CSP: the shadow root injects an inline `<style>` — allow `'unsafe-inline'` for styles or use a
+5. CSP: the shadow root injects an inline `<style>`: allow `'unsafe-inline'` for styles or use a
    nonce. Decide when writing security headers.
 6. Later, if wanted: a Fuse.js index over `content/*` so typing at her jumps to a section; an LLM
    route only if people actually type.
 
-#### Mochi as a site guide — the layered design
+#### Mochi as a site guide: the layered design
 
 The character file is the dumbest layer and stays that way. Intelligence lives above it, in code
 that has no DOM and no React so it can be unit-tested and, later, exposed to an LLM as tools.
@@ -354,7 +354,7 @@ that has no DOM and no React so it can be unit-tested and, later, exposed to an 
 ```
 content/*.ts, content/blog, content/products   source of truth (already exists)
         │
-search index (Fuse.js over typed fields)        V2 — not V1
+search index (Fuse.js over typed fields)        V2, not V1
         │
 assistant brain  (pure functions)               suggest(route, ctx) · react(event) · intents
         │
@@ -365,10 +365,10 @@ site-assistant.js (custom element)              artwork, rAF rig, balloon, peek 
 
 **State machine (V1).** `peeking → out → idle → talking → hidden`, driven by `useReducer`.
 `talking` carries `{ text, actions? }`. Do not add `searching` / `responding` until there is a text
-input; do not reach for XState — five states and one payload is a reducer.
+input; do not reach for XState: five states and one payload is a reducer.
 
 **Voice.** Mochi is Sara's assistant, not Sara. Third person, always: "She's done more backend than
-anything" — never "I've focused on backend". Rules: ≤ 2 lines, no "I think", no exclamation-mark
+anything", never "I've focused on backend". Rules: ≤ 2 lines, no "I think", no exclamation-mark
 enthusiasm, one unsolicited message per route per session.
 
 **Route goals** (the brain's `suggest(route)` reads these):
@@ -384,9 +384,9 @@ enthusiasm, one unsolicited message per route per session.
 | `/contact` | convert | "LinkedIn is usually fastest." |
 | owner routes | operate | "Two new inquiries, one reference waiting." |
 
-**Event reactions** (`react(event)`) — trigger on **completion**, never on elapsed time:
+**Event reactions** (`react(event)`): trigger on **completion**, never on elapsed time:
 
-- `tray:first-pick` → "Tick anything else that fits — one form covers all of them."
+- `tray:first-pick` → "Tick anything else that fits; one form covers all of them."
 - `inquiry:sent` / `contact:sent` / `reference:sent` → confirmation line, then quiet.
 - `cv:downloaded` → "Same content source as the site, so it won't drift."
 - `post:read-to-end` → related post, if one exists.
@@ -403,11 +403,11 @@ counts from the two queues, links to `/admin/review` and `/keystatic`, no sales 
 makes the owner view feel finished.
 
 **Persistence rules** (`localStorage`, one key `mochi:v1`):
-- `awake: true` after the first coax-out — a returning visitor never taps three times again.
-- `hidden: true` after "go nap" — persists across sessions; the corner badge brings her back.
+- `awake: true` after the first coax-out: a returning visitor never taps three times again.
+- `hidden: true` after "go nap": persists across sessions; the corner badge brings her back.
 - `seen: { [route]: true }` per session (`sessionStorage`) to enforce one tip per route.
 
-**Search and palette (V2).** Fuse.js over the typed content modules — structured fields (tags,
+**Search and palette (V2).** Fuse.js over the typed content modules: structured fields (tags,
 stack, category) beat prose search and give facets for free; Pagefind only once the blog is large.
 Surface it as a ⌘K palette that is *also* reachable from a visible control (recruiters and salon
 owners do not press ⌘K). The avatar can open the palette ("Looking for something specific?") but
@@ -433,8 +433,8 @@ persona, persistence. V2: Fuse index, palette, related-post recommendations. V3:
   (focus trap, Escape, scroll lock, focus return, `aria-expanded` on the trigger).
 - Theme toggle: three-state system / light / dark with `aria-label` + `aria-pressed`, not a label
   naming the target state.
-- Footer (from the prototype): three columns — name + role + location; Pages links; Elsewhere icon
-  buttons (email, LinkedIn, CV) + email text — then a bottom row with © year, derived "Last updated",
+- Footer (from the prototype): three columns: name + role + location; Pages links; Elsewhere icon
+  buttons (email, LinkedIn, CV) + email text, then a bottom row with © year, derived "Last updated",
   and the "Owner sign in" link (hidden when signed in).
 - Drop `white-space: nowrap` on the About `h1` and role line; they overflow at 320px.
 
@@ -465,7 +465,7 @@ mochi_action       { intent }
 palette_opened     {}          (V2)
 ```
 
-The same bus feeds Mochi's `react(event)` — one emitter, two consumers — and `mochi_action` counts
+The same bus feeds Mochi's `react(event)` (one emitter, two consumers), and `mochi_action` counts
 are the evidence that gates the V3 LLM decision. No dashboard; Vercel's panel is enough.
 
 **SEO.** `generateMetadata` per route; `sitemap.ts` including `/products/[slug]` and `/blog/[slug]`;
@@ -500,27 +500,63 @@ page that generates paid work is closer to the line. If inquiries convert, move 
 
 ## Build order
 
-**Phase 1 — publishable. Ship this before touching anything below it.** Next 16.3 + TS strict,
+**Phase 1: publishable. Ship this before touching anything below it.** Next 16.3 + TS strict,
 real routes, Tailwind v4 tokens, `next-themes`, `next/font`, typed content modules, MDX blog +
 reading time + RSS, **Products catalogue from Keystatic YAML with external demo links and detail
-pages — no tray, no form**, contact form → Resend, `track()` with the event list, metadata +
+pages: no tray, no form**, contact form → Resend, `track()` with the event list, metadata +
 sitemap + robots + JSON-LD, error pages, security headers, analytics, domain, footer. No DB, no
 auth, no map, no references, no inquiries, no cat. The temptation will be to "just add the inquiry
-form quickly" — don't; it is a public write endpoint and needs Phase 2's defences.
+form quickly". Don't: it is a public write endpoint and needs Phase 2's defences.
 
-**Phase 2 — the two write flows.** Neon + Drizzle + Better Auth (GitHub + allowlist),
+**Phase 2: the two write flows.** Neon + Drizzle + Better Auth (GitHub + allowlist),
 `requireOwner()`, sign-in page
-and Sign out, `/admin/review` with both queues, **interest tray + inquiry form + inquiry
-actions**, both referee flows + preview, Turnstile + honeypot + rate limiting, consent capture,
-email alerts, cached reads with revalidation on approve.
+and Sign out, `/admin/review` (references queue now; the inquiries queue arrives with Phase 5),
+both referee flows + preview, Turnstile + honeypot + rate limiting, consent capture, email alerts,
+cached reads with revalidation on approve. *The interest tray, inquiry form and inquiry actions
+moved to Phase 5.*
 
-**Phase 3 — authoring and polish.** Keystatic for blog + products, visitor beacon + pre-rendered
-map, **Mochi V1** (avatar + brain: route tips, event reactions, five intents, owner persona,
-persistence), OG images via `next/og`, three Playwright specs, CodeQL + Dependabot, first two
-product demos actually deployed on subdomains.
+**Phase 3: authoring and polish.** Keystatic for the blog, visitor beacon + pre-rendered map,
+**Mochi V1** (avatar + brain: route tips, event reactions, five intents, owner persona,
+persistence), OG images via `next/og`, three Playwright specs, CodeQL + Dependabot. *Keystatic
+for products and the first product demos moved to Phase 5.*
 
-**Phase 4 — Mochi V2 (only if the blog has grown).** Fuse index over content modules, ⌘K palette
+**Phase 4: Mochi V2 (only if the blog has grown).** Fuse index over content modules, ⌘K palette
 with a visible trigger, related-post recommendations.
+
+**Phase 5: Projects and Products relaunch.** *Parked 2026-10-25, to pick up once every other
+feature planned for the portfolio is done.* Both pages were taken offline rather than left
+thin: a Projects page without standout work, or a Products page without a deployed demo, argues
+against the site instead of for it.
+
+*Where things are now.* The routes live in `src/app/_projects` and `src/app/_products`. The
+underscore makes them Next private folders: opted out of routing (they return the themed 404),
+but still type-checked, so they cannot quietly rot. Their nav and footer entries are commented
+out in `src/content/site.ts` (`navItems`, `FOOTER_HREFS`); the sitemap is built from `navItems`
+and follows on its own.
+
+*To bring a page back.* Rename its folder without the underscore, uncomment its two lines in
+`site.ts`, then check the desktop nav still fits on one line at the 941px breakpoint (five items
+plus Resume and the theme toggle; see the note above `navItems`).
+
+*Projects: relaunch when there are two or three pieces worth leading with.*
+- Content already written in `src/content/projects.ts`: Explainable AI for intrusion detection
+  (in progress), Security Gates for AI-Written Code (micro1), Kayseri Social Run, the CNN
+  capstone. Re-rank by strength at relaunch; the first entry is the one most visitors read.
+- Add cover screenshots (`cover` field, `public/projects/`) and repo or paper links.
+- Consider a detail page per project once any one has more to say than three bullets.
+
+*Products: everything product-shaped, gathered from Phases 2 and 3.*
+- First two demos actually built and deployed, each on its own subdomain. Nothing is listed
+  until it is live.
+- Keystatic `products` collection, `/products/[slug]` detail pages, category filter links.
+- Interest tray, `/products/request` inquiry form (Turnstile + honeypot + rate limit, reusing
+  Phase 2's helpers), the `inquiries` table, and the inquiries queue in `/admin/review` with
+  Mark contacted / Archive.
+- `Service`/`Offer` JSON-LD per product; the `demo_opened`, `tray_pick` and `inquiry_sent`
+  analytics events (already declared in `src/lib/analytics.ts`).
+- Mochi's `find-a-website` and `show-projects` intents point at these routes, so wire them
+  here if Mochi lands first.
+- Revisit the Vercel Hobby commercial-use caveat (see Cost) before inquiries go live.
 
 ---
 
@@ -542,7 +578,7 @@ with a visible trigger, related-post recommendations.
    `/admin/review` with badge count 1 → Mark contacted → badge 0 → Archive → hidden. Forged slug in
    the POST is rejected.
 6. **Playwright spec 3 (auth boundary):** signed-out request to `/admin/review`, to the approve
-   action, and to the inquiry status action all reject — test the actions directly. Grep the
+   action, and to the inquiry status action all reject; test the actions directly. Grep the
    codebase: every file under `app/admin/**/actions.ts` and every mutating action contains
    `requireOwner()`.
 7. Geo beacon on a preview deployment: `visit_counts` increments, no IP anywhere.
@@ -553,14 +589,14 @@ with a visible trigger, related-post recommendations.
 
 ## Critical files
 
-- `Portfolio.dc.html` — the visual and behavioural spec. `theme()` (~995) holds both token sets;
+- `Portfolio.dc.html`: the visual and behavioural spec. `theme()` (~995) holds both token sets;
   `renderVals()` (~1023 onward) enumerates every piece of state the real routes replace;
   `seedProducts()` (~853) is the first six catalogue entries and their feature copy;
   `seedPosts()` (~838) two sample posts; `componentDidMount` (~800) contains the auth bypass to
   delete and the `duck-nav` / `duck-reference` listeners to rewire.
-- `assistant.js` — port as-is. Copy in `TIPS` / `HELP` / `QUIPS`; palettes in `LIGHT` / `DARK`;
+- `assistant.js`: port as-is. Copy in `TIPS` / `HELP` / `QUIPS`; palettes in `LIGHT` / `DARK`;
   seam in `emit()` and `openHelp()`.
-- `VisitorMap.html` — reuse the projection and theme colours; discard the iframe and CDN fetches.
-- `assets/Sara_Abouroumia_Resume.pdf` — source of truth for the content modules.
-- `support.js`, `image-slot.js` — design-tool runtime. Not ported; `image-slot` becomes
+- `VisitorMap.html`: reuse the projection and theme colours; discard the iframe and CDN fetches.
+- `assets/Sara_Abouroumia_Resume.pdf`: source of truth for the content modules.
+- `support.js`, `image-slot.js`: design-tool runtime. Not ported; `image-slot` becomes
   `next/image` (product covers and blog covers are Keystatic image fields).

@@ -41,21 +41,31 @@ export const site = {
  * currently commented out there pending References and Certifications.
  */
 /**
- * The nav label is "Research" while the page itself is headed "Research &
- * Development". That is not drift: the full name is ~175px at 15px, and at the
- * 941px breakpoint the desktop row has roughly 130px of slack once the
- * wordmark, Resume chip and theme toggle take their share. The short label is
- * what keeps the nav on one line at its tightest width.
+ * Mind the width when adding an item: at the 941px breakpoint the desktop row
+ * has roughly 130px of slack once the wordmark, Resume chip and theme toggle
+ * take their share, and five items is about what fits on one line.
  */
 export const navItems = [
   { href: "/", label: "About" },
-  { href: "/projects", label: "Projects" },
-  { href: "/products", label: "Products" },
-  { href: "/research", label: "Research" },
+  /*
+   * Projects and Products are PARKED (Phase 5 in docs/BUILD_PLAN.md). Their
+   * routes live in src/app/_projects and src/app/_products: the underscore
+   * makes them Next "private folders", opted out of routing but still
+   * type-checked. To bring one back, rename its folder without the underscore
+   * and uncomment its line here (and in footerPages below). The sitemap is
+   * built from this list, so it follows on its own.
+   */
+  // { href: "/projects", label: "Projects" },
+  // { href: "/products", label: "Products" },
+  // Was /research ("Research") until 2026-10; next.config.ts redirects it.
+  { href: "/notes", label: "Notes" },
   { href: "/contact", label: "Contact" },
 ] as const;
 
 // Deliberately a subset, matching the design's footer, which omits Contact.
+// Typed as string[] so the parked hrefs can stay listed without TypeScript
+// objecting that no nav item has them.
+const FOOTER_HREFS: string[] = ["/", /* "/projects", "/products", */ "/notes"];
 export const footerPages = navItems.filter((i) =>
-  ["/", "/projects", "/products", "/research"].includes(i.href),
+  FOOTER_HREFS.includes(i.href),
 );

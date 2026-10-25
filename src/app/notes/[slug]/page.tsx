@@ -4,26 +4,32 @@ import { notFound } from "next/navigation";
 import { site } from "@/content/site";
 import { formatDay } from "@/lib/dates";
 import { pageMetadata } from "@/lib/metadata";
-import { getPost, getPosts } from "@/lib/research";
+import {
+  categoryLabel,
+  getNote,
+  getNotes,
+  NOTES_PATH,
+  noteHref,
+} from "@/lib/notes";
 
 /**
- * A research post.
+ * A single note.
  *
  * The body is loaded by dynamic import rather than read as text, which is the
  * pattern Next documents for MDX outside the app directory. The bundler turns
- * the template literal into a context module over src/content/research, so
- * each post compiles into its own chunk and only the one being rendered is
- * pulled in.
+ * the template literal into a context module over src/content/notes, so each
+ * note compiles into its own chunk and only the one being rendered is pulled
+ * in.
  */
 
 /**
- * Prerender every post at build time.
+ * Prerender every note at build time.
  *
- * Without this the route still works, but each post would be rendered on first
+ * Without this the route still works, but each note would be rendered on first
  * request instead of sitting on the CDN as HTML.
  */
 export function generateStaticParams() {
-  return getPosts().map((post) => ({ slug: post.slug }));
+  return getNotes().map((note) => ({ slug: note.slug }));
 }
 
 /**
@@ -35,42 +41,40 @@ export const dynamicParams = false;
 
 export async function generateMetadata({
   params,
-}: PageProps<"/research/[slug]">): Promise<Metadata> {
+}: PageProps<"/notes/[slug]">): Promise<Metadata> {
   const { slug } = await params;
-  const post = getPost(slug);
-  if (!post) return {};
+  const note = getNote(slug);
+  if (!note) return {};
 
   return {
     ...pageMetadata({
-      title: post.title,
-      description: post.summary,
-      path: `/research/${slug}`,
-      publishedTime: post.date,
+      title: note.title,
+      description: note.summary,
+      path: noteHref(slug),
+      publishedTime: note.date,
     }),
     // A draft reachable on a preview deployment should still never be indexed
     // if that URL is shared.
-    ...(post.draft ? { robots: { index: false, follow: false } } : {}),
+    ...(note.draft ? { robots: { index: false, follow: false } } : {}),
   };
 }
 
-export default async function ResearchPost({
-  params,
-}: PageProps<"/research/[slug]">) {
+export default async function NotePage({ params }: PageProps<"/notes/[slug]">) {
   const { slug } = await params;
-  const post = getPost(slug);
+  const note = getNote(slug);
 
   // dynamicParams=false makes this unreachable through the router, but
-  // generateStaticParams and getPost read the same directory twice, so this is
+  // generateStaticParams and getNote read the same directory twice, so this is
   // the guard that keeps the types honest.
-  if (!post) notFound();
+  if (!note) notFound();
 
-  const { default: Body } = await import(`@/content/research/${slug}.mdx`);
+  const { default: Body } = await import(`@/content/notes/${slug}.mdx`);
 
   return (
     <article>
-      {/* Structured data for the post itself. The Person block on the home
+      {/* Structured data for the note itself. The Person block on the home
           page describes the author; this describes the piece, and links the
-          two by name. */}
+          two by name. articleSection is schema.org's word for a category. */}
       <script
         type="application/ld+json"
         // JSON-LD must be the raw text content of the tag; it is escaped on
@@ -80,33 +84,40 @@ export default async function ResearchPost({
           __html: JSON.stringify({
             "@context": "https://schema.org",
             "@type": "BlogPosting",
-            headline: post.title,
-            description: post.summary,
-            datePublished: post.date,
+            headline: note.title,
+            description: note.summary,
+            datePublished: note.date,
+            articleSection: categoryLabel(note.category),
             author: { "@type": "Person", name: site.name, url: site.url },
-            url: `${site.url}/research/${slug}`,
-            keywords: post.tags.length ? post.tags.join(", ") : undefined,
+            url: `${site.url}${noteHref(slug)}`,
+            keywords: note.tags.length ? note.tags.join(", ") : undefined,
           }).replace(/</g, "\\u003c"),
         }}
       />
 
       <Link
-        href="/research"
+        href={NOTES_PATH}
         className="font-mono text-[11px] text-muted-light uppercase tracking-[0.06em] no-underline transition-colors hover:text-accent"
       >
-        &larr; Research &amp; Development
+        &larr; Notes
       </Link>
 
+      {/* The category leads, as on the card the reader just clicked: it is
+          the first thing that tells them what kind of read this is. */}
+      <p className="mt-6 mb-0 font-semibold text-[12px] text-accent uppercase tracking-[0.12em]">
+        {categoryLabel(note.category)}
+      </p>
+
       {/* The only h1 on the page, which is why mdx-components maps no h1. */}
-      <h1 className="mt-5 mb-3 max-w-[680px] font-serif font-semibold text-[34px] text-text leading-[1.15]">
-        {post.title}
+      <h1 className="mt-2 mb-3 max-w-[680px] font-serif font-semibold text-[34px] text-text leading-[1.15]">
+        {note.title}
       </h1>
 
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-light uppercase tracking-[0.06em]">
-        <time dateTime={post.date}>{formatDay(post.date)}</time>
+        <time dateTime={note.date}>{formatDay(note.date)}</time>
         <span aria-hidden="true">·</span>
-        <span>{post.readingMinutes} min read</span>
-        {post.draft ? (
+        <span>{note.readingMinutes} min read</span>
+        {note.draft ? (
           <>
             <span aria-hidden="true">·</span>
             {/* Visible on localhost and previews only, by definition: a draft
@@ -124,9 +135,9 @@ export default async function ResearchPost({
         <Body />
       </div>
 
-      {post.tags.length ? (
+      {note.tags.length ? (
         <ul className="m-0 mt-10 flex max-w-[640px] list-none flex-wrap gap-2 p-0">
-          {post.tags.map((tag) => (
+          {note.tags.map((tag) => (
             <li
               key={tag}
               className="rounded-[3px] border border-border px-2.5 py-1 font-mono text-[11px] text-muted-light uppercase tracking-[0.06em]"

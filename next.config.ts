@@ -134,6 +134,27 @@ const nextConfig: NextConfig = {
   // framework and therefore which CVE list to try. Nothing needs it.
   poweredByHeader: false,
 
+  async redirects() {
+    return [
+      {
+        /**
+         * The section was /research until 2026-10, and is /notes now (see the
+         * note at the top of src/lib/notes.ts). One rule covers all of it:
+         * `:path*` matches zero or more segments, so /research itself, every
+         * note under it, and /research/rss.xml all land on their /notes twin.
+         *
+         * permanent: true sends a 308, which tells search engines to move the
+         * old URL's standing to the new one and browsers to cache the hop, so
+         * shared links and feed subscriptions carry over. 308 rather than the
+         * older 301 because it preserves the request method.
+         */
+        source: "/research/:path*",
+        destination: "/notes/:path*",
+        permanent: true,
+      },
+    ];
+  },
+
   async headers() {
     return [
       {
@@ -154,7 +175,7 @@ const nextConfig: NextConfig = {
 };
 
 /**
- * MDX, for the writeups under /research.
+ * MDX, for the notes under /notes.
  *
  * Every plugin is named by STRING rather than imported. That is not a style
  * choice: this project builds with Turbopack (the banner on `next build` says
@@ -169,7 +190,7 @@ const nextConfig: NextConfig = {
  * at all. Everything below is strings, booleans and objects for that reason.
  *
  * pageExtensions is deliberately NOT set. It exists to let .mdx files act as
- * routes, and these are not routes: they live in src/content/research and are
+ * routes, and these are not routes: they live in src/content/notes and are
  * imported by a [slug] page. Leaving it alone also means a stray .mdx dropped
  * into src/app cannot quietly become a public page.
  */

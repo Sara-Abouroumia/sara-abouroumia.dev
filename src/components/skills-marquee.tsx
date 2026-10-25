@@ -175,8 +175,8 @@ const GLYPHS: Record<NonNullable<Skill["glyph"]>, string> = {
  * has to be baked into a literal hex at build time, and a CSS var cannot be
  * read from Node. Keep in step with --accent if that ever changes.
  */
-const ACCENT_LIGHT = "#2c4a6e";
-const ACCENT_DARK = "#7fa8d1";
+const ACCENT_LIGHT = "#ad4f2d";
+const ACCENT_DARK = "#d97757";
 
 function accentColors() {
   return {

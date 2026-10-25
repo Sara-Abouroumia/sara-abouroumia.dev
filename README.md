@@ -6,7 +6,7 @@ Source for [sara-abouroumia.dev](https://sara-abouroumia.dev), the personal site
 
 - **Next.js 16** (App Router, TypeScript strict), every route statically prerendered
 - **Tailwind CSS 4**, with the colour tokens and both themes in `src/app/globals.css`
-- **MDX** for research posts, highlighted at build time by Shiki
+- **MDX** for notes, highlighted at build time by Shiki
 - **Resend** for the contact form, sent from a Server Action
 - **Biome** for linting and formatting
 - Deployed on **Vercel**
@@ -37,14 +37,14 @@ The contact form needs `RESEND_API_KEY` and `CONTACT_FROM_EMAIL` (see `.env.exam
 | Experience | `src/content/experience.ts` |
 | Education and coursework | `src/content/education.ts` |
 | Skills | `src/content/skills.ts` |
-| Research posts | `src/content/research/*.mdx` |
+| Notes | `src/content/notes/*.mdx` |
 | Resume PDF | `public/Sara_Abouroumia_Resume.pdf` |
 
 Content is typed TypeScript, not a CMS, so a typo in a field name is a build error rather than a blank space on the live site.
 
-### Writing a research post
+### Writing a note
 
-Copy `src/content/research/writing-a-post.mdx`, rename it (the filename becomes the URL), and edit the frontmatter. Posts with `draft: true` render locally and on preview deployments but never in production, the RSS feed, or the sitemap. The template itself shows every element the post layout supports.
+Copy `src/content/notes/writing-a-note.mdx`, rename it (the filename becomes the URL under `/notes/`), and edit the frontmatter. Every note needs a `category`: `lecture`, `study`, `paper` or `finding`, which sets its label on the card and the filter it appears under; `tags` are free-form topics. Notes with `draft: true` render locally and on preview deployments but never in production, the RSS feed, or the sitemap. The template itself shows every element a note can use.
 
 ## Design reference
 

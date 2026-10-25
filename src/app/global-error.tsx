@@ -34,8 +34,8 @@ const STYLES = `
     --soft: #33322d;
     --muted: #6b675c;
     --border: #e2ded3;
-    --accent: #2c4a6e;
-    --accent-hover: #1a3350;
+    --accent: #ad4f2d;
+    --accent-hover: #8f3f22;
     --accent-fg: #ffffff;
   }
   @media (prefers-color-scheme: dark) {
@@ -46,8 +46,8 @@ const STYLES = `
       --soft: #d8d5cb;
       --muted: #9b9789;
       --border: #2b2e33;
-      --accent: #7da7d9;
-      --accent-hover: #9cc0e6;
+      --accent: #d97757;
+      --accent-hover: #e6916f;
       --accent-fg: #0f1115;
     }
   }
@@ -58,8 +58,8 @@ const STYLES = `
     --soft: #d8d5cb;
     --muted: #9b9789;
     --border: #2b2e33;
-    --accent: #7da7d9;
-    --accent-hover: #9cc0e6;
+    --accent: #d97757;
+    --accent-hover: #e6916f;
     --accent-fg: #0f1115;
   }
   body {

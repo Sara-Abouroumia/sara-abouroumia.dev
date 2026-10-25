@@ -161,8 +161,8 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
           <legend> takes no part in its fieldset's flex or grid layout.
 
           The chosen chip keeps a light fill and puts the signal in its edge:
-          baby blue in light, where the navy accent carried no more weight
-          than the text beside it, and the accent in dark. See
+          the bright orange in light, where the deeper accent carried no more
+          weight than the text beside it, and the accent in dark. See
           --selected-border. */}
       {/* Switched off by SHOW_TOPICS in topics.ts. When off, no radio is in
           the form, so no `topic` is submitted and the action omits it. */}
@@ -409,7 +409,10 @@ async function burst(from: { x: number; y: number }) {
   const shared = {
     origin: from,
     disableForReducedMotion: true,
-    colors: ["#2c4a6e", "#7da7d9", "#16a34a", "#4ade80", "#f0c42b"],
+    // The two accents (light and dark --accent), the two success greens,
+    // and the label yellow. Literal hex: canvas-confetti draws on a canvas,
+    // which cannot read CSS variables.
+    colors: ["#ad4f2d", "#d97757", "#16a34a", "#4ade80", "#f0c42b"],
   };
 
   /**

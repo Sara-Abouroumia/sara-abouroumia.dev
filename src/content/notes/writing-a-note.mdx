@@ -1,6 +1,7 @@
 ---
-title: Writing a post
-summary: Every element the research pipeline renders, in one place. Marked as a draft, so it never appears on the live site.
+title: Writing a note
+summary: Every element a note can use, in one place. Marked as a draft, so it never appears on the live site.
+category: study
 date: 2026-09-23
 draft: true
 tags:
@@ -11,22 +12,36 @@ This file is a template and a reference. It is marked `draft: true`, which
 means it renders on localhost and on preview deployments but never on the
 production site. Copy it, rename it, delete everything below, and write.
 
-The filename becomes the URL. This one is `writing-a-post.mdx`, so it lives at
-`/research/writing-a-post`.
+The filename becomes the URL. This one is `writing-a-note.mdx`, so it lives at
+`/notes/writing-a-note`.
 
 ## Frontmatter
 
 The block at the top of the file is required and validated at build time. A
 missing or misspelled key fails the build with the filename in the message,
-rather than shipping a post with a blank summary.
+rather than shipping a note with a blank summary.
 
 | Key | Required | Notes |
 | --- | --- | --- |
 | `title` | yes | Used as the h1, the page title, and the feed entry title |
 | `summary` | yes | The card, the meta description, and the RSS description |
+| `category` | yes | One of `lecture`, `study`, `paper`, `finding`. Drives the card label and the filter |
 | `date` | yes | `YYYY-MM-DD`. Sorts the index, newest first |
 | `draft` | no | Defaults to `false`. `true` hides it in production only |
-| `tags` | no | Defaults to none |
+| `tags` | no | Topics, free-form (`intrusion detection`, `transformers`). Defaults to none |
+
+The four categories:
+
+- `lecture`: notes taken from a course or a talk
+- `study`: working through a topic on your own
+- `paper`: a summary or critique of a paper or article you read
+- `finding`: something you worked out, measured, or got wrong and fixed
+
+**Quote any title or summary that contains a colon.** YAML reads `: ` as the
+start of a new key, so `title: Networks: TCP` fails the build, while
+`title: "Networks: TCP"` works. The same goes for an empty tag list: write
+`tags: []`, not a bare `tags:`, which YAML reads as "no value" rather than
+"no tags".
 
 ## Headings
 
