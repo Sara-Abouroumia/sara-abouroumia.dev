@@ -53,9 +53,17 @@ export function CurrentAffiliations({
   return (
     <ul className={`flex flex-col gap-2.5 ${className}`}>
       {items.map((item) => (
-        <li key={item.key} className="flex items-center gap-2.5">
+        // Below md, the logo alone, as a badge beside the name: the full
+        // name takes a whole row of a phone's header to state one fact. The
+        // name is hidden visually only (max-md:sr-only), so a screen reader
+        // still hears it, and title gives sighted readers a tooltip.
+        <li
+          key={item.key}
+          title={item.org}
+          className="flex items-center gap-2.5"
+        >
           <OrgLogo src={item.logo} name={item.org} />
-          <span className="font-semibold text-sm leading-snug">
+          <span className="font-semibold text-sm leading-snug max-md:sr-only">
             {item.org}
             <span className="sr-only">, {item.detail}</span>
           </span>

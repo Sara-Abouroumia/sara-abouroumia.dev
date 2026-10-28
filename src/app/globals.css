@@ -51,6 +51,12 @@
   /* The oversized 404 numeral: a shade off the page, enough to read as a
      watermark and not enough to compete with the words in front of it. */
   --ghost: #efece5;
+  /* The primary call to action (Send message): black in BOTH themes, by
+     design, rather than the accent. White text on it measures 18.7:1. */
+  --cta: #111214;
+  --cta-hover: #2b2d31;
+  --cta-fg: #ffffff;
+  --cta-border: transparent;
   /* Every other row of the 404 answer list, a step off --panel so the rows
      read as a table without the stripe shouting. 1.11:1 against the panel it
      sits in, with body text still at 13.8:1 on top. */
@@ -147,6 +153,15 @@
   --form-label: #c4c5ca;
   --form-hint: #8e9097;
   --ghost: #212227;
+  /* Still black on the dark theme. Black on this near-black page measures
+     1.03:1, invisible as a shape, so the edge is drawn: #62666f is the
+     lightest grey that clears the 3:1 WCAG 1.4.11 asks of a control's
+     boundary (3.15:1 on the page, 3.26:1 on the button). Hover lifts the
+     fill instead of darkening it, since there is nowhere darker to go. */
+  --cta: #111214;
+  --cta-hover: #24262b;
+  --cta-fg: #ffffff;
+  --cta-border: #62666f;
   --row-alt: #17191e; /* 1.09:1 against --panel, text at 15.3:1 */
   --success-mark: #4ade80; /* 10.4:1 on this ground */
   --success-bg: #182018;
@@ -215,6 +230,10 @@
   --color-form-label: var(--form-label);
   --color-form-hint: var(--form-hint);
   --color-ghost: var(--ghost);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-cta-fg: var(--cta-fg);
+  --color-cta-border: var(--cta-border);
   --color-row-alt: var(--row-alt);
   --color-success-mark: var(--success-mark);
   --color-selected-border: var(--selected-border);
@@ -259,18 +278,38 @@ body {
   }
 }
 
-/* Height of the sticky chrome a jumped-to heading has to clear. Measured, not
-   guessed, the header renders 77px narrow and 73px wide, and the chip bar
-   adds 49px below xl, where it replaces the gutter rail. Declared once because
-   three things depend on it: where <SectionBar /> pins, how far a section
-   offsets its own anchor, and the reading line in useActiveSection. */
+/* Height of the sticky chrome a jumped-to heading has to clear. Declared once
+   because three things depend on it: where <SectionBar /> pins (--header-h),
+   how far a section offsets its own anchor, and the reading line in
+   useActiveSection (both --anchor-offset).
+
+   Measured in the browser, per width, and the breakpoints follow the HEADER,
+   not the rail. The header turns desktop (and 4px shorter) at 941px, the menu
+   breakpoint; the rail replaces the section bar only at 1280px. These used to
+   switch together at 1280, so from 941 to 1279 the bar pinned 4px below a
+   73px header with the page showing through the gap.
+
+     < 941      header 77, bar 45   anchor 77 + 45 = 122
+     941-1279   header 73, bar 45   anchor 73 + 45 = 118
+     >= 1280    header 73, no bar   anchor 97 (the rail's own spacing)
+
+   --anchor-offset must equal header + bar EXACTLY: a jump parks the section's
+   top there, and since Experience starts right under the bar, any surplus
+   leaves the bar sitting that many pixels below the header, unstuck. (It was
+   134, from when the bar was 49px tall.) If the bar's height changes, these
+   change with it. */
 :root {
   --header-h: 77px;
-  --anchor-offset: 134px;
+  --anchor-offset: 122px;
+}
+@media (min-width: 941px) {
+  :root {
+    --header-h: 73px;
+    --anchor-offset: 118px;
+  }
 }
 @media (min-width: 1280px) {
   :root {
-    --header-h: 73px;
     --anchor-offset: 97px;
   }
 }

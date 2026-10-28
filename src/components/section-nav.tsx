@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { ArrowUpIcon, sectionId } from "@/components/section";
 import { useActiveSection } from "@/components/use-active-section";
 
@@ -17,7 +18,17 @@ import { useActiveSection } from "@/components/use-active-section";
  *
  * Below xl there is no gutter to sit in, <SectionBar /> covers that case.
  */
-export function SectionNav({ titles }: { titles: readonly string[] }) {
+export function SectionNav({
+  titles,
+  aside,
+}: {
+  titles: readonly string[];
+  /**
+   * Anything that should travel with the rail, under the links (the visitor
+   * globe). Rendered as given; the rail only gives it its place.
+   */
+  aside?: ReactNode;
+}) {
   const active = useActiveSection(titles);
 
   return (
@@ -77,6 +88,8 @@ export function SectionNav({ titles }: { titles: readonly string[] }) {
             Top
           </a>
         ) : null}
+
+        {aside ? <div className="mt-8 pl-3">{aside}</div> : null}
       </div>
     </nav>
   );

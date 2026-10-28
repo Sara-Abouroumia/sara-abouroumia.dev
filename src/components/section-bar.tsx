@@ -56,23 +56,55 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
     return () => observer.disconnect();
   }, []);
 
-  // Keep the current label in view. With more sections than fit (the point at
-  // which this row starts scrolling) the active one would otherwise sit off
-  // the edge exactly when it matters.
+  // Keep the current pill in view, but only when it is not, and only by as
+  // much as it takes. Centring it unconditionally (what this used to do)
+  // scrolled the first pill half off the edge even when everything fitted,
+  // and a word cut in half reads as a rendering bug, not as "this scrolls".
   useEffect(() => {
     const track = trackRef.current;
     if (!track || !active) return;
     const item = track.querySelector<HTMLElement>(`[data-chip="${active}"]`);
     if (!item) return;
-
-    const target = item.offsetLeft - (track.clientWidth - item.clientWidth) / 2;
+    const pad = 16;
+    const left = item.offsetLeft - pad;
+    const right = item.offsetLeft + item.offsetWidth + pad - track.clientWidth;
+    let to: number | null = null;
+    if (left < track.scrollLeft) to = left;
+    else if (right > track.scrollLeft) to = right;
+    if (to === null) return;
     track.scrollTo({
-      left: Math.max(0, target),
+      left: Math.max(0, to),
       behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
         ? "auto"
         : "smooth",
     });
   }, [active]);
+
+  // Whether there is more to scroll to on either side: drives the edge fades,
+  // the cue that the row moves. No overflow, no fade, so a row that fits
+  // never looks cut off.
+  const [more, setMore] = useState({ left: false, right: false });
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const update = () =>
+      setMore({
+        left: track.scrollLeft > 2,
+        right: track.scrollLeft + track.clientWidth < track.scrollWidth - 2,
+      });
+    update();
+    track.addEventListener("scroll", update, { passive: true });
+    const ro = new ResizeObserver(update);
+    ro.observe(track);
+    return () => {
+      track.removeEventListener("scroll", update);
+      ro.disconnect();
+    };
+  }, []);
+  const fade = [
+    more.left ? "transparent, #000 24px" : "#000",
+    more.right ? "#000 calc(100% - 24px), transparent" : "#000",
+  ].join(", ");
 
   return (
     <>
@@ -85,8 +117,10 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
         aria-labelledby="section-bar-label"
         // Full-bleed so the row can scroll edge to edge, with the page's own
         // padding restored inside.
-        className={`-mx-6 sticky top-[var(--header-h)] z-[5] flex items-stretch bg-bg xl:hidden ${
-          pinned ? "border-border border-b" : ""
+        // Pinned, it gains an edge and a soft shadow: the cue that it is a
+        // toolbar floating over the page, not a line of the page.
+        className={`-mx-6 sticky top-[var(--header-h)] z-[5] flex items-stretch border-border border-b bg-bg transition-shadow xl:hidden ${
+          pinned ? "shadow-[0_8px_16px_-14px_rgba(0,0,0,0.35)]" : ""
         }`}
       >
         {/* Outside the scrolling track, so it stays put once there are more
@@ -97,7 +131,7 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
             how two labels for one thing drift apart. */}
         <span
           id="section-bar-label"
-          className="flex shrink-0 items-center pr-4 pl-6 text-[11px] text-muted-light uppercase tracking-[0.08em]"
+          className="flex shrink-0 items-center pr-3 pl-6 text-[12px] text-muted-light"
         >
           Jump to
         </span>
@@ -109,26 +143,46 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
           // to scroll the moment a fourth section exists, which is why the
           // active label centres itself. gap-5 over gap-6 just means less of
           // it. The two fixed ends stay put so neither scrolls out of reach.
-          className="m-0 flex list-none gap-5 overflow-x-auto pr-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          className="m-0 flex min-w-0 flex-1 list-none overflow-x-auto pr-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          style={{
+            maskImage: `linear-gradient(to right, ${fade})`,
+            WebkitMaskImage: `linear-gradient(to right, ${fade})`,
+          }}
         >
           {titles.map((title) => {
             const id = sectionId(title);
             const current = active === id;
             return (
+              // The line under these is the page's own section break (the
+              // nav's border-bottom): one rule that both divides the intro
+              // from the sections and carries the "you are here" light.
               <li key={id}>
                 <a
                   href={`#${id}`}
                   data-chip={id}
                   aria-current={current ? "true" : undefined}
-                  // -mb-px so the marker sits over the bar's hairline rather
-                  // than beside it, matching how the rail overlays its own.
-                  className={`-mb-px block whitespace-nowrap border-b-2 py-3 text-[12px] no-underline uppercase tracking-[0.06em] transition-colors ${
+                  // Normal case: uppercase read as one more heading, where
+                  // these are controls. min-h-11 is the 44px touch target.
+                  className={`group relative flex min-h-11 items-center whitespace-nowrap px-2.5 text-[13px] no-underline transition-colors focus-visible:rounded-[3px] focus-visible:outline-2 focus-visible:outline-accent focus-visible:-outline-offset-2 ${
                     current
-                      ? "border-accent font-semibold text-text"
-                      : "border-transparent text-muted"
+                      ? "font-medium text-text"
+                      : "text-muted hover:text-text-soft"
                   }`}
                 >
                   {title}
+                  {/* This stop's stretch of the section-break rule, lit while
+                      its section is on screen. -bottom-px lays it over the
+                      nav's own bottom border, which IS that rule, so there is
+                      one line, not a track above a divider. Hover hints at an
+                      unlit one, so the stretches read as targets too. */}
+                  <span
+                    aria-hidden="true"
+                    className={`absolute inset-x-0 -bottom-px h-[2px] transition-[opacity,box-shadow] duration-300 ${
+                      current
+                        ? "bg-accent opacity-100 shadow-[0_0_8px_0_var(--accent)]"
+                        : "bg-muted-light opacity-0 group-hover:opacity-60"
+                    }`}
+                  />
                 </a>
               </li>
             );
@@ -153,7 +207,7 @@ export function SectionBar({ titles }: { titles: readonly string[] }) {
           <a
             href="#top"
             aria-label="Back to top"
-            className="flex shrink-0 items-center border-border border-l pr-6 pl-4 text-muted transition-colors hover:text-text"
+            className="flex shrink-0 items-center self-stretch border-border border-l pr-6 pl-3.5 text-muted transition-colors hover:text-text"
           >
             <ArrowUpIcon />
           </a>

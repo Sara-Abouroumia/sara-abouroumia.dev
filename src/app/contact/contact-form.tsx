@@ -309,7 +309,7 @@ function Form({ onSendAnother }: { onSendAnother: () => void }) {
         <button
           type="submit"
           disabled={isPending}
-          className={`inline-flex min-h-12 w-full items-center justify-center gap-2.5 ${RADIUS} bg-accent px-[26px] text-[15px] font-semibold text-accent-fg transition-colors hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-accent whitespace-nowrap focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70 sm:w-auto`}
+          className={`inline-flex min-h-12 w-full items-center justify-center gap-2.5 ${RADIUS} border border-cta-border bg-cta px-[26px] text-[15px] font-semibold text-cta-fg transition-colors hover:bg-cta-hover focus-visible:outline-2 focus-visible:outline-accent whitespace-nowrap focus-visible:outline-offset-2 disabled:cursor-wait disabled:opacity-70 sm:w-auto`}
         >
           {isPending ? <SpinnerIcon /> : null}
           <span>{isPending ? "Sending…" : "Send message"}</span>

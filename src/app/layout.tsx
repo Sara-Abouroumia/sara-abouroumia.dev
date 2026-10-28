@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { VisitBeacon } from "@/components/visit-beacon";
 import { site } from "@/content/site";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
 
@@ -86,6 +87,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               existing script-src 'self' and connect-src 'self' already cover
               it and the CSP needs no widening. */}
           <Analytics />
+          {/* Renders nothing. Counts this visit's country for the map on
+              About, once per browser session, from whichever page the visit
+              starts on. See components/visit-beacon.tsx. */}
+          <VisitBeacon />
         </ThemeProvider>
       </body>
     </html>

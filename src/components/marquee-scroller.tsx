@@ -117,17 +117,11 @@ export function MarqueeScroller({
       raf = requestAnimationFrame(tick);
     };
 
-    // Vertical wheel → horizontal scroll. A mouse wheel has no horizontal
-    // axis, so without this the strip could only be scrolled by trackpad.
-    // Genuinely horizontal input (trackpad, shift+wheel) is left to the
-    // browser. This does capture the page's vertical scroll while the pointer
-    // is over the strip; it is ~100px tall, so the trap is small.
-    const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) <= Math.abs(e.deltaX)) return;
-      e.preventDefault();
-      apply(el.scrollLeft + e.deltaY);
-      pauseBriefly();
-    };
+    // No vertical-wheel capture. Turning the wheel into sideways scrolling
+    // trapped the page: the loop has no end, so with the pointer over this
+    // full-width strip the page could not scroll past Skills at all. A mouse
+    // can still drag it (below), and horizontal input (trackpad, shift+wheel)
+    // scrolls it natively.
 
     // Native horizontal scroll (trackpad, touch) still needs to wrap, and
     // should pause the drift. But assigning scrollLeft above fires this same
@@ -143,8 +137,11 @@ export function MarqueeScroller({
       pauseBriefly();
     };
 
-    // Mouse drag. Touch is left to native scrolling (touch-action: pan-x),
-    // which handles swipes and momentum better than we could.
+    // Mouse drag. Touch is left to native scrolling, which handles swipes and
+    // momentum better than we could. touch-action allows BOTH axes: pan-x
+    // alone meant a thumb landing on the strip could not scroll the page up
+    // or down, a dead zone across the full width of a phone. With both, the
+    // browser reads the swipe's direction, as native carousels do.
     let startX = 0;
     let startLeft = 0;
 
@@ -208,7 +205,6 @@ export function MarqueeScroller({
     });
     io.observe(el);
 
-    el.addEventListener("wheel", onWheel, { passive: false });
     el.addEventListener("scroll", onScroll, { passive: true });
     el.addEventListener("pointerdown", onPointerDown);
     el.addEventListener("pointermove", onPointerMove);
@@ -222,7 +218,6 @@ export function MarqueeScroller({
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
-      el.removeEventListener("wheel", onWheel);
       el.removeEventListener("scroll", onScroll);
       el.removeEventListener("pointerdown", onPointerDown);
       el.removeEventListener("pointermove", onPointerMove);
@@ -240,7 +235,7 @@ export function MarqueeScroller({
       // drift works by assigning scrollLeft every frame, and a smooth scroll
       // container would animate each of those and stall the strip. globals.css
       // sets html { scroll-behavior: smooth } for the section rail.
-      className={`cursor-grab overflow-x-auto overscroll-x-contain [scroll-behavior:auto] [scrollbar-width:none] [touch-action:pan-x] data-dragging:cursor-grabbing data-dragging:select-none [&::-webkit-scrollbar]:hidden ${className}`}
+      className={`cursor-grab overflow-x-auto overscroll-x-contain [scroll-behavior:auto] [scrollbar-width:none] [touch-action:pan-x_pan-y] data-dragging:cursor-grabbing data-dragging:select-none [&::-webkit-scrollbar]:hidden ${className}`}
     >
       {children}
     </div>

@@ -15,17 +15,28 @@ import { SectionNav } from "@/components/section-nav";
 // import { ServiceFrontPage } from "@/components/service-front-page";
 import { SkillsMarquee } from "@/components/skills-marquee";
 import { ExperienceTimeline } from "@/components/timeline";
+import { WorldReadersGlobe } from "@/components/world-readers-globe";
 import { BIO_LINES, bio } from "@/content/about";
 import { education } from "@/content/education";
 import { companies } from "@/content/experience";
 // import { service, serviceIntro } from "@/content/experience";
 import { site } from "@/content/site";
 import { pageMetadata, SITE_DESCRIPTION } from "@/lib/metadata";
+import { getCountryVisits } from "@/lib/visits";
 
 export const metadata: Metadata = pageMetadata({
   description: SITE_DESCRIPTION,
   path: "/",
 });
+
+/**
+ * Rebuild this page in the background at most once a day, for the visitor
+ * map's counts. Between rebuilds it is served as static HTML, so no visitor
+ * ever waits on the database (see getCountryVisits). A literal, not 60 * 60
+ * * 24: Next reads this value without running the file, so it must be
+ * statically analyzable.
+ */
+export const revalidate = 86400;
 
 const QUICK_LINK =
   "inline-flex items-center gap-2 whitespace-nowrap rounded-[3px] border px-3.5 py-1.5 text-sm no-underline transition-colors";
@@ -63,7 +74,9 @@ const SECTIONS = [
   // "Leadership & Service",
 ] as const;
 
-export default function Home() {
+export default async function Home() {
+  const visits = await getCountryVisits();
+
   return (
     <div className="relative">
       {/* Structured data, not UI: it renders a <script> and nothing visible.
@@ -71,12 +84,18 @@ export default function Home() {
           Sara, and the home page is the one page that is about her. */}
       <PersonJsonLd />
 
-      <SectionNav titles={SECTIONS} />
-      {/* Header. The visitor map slots in behind this in Phase 3. */}
+      <SectionNav
+        titles={SECTIONS}
+        aside={
+          visits.length > 0 ? (
+            <WorldReadersGlobe visits={visits} className="w-[132px]" />
+          ) : null
+        }
+      />
       {/* The name block takes the slack (flex-1), so the affiliations settle
           against the far edge without an ms-auto. Below md they claim a full
           row and wrap under the header instead of squeezing the name. */}
-      <div className="mb-7 flex flex-wrap items-center gap-5">
+      <div className="relative mb-7 flex flex-wrap items-center gap-5">
         <Avatar />
         <div className="min-w-0 flex-1">
           {/* The greeting, kept out of the bio on purpose: the bio's first
@@ -90,7 +109,10 @@ export default function Home() {
             </span>{" "} */}
             Welcome, I&apos;m
           </p>
-          <h1 className="font-serif text-[34px] font-semibold leading-[1.15]">
+          {/* 27px under 360px wide: there the column beside the photo is
+              164px, and "Abouroumia", one unbreakable word, is 197px at 34px,
+              so it ran off the screen. At 27px it is ~157px and fits. */}
+          <h1 className="font-serif text-[34px] font-semibold leading-[1.15] max-[359px]:text-[27px]">
             {site.name}
           </h1>
           {/* Two facts at two weights, in order of importance: the role is
@@ -113,7 +135,12 @@ export default function Home() {
             </span>
           </p>
         </div>
-        <CurrentAffiliations className="w-full md:w-auto md:max-w-[230px]" />
+        {/* Below md the affiliation is a logo badge in the top-right corner,
+            level with the greeting. Absolutely positioned, so it sits in the
+            empty space beside "Welcome, I'm" and takes no width from the name
+            and headline (as a flex item it squeezed them into extra lines).
+            md and up: logo and name in the row, as before. */}
+        <CurrentAffiliations className="max-md:absolute max-md:top-0 max-md:right-0 md:max-w-[230px]" />
       </div>
 
       <div className="mb-7 flex flex-wrap gap-2.5">
@@ -154,6 +181,16 @@ export default function Home() {
 
       <NowPanel />
 
+      {/* Below xl the right rail does not exist, so the globe closes the
+          introduction instead: after the Now panel, before the page
+          navigator, centred. Here it reads as the end of "who and what",
+          without crowding the header. */}
+      {visits.length > 0 ? (
+        <div className="mt-8 flex justify-center xl:hidden">
+          <WorldReadersGlobe visits={visits} className="w-[140px]" />
+        </div>
+      ) : null}
+
       {/* Sits here on purpose: below the fold while the intro is read, pinned
           from the first section onward. See <SectionBar />. */}
       <SectionBar titles={SECTIONS} />
@@ -162,7 +199,14 @@ export default function Home() {
           every bullet is in the DOM and only clipped, so the full text is in
           the page source for search and for print. The cap is a scanning
           affordance, not a second page. */}
-      <Section title="Experience" className="mt-7">
+      {/* Below xl the bar above draws this section's break (its bottom
+          border is the rule), so the section's own top rule and margin step
+          aside there; a second rule 28px under the first read as a double
+          line. At xl the bar is hidden and the rule is the section's again. */}
+      <Section
+        title="Experience"
+        className="mt-7 max-xl:mt-0 max-xl:border-t-0"
+      >
         <ExperienceTimeline companies={companies} maxLines={3} />
       </Section>
 
