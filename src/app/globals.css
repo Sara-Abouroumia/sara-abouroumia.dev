@@ -388,6 +388,26 @@ body {
   }
 }
 
+/* The glow on the References sparkles: a drop-shadow, not a box-shadow,
+   so it follows the stars' own outline rather than their square box. Two
+   layers, a tight bright one and a wide faint one, the way a point of
+   light has a core and a halo. Stronger in dark mode, where a glow is
+   what actually reads (the reasoning .toggle-glow follows below). */
+@layer components {
+  .sparkle-glow {
+    filter: drop-shadow(
+        0 0 1.5px color-mix(in srgb, var(--accent) 55%, transparent)
+      )
+      drop-shadow(0 0 5px color-mix(in srgb, var(--accent) 35%, transparent));
+  }
+  .dark .sparkle-glow {
+    filter: drop-shadow(
+        0 0 2px color-mix(in srgb, var(--accent) 75%, transparent)
+      )
+      drop-shadow(0 0 7px color-mix(in srgb, var(--accent) 55%, transparent));
+  }
+}
+
 /* The hover glow on <ExpandToggle />. A text-shadow on the label and a
    drop-shadow on the chevron, both tinted from --accent, so the glow is the
    button's own colour bleeding outward rather than a separate highlight. It
@@ -421,6 +441,40 @@ body {
   }
   .toggle-glow:hover svg {
     filter: drop-shadow(0 0 4px var(--toggle-glow));
+  }
+}
+
+/* A mark that shows when the link beside it is hovered or focused
+   (.profile-link wraps .profile-mark: the LinkedIn logo next to a name).
+
+   Only where it can work and there is room for it: a device that can hover
+   (a touch screen has no hover, so the mark would never appear) and a
+   viewport from md up (below that the card is stacked and the mark is
+   always shown, as the cue that the name is a link). The mark keeps its
+   space while hidden, so revealing it moves nothing. It slides in from the
+   left 4px as it fades up. Keyboard focus reveals it too, and reduced
+   motion makes it a plain fade. */
+@layer components {
+  @media (hover: hover) and (min-width: 48rem) {
+    .profile-mark {
+      opacity: 0;
+      transform: translateX(-4px);
+      transition:
+        opacity 0.2s ease-out,
+        transform 0.2s ease-out;
+    }
+    .profile-link:hover .profile-mark,
+    .profile-link:focus-visible .profile-mark {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @media (hover: hover) and (min-width: 48rem) and (
+      prefers-reduced-motion: reduce
+    ) {
+    .profile-mark {
+      transform: none;
+    }
   }
 }
 

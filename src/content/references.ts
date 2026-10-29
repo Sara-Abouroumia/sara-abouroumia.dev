@@ -8,10 +8,15 @@
  *
  * Verbatim, always. A quotation is the author's words, so nothing is
  * corrected, shortened or reworded, including small slips; the `quote` is
- * one exact sentence lifted from `body`, never a paraphrase of it.
+ * one exact sentence lifted from `body`, never a paraphrase of it. The page
+ * leads with the quote and opens the whole `body` as the full letter on
+ * request; the build also checks the quote against it.
  *
- * No photos. LinkedIn's image URLs expire, the CSP allows images from this
- * origin only, and a person's photo is theirs to publish. Initials stand in.
+ * Photos only with the person's consent, and self-hosted in
+ * public/references/ at 400px (they are shown at 56px, so even 2x
+ * screens get a sharp copy): LinkedIn's image URLs expire, and the CSP
+ * allows images from this origin only. Without one there is no stand-in:
+ * the card shows just the name.
  *
  * Order is the order shown: the reference closest to the role Sara presents
  * (engineering) leads.
@@ -29,12 +34,27 @@ export type Reference = {
   title: string;
   /** How they worked with Sara, in LinkedIn's words. */
   relationship: string;
+  /**
+   * Where they worked together, shown on the back of the card. Needed
+   * because `title` is their CURRENT role, which is usually not where they
+   * knew her. Spelled as `org` is in content/experience.ts, so the two
+   * sections name a place the same way.
+   */
+  at: string;
   /** When it was written, YYYY-MM-DD. */
   date: string;
   /** Their LinkedIn profile, so the attribution can be checked. */
   profile: string;
+  /** Their photo in public/, only once they have agreed to it. */
+  photo?: string;
   /** One sentence from `body`, word for word, set as the pull quote. */
   quote: string;
+  /**
+   * What the recommendation speaks to, two words at most, so a reader sees
+   * each reference's angle before reading it. Ours, not the author's: a
+   * summary of their letter, so keep it to what the letter plainly says.
+   */
+  focus: readonly string[];
   body: readonly ReferenceBlock[];
 };
 
@@ -43,22 +63,31 @@ export const references: readonly Reference[] = [
     name: "Seyyid Yiğit",
     title: "Full Stack Engineer at Ravlexo",
     relationship: "Managed Sara directly",
+    at: "Mazaka Yazilim",
     date: "2022-12-25",
     profile: "https://www.linkedin.com/in/seyyidyigit/",
+    // Shared with his permission (October 2026).
+    photo: "/references/seyyid-yigit.jpg",
     quote:
       "Throughout the project, Sara became an influential member of the team and despite going to school, she consistently completed all her tasks on time and even ahead of schedule.",
+    focus: ["Engineering", "Delivery"],
     body: [
       "We worked with Sara for a while, both in the office and remotely, on the development of the frontend (React) side of the e-commerce project. Throughout the project, Sara became an influential member of the team and despite going to school, she consistently completed all her tasks on time and even ahead of schedule. I was impressed by her ability to quickly grasp the subjects or platforms that she needed to learn, which helped her to work effectively on the project. Additionally, it was a pleasure to work with Sara because of her friendly personality and pleasant demeanor when chatting.",
     ],
   },
   {
-    name: "Nimet BULUT",
+    // LinkedIn has "Nimet BULUT"; set in ordinary capitals here so it
+    // matches the other names. The quote and letter stay verbatim; the name
+    // is display.
+    name: "Nimet Bulut",
     title: "International Relations Office Director at Abdullah Gül University",
     relationship: "Managed Sara directly",
+    at: "Abdullah Gül University International Office",
     date: "2023-11-10",
     profile: "https://www.linkedin.com/in/nimet-bulut-999b71115/",
     quote:
       "Sara proved to be very hardworking, reliable and dynamic, continuously showcasing a positive mindset and attitude.",
+    focus: ["Leadership", "Coordination"],
     body: [
       "With this letter, I would like to recommend our student Sara Abouroumia for her work during the 2023 Abdullah Gül University International Student Welcome Program (September 1-30, 2023) and its preparation/follow-up periods.",
       "Sara applied to integrate the official Welcome Program Volunteer team for that period. Her duties included the following:",
