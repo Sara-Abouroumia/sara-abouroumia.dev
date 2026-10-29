@@ -38,9 +38,8 @@ type Palette = {
   ocean: string;
   land: string;
   rim: string;
-  /** Light colour as r,g,b: glow centre, glow edge, core. */
+  /** Heat colour as r,g,b: centre, edge. */
   glow: [string, string];
-  core: string;
   blend: GlobalCompositeOperation;
 };
 
@@ -53,7 +52,6 @@ const NIGHT: Palette = {
   land: "#2a2d33",
   rim: "rgba(255, 255, 255, 0.1)",
   glow: ["255, 196, 82", "255, 165, 55"],
-  core: "255, 244, 214",
   blend: "lighter",
 };
 
@@ -62,12 +60,13 @@ const DAY: Palette = {
   land: "#d9d0bd",
   rim: "rgba(150, 135, 105, 0.35)",
   glow: ["235, 150, 25", "225, 135, 20"],
-  core: "196, 112, 10",
   blend: "source-over",
 };
 
 /** Degrees per arrow-key press. */
 const KEY_STEP = 12;
+/** Opacity of the faintest country (one visit), as a share of the busiest. */
+const HEAT_FLOOR = 0.3;
 
 /**
  * Where the site is read from, as a globe you can turn.
@@ -192,37 +191,41 @@ export function VisitorGlobe({
         // the view centre is behind the globe.
         ctx.globalCompositeOperation = p.blend;
         const center: [number, number] = [-rot.lambda, -rot.phi];
-        const r0 = Math.max(1, size / 130);
-        const r1 = Math.max(2.6, size / 40);
         for (const d of dots) {
           const arc = geoDistance(d.at, center);
           if (arc > Math.PI / 2) continue;
           const xy = projection(d.at);
           if (!xy) continue;
-          // Area tracks the count (sqrt). Lights near the rim dim, the way
-          // a city near the horizon does, which sells the curve.
-          const r = r0 + (r1 - r0) * Math.sqrt(d.weight);
+          // Heat, not dots: one soft patch per country with no hard edge
+          // and no solid centre. Weight (already log-scaled) drives mostly
+          // opacity and a little spread, so a busy country reads as warmer,
+          // not as a bigger blob covering its neighbours. HEAT_FLOOR keeps a
+          // single visit faintly visible next to a busy one. Patches that
+          // overlap (Europe) add up, which is what makes it a heat map.
+          // Near the rim they dim, the way a city near the horizon does.
           const fade = Math.min(1, (Math.PI / 2 - arc) / 0.35);
-          // Glow: a soft radial falloff to nothing.
-          const glow = ctx.createRadialGradient(
+          const a = (HEAT_FLOOR + (1 - HEAT_FLOOR) * d.weight) * fade;
+          const r = size * (0.06 + 0.04 * d.weight);
+          const heat = ctx.createRadialGradient(
             xy[0],
             xy[1],
             0,
             xy[0],
             xy[1],
-            r * 4,
+            r,
           );
-          glow.addColorStop(0, `rgba(${p.glow[0]}, ${0.5 * fade})`);
-          glow.addColorStop(0.35, `rgba(${p.glow[1]}, ${0.2 * fade})`);
-          glow.addColorStop(1, `rgba(${p.glow[1]}, 0)`);
-          ctx.fillStyle = glow;
+          // Glow colour all the way in, never a near-white core: a white
+          // centre reads as a lamp, and additive blending pushes
+          // overlapping patches further toward white. Kept well under full
+          // opacity so even the busiest country is a warm tint on the land,
+          // not a glare.
+          heat.addColorStop(0, `rgba(${p.glow[0]}, ${0.5 * a})`);
+          heat.addColorStop(0.35, `rgba(${p.glow[0]}, ${0.3 * a})`);
+          heat.addColorStop(0.7, `rgba(${p.glow[1]}, ${0.1 * a})`);
+          heat.addColorStop(1, `rgba(${p.glow[1]}, 0)`);
+          ctx.fillStyle = heat;
           ctx.beginPath();
-          ctx.arc(xy[0], xy[1], r * 4, 0, Math.PI * 2);
-          ctx.fill();
-          // Core: the bright centre of a lit city.
-          ctx.fillStyle = `rgba(${p.core}, ${0.95 * fade})`;
-          ctx.beginPath();
-          ctx.arc(xy[0], xy[1], r * 0.7, 0, Math.PI * 2);
+          ctx.arc(xy[0], xy[1], r, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.globalCompositeOperation = "source-over";

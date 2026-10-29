@@ -19,9 +19,15 @@ export function WorldReadersGlobe({
 }) {
   const ranked = [...visits].sort((a, b) => b.visits - a.visits);
   const max = ranked[0]?.visits ?? 1;
+  // Log scale, not linear. Linear divides by the busiest country, so the day
+  // one country has 100,000 visits a country with 10 gets 0.0001 and
+  // vanishes. On a log scale it keeps ~0.2: every order of magnitude is one
+  // equal step of brightness (10, 100, 1,000...), which is how a reader
+  // compares "a few" with "a lot" anyway. log1p so a single visit is not 0.
   const dots: GlobeDot[] = ranked.flatMap((v) => {
     const at = countryLonLat(v.code);
-    return at ? [{ code: v.code, at, weight: v.visits / max }] : [];
+    const weight = Math.log1p(v.visits) / Math.log1p(max);
+    return at ? [{ code: v.code, at, weight }] : [];
   });
 
   const names = new Intl.DisplayNames(["en"], { type: "region" });

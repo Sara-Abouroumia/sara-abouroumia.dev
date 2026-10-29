@@ -11,8 +11,9 @@ import { char, date, integer, pgTable, primaryKey } from "drizzle-orm/pg-core";
  * written to the visitor's device for it (see the beacon).
  *
  * One row per (country, day) rather than one per visit: the table stays tiny
- * however busy the site gets, and a day's counts can later be summed into a
- * "last 30 days" view without changing anything here.
+ * however busy the site gets (at most ~250 rows a day, ~1M after ten busy
+ * years, which Postgres sums without noticing), and the map reads a rolling
+ * window of days from it (see lib/visits.ts).
  */
 export const visitCounts = pgTable(
   "visit_counts",
@@ -24,4 +25,32 @@ export const visitCounts = pgTable(
     count: integer("count").notNull().default(0),
   },
   (t) => [primaryKey({ columns: [t.countryCode, t.day] })],
+);
+
+/**
+ * Who has already been counted today, so a network counts once a day however
+ * many tabs, incognito windows or scripted requests it sends.
+ *
+ * `visitor` is not an IP. It is HMAC-SHA256(secret, day + network), cut to
+ * 128 bits, where the network is the IPv4 address or the IPv6 /64 (see
+ * networkOf in lib/visits.ts). Three properties follow, and they are the
+ * point of the design:
+ *   - Keyed: without VISIT_HASH_SECRET, a leaked copy of this table cannot be
+ *     brute-forced back into IPs, even though IPv4 has only 4 billion values.
+ *   - Daily: the day is inside the hash, so the same network yields an
+ *     unrelated value tomorrow. No row can link two days of one visitor.
+ *   - Short-lived: every write sweeps rows older than today, so the table
+ *     only ever holds today (plus nothing at all on a quiet day).
+ *
+ * Primary key (day, visitor), day first: the daily sweep is then a range
+ * scan over the front of the index, and the duplicate check is an exact hit.
+ */
+export const visitSeen = pgTable(
+  "visit_seen",
+  {
+    day: date("day", { mode: "string" }).notNull(),
+    /** 32 hex characters: the first 128 bits of the keyed hash. */
+    visitor: char("visitor", { length: 32 }).notNull(),
+  },
+  (t) => [primaryKey({ columns: [t.day, t.visitor] })],
 );
