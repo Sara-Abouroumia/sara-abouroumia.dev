@@ -316,7 +316,14 @@ body {
 
 /* The "live" pulse on the Now panel. A ring expanding out of the dot and
    fading, rather than the dot itself blinking, a blink reads as a fault
-   indicator, an expanding ring reads as a heartbeat. */
+   indicator, an expanding ring reads as a heartbeat.
+
+   Four beats on arrival (about 10s), then the solid dot alone. It used to run
+   forever, and measured, an endless animation here kept the browser
+   restyling the page 60 times a second for the whole visit, the largest
+   single source of idle work on a phone. The beats are what catch the eye;
+   after that the dot and the date carry "live" on their own. `forwards`
+   holds the last frame (ring fully faded), so it ends without a flicker. */
 @keyframes now-ping {
   0% {
     transform: scale(1);
@@ -331,7 +338,7 @@ body {
 
 @layer components {
   .now-ping {
-    animation: now-ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+    animation: now-ping 2.4s cubic-bezier(0, 0, 0.2, 1) 4 forwards;
   }
   /* Nothing here is conveyed by the motion (the date beside it says the same
      thing in words), so it simply stops, leaving the solid dot. */

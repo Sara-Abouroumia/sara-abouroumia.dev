@@ -99,21 +99,32 @@ export function MarqueeScroller({
       resumeAt = performance.now() + RESUME_DELAY;
     };
 
+    /**
+     * The loop runs only while there is something to animate. It used to keep
+     * ticking off-screen and under reduced motion, skipping the move but still
+     * waking the main thread 60 times a second for the whole visit. Now it
+     * stops itself, and start() (from the visibility observer and the motion
+     * setting) brings it back.
+     */
     const tick = (now: number) => {
+      raf = 0;
+      if (!visible || reduceMotion.matches) return;
       const dt = Math.min((now - last) / 1000, 0.1); // clamp tab-switch gaps
       last = now;
 
       const held = hovering && now - lastMove < HOVER_HOLD;
 
-      if (
-        !reduceMotion.matches &&
-        visible &&
-        !held &&
-        !dragging &&
-        now >= resumeAt
-      ) {
+      if (!held && !dragging && now >= resumeAt) {
         apply(pos + SPEED * dt);
       }
+      raf = requestAnimationFrame(tick);
+    };
+
+    const start = () => {
+      if (raf || !visible || reduceMotion.matches) return;
+      // Fresh clock, so the first frame back does not jump by the time spent
+      // stopped.
+      last = performance.now();
       raf = requestAnimationFrame(tick);
     };
 
@@ -202,8 +213,10 @@ export function MarqueeScroller({
 
     const io = new IntersectionObserver(([entry]) => {
       visible = entry.isIntersecting;
+      start();
     });
     io.observe(el);
+    reduceMotion.addEventListener("change", start);
 
     el.addEventListener("scroll", onScroll, { passive: true });
     el.addEventListener("pointerdown", onPointerDown);
@@ -212,12 +225,13 @@ export function MarqueeScroller({
     el.addEventListener("pointercancel", endPress);
     el.addEventListener("pointerenter", onPointerEnter);
     el.addEventListener("pointerleave", onPointerLeave);
-    raf = requestAnimationFrame(tick);
+    start();
 
     return () => {
       cancelAnimationFrame(raf);
       ro.disconnect();
       io.disconnect();
+      reduceMotion.removeEventListener("change", start);
       el.removeEventListener("scroll", onScroll);
       el.removeEventListener("pointerdown", onPointerDown);
       el.removeEventListener("pointermove", onPointerMove);
