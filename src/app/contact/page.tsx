@@ -7,7 +7,9 @@ import { ContactForm } from "./contact-form";
 
 export const metadata: Metadata = pageMetadata({
   title: "Contact",
-  description: `Get in touch with ${site.name}.`,
+  // Says what to get in touch about, so the search snippet answers "why
+  // would I write?" instead of restating the page title.
+  description: `Get in touch with ${site.name} about research collaborations, AI security, or engineering work.`,
   path: "/contact",
 });
 

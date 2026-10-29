@@ -278,31 +278,48 @@ function SkillItem({ skill }: { skill: Skill }) {
 export function SkillsMarquee() {
   const copies = [0, 1];
 
+  // py-7 is load-bearing, not styling. `overflow-x: auto` forces overflow-y
+  // to compute to auto too, CSS will not scroll one axis while the other
+  // stays visible, so the scroller clips vertically, and a drop-shadow
+  // reaches roughly 1.2x its radius past the mark (24px at the 20px hover
+  // radius). Less padding than that and the glow gets sliced off against the
+  // container's top edge.
   return (
-    // py-7 is load-bearing, not styling. `overflow-x: auto` forces overflow-y
-    // to compute to auto too, CSS will not scroll one axis while the other
-    // stays visible, so this element clips vertically, and a drop-shadow
-    // reaches roughly 1.2x its radius past the mark (24px at the 20px hover
-    // radius). Less padding than that and the glow gets sliced off against the
-    // container's top edge.
-    <MarqueeScroller className="-mx-6 px-6 py-7 [mask-image:linear-gradient(to_right,transparent,black_7%,black_93%,transparent)]">
-      <div className="flex w-max">
-        {copies.map((copy) => (
-          <ul
-            key={copy}
-            // The scroller wraps by this element's measured width, so the
-            // marker has to sit on one copy exactly.
-            data-marquee-copy={copy === 0 ? "" : undefined}
-            aria-label={copy === 0 ? "Tools and technologies" : undefined}
-            aria-hidden={copy === 1 ? "true" : undefined}
-            className="flex list-none items-stretch p-0"
-          >
-            {allSkills.map((skill) => (
-              <SkillItem key={`${copy}-${skill.name}`} skill={skill} />
-            ))}
-          </ul>
-        ))}
-      </div>
-    </MarqueeScroller>
+    <div>
+      <MarqueeScroller className="-mx-6 px-6 py-7 [mask-image:linear-gradient(to_right,transparent,transparent_6%,black_16%,black_84%,transparent_94%,transparent)]">
+        <div className="flex w-max">
+          {copies.map((copy) => (
+            <ul
+              key={copy}
+              // The scroller wraps by this element's measured width, so the
+              // marker has to sit on one copy exactly.
+              data-marquee-copy={copy === 0 ? "" : undefined}
+              aria-label={copy === 0 ? "Tools and technologies" : undefined}
+              aria-hidden={copy === 1 ? "true" : undefined}
+              className="flex list-none items-stretch p-0"
+            >
+              {allSkills.map((skill) => (
+                <SkillItem key={`${copy}-${skill.name}`} skill={skill} />
+              ))}
+            </ul>
+          ))}
+        </div>
+      </MarqueeScroller>
+      {/* -mt-4 pulls the hint up into the scroller's bottom padding, which
+          exists only to give the glow room, so the line sits close to the
+          labels it explains. aria-hidden: it describes pointer gestures, and
+          a screen reader already gets the full list as a list. */}
+      <p
+        aria-hidden="true"
+        className="-mt-4 text-[11px] text-muted-light leading-relaxed tracking-[0.02em]"
+      >
+        {/* Two block spans rather than a <br>, so each line is a whole
+            thought and the break never lands mid-sentence. */}
+        <span className="block">This list runs on a loop.</span>
+        {/* <span className="block">
+          Hover to pause it, then drag or use the arrows to see more.
+        </span> */}
+      </p>
+    </div>
   );
 }

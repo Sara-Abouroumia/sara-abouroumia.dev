@@ -19,6 +19,45 @@ const DRAG_SLOP = 4;
  * moving along the row holds it still for as long as you are looking.
  */
 const HOVER_HOLD = 2500;
+/** Duration of the eased glide an arrow press triggers, in ms. */
+const GLIDE_MS = 450;
+
+/** Ease-out cubic: quick off the mark, settles gently. */
+const easeOut = (t: number) => 1 - (1 - t) ** 3;
+
+/**
+ * A plain chevron: one light grey stroke at normal icon weight, mostly
+ * transparent so it hints without competing with the marks, round caps and
+ * join so nothing ends in a point.
+ *
+ * It grows a little in two cases, by the same amount so they feel like one
+ * gesture: while the cursor is on it, and while the row is being moved in its
+ * direction (drag, trackpad, swipe or an arrow press). The second comes from
+ * the `data-scrolling` flag the scroller sets on the wrapper, read here with a
+ * group-data variant. Each arrow listens only for its own direction.
+ */
+const CHEVRON = {
+  left: "M14.5 5.5 8.5 12l6 6.5",
+  right: "M9.5 5.5 15.5 12l-6 6.5",
+};
+
+function Chevron({ dir }: { dir: -1 | 1 }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeOpacity="0.35"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={`h-7 w-7 transition-[scale] duration-300 ease-out group-hover/arrow:scale-125 ${dir < 0 ? "group-data-[scrolling=left]/marquee:scale-125" : "group-data-[scrolling=right]/marquee:scale-125"}`}
+    >
+      <path d={dir < 0 ? CHEVRON.left : CHEVRON.right} />
+    </svg>
+  );
+}
 
 /**
  * A horizontally scrolling strip that drifts on its own but yields to the user.
@@ -45,10 +84,15 @@ export function MarqueeScroller({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  // The arrows render outside the effect, but the position state they need
+  // to move lives inside it, so the effect hands them a function through here.
+  const nudgeRef = useRef<(dir: -1 | 1) => void>(null);
 
   useEffect(() => {
     const el = ref.current;
-    if (!el) return;
+    const wrap = wrapRef.current;
+    if (!el || !wrap) return;
 
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -85,6 +129,32 @@ export function MarqueeScroller({
     let lastMove = 0;
     let last = performance.now();
     let raf = 0;
+    // An arrow glide in flight: where it began, how far it goes, and when.
+    let glide: { from: number; by: number; at: number } | null = null;
+
+    /**
+     * Marks which way the user is moving the row, so the matching arrow can
+     * grow. "right" means scrollLeft increasing, the same sense as the right
+     * arrow. The flag clears 200ms after the last movement, which is what
+     * lets the arrow shrink back once the gesture stops.
+     *
+     * Written only when the value changes: this runs on every scroll event
+     * and every drag frame, and a DOM attribute write that changes nothing
+     * still costs a style recalculation.
+     *
+     * The automatic drift deliberately never calls this. It moves all the
+     * time, so an arrow growing for it would just be permanently large.
+     */
+    let flagTimer = 0;
+    const flag = (delta: number) => {
+      if (!delta) return;
+      const way = delta > 0 ? "right" : "left";
+      if (wrap.dataset.scrolling !== way) wrap.dataset.scrolling = way;
+      clearTimeout(flagTimer);
+      flagTimer = window.setTimeout(() => {
+        delete wrap.dataset.scrolling;
+      }, 200);
+    };
 
     /** Position modulo one copy. Handles any magnitude, both directions. */
     const norm = (value: number) =>
@@ -114,7 +184,19 @@ export function MarqueeScroller({
 
       const held = hovering && now - lastMove < HOVER_HOLD;
 
-      if (!held && !dragging && now >= resumeAt) {
+      if (glide) {
+        // Driven from this same loop rather than scrollTo({ behavior:
+        // "smooth" }): a native smooth scroll would fight the drift's own
+        // scrollLeft writes, and could not wrap at the seam either. norm()
+        // inside apply() handles the wrap, so a glide crosses it cleanly.
+        const t = Math.min((now - glide.at) / GLIDE_MS, 1);
+        apply(glide.from + glide.by * easeOut(t));
+        flag(glide.by);
+        if (t === 1) {
+          glide = null;
+          pauseBriefly();
+        }
+      } else if (!held && !dragging && now >= resumeAt) {
         apply(pos + SPEED * dt);
       }
       raf = requestAnimationFrame(tick);
@@ -126,6 +208,18 @@ export function MarqueeScroller({
       // stopped.
       last = performance.now();
       raf = requestAnimationFrame(tick);
+    };
+
+    // Half the visible width per press: far enough to bring fresh marks in,
+    // short enough that the eye can follow where the row went.
+    nudgeRef.current = (dir) => {
+      const by = dir * Math.max(200, el.clientWidth * 0.5);
+      if (reduceMotion.matches) {
+        apply(pos + by); // no glide under reduced motion, just move
+        return;
+      }
+      glide = { from: pos, by, at: performance.now() };
+      start();
     };
 
     // No vertical-wheel capture. Turning the wheel into sideways scrolling
@@ -142,6 +236,7 @@ export function MarqueeScroller({
       if (dragging) return;
       const current = el.scrollLeft;
       if (Math.abs(current - pos) <= 1) return;
+      flag(current - pos);
       const wrapped = norm(current);
       if (Math.abs(wrapped - current) > 1) el.scrollLeft = wrapped;
       pos = wrapped;
@@ -155,12 +250,14 @@ export function MarqueeScroller({
     // browser reads the swipe's direction, as native carousels do.
     let startX = 0;
     let startLeft = 0;
+    let prevDx = 0;
 
     const onPointerDown = (e: PointerEvent) => {
       if (e.pointerType !== "mouse" || e.button !== 0) return;
       pressing = true;
       startX = e.clientX;
       startLeft = el.scrollLeft;
+      prevDx = 0;
     };
 
     const onPointerMove = (e: PointerEvent) => {
@@ -177,6 +274,10 @@ export function MarqueeScroller({
         el.dataset.dragging = "";
       }
       apply(startLeft - dx);
+      // Pulling the pointer left reveals what is to the right, so scrollLeft
+      // moves opposite to the pointer: its change is prevDx - dx.
+      flag(prevDx - dx);
+      prevDx = dx;
     };
 
     const endPress = (e: PointerEvent) => {
@@ -228,7 +329,9 @@ export function MarqueeScroller({
     start();
 
     return () => {
+      nudgeRef.current = null;
       cancelAnimationFrame(raf);
+      clearTimeout(flagTimer);
       ro.disconnect();
       io.disconnect();
       reduceMotion.removeEventListener("change", start);
@@ -243,15 +346,46 @@ export function MarqueeScroller({
   }, []);
 
   return (
-    <div
-      ref={ref}
-      // scroll-behavior:auto is defensive. It is not inherited today, but the
-      // drift works by assigning scrollLeft every frame, and a smooth scroll
-      // container would animate each of those and stall the strip. globals.css
-      // sets html { scroll-behavior: smooth } for the section rail.
-      className={`cursor-grab overflow-x-auto overscroll-x-contain [scroll-behavior:auto] [scrollbar-width:none] [touch-action:pan-x_pan-y] data-dragging:cursor-grabbing data-dragging:select-none [&::-webkit-scrollbar]:hidden ${className}`}
-    >
-      {children}
+    // The arrows sit in this wrapper, not in the scroll container: anything
+    // inside that would scroll away with the row, and be faded by its mask.
+    <div ref={wrapRef} className="group/marquee relative">
+      <div
+        ref={ref}
+        // scroll-behavior:auto is defensive. It is not inherited today, but the
+        // drift works by assigning scrollLeft every frame, and a smooth scroll
+        // container would animate each of those and stall the strip. globals.css
+        // sets html { scroll-behavior: smooth } for the section rail.
+        className={`cursor-grab overflow-x-auto overscroll-x-contain [scroll-behavior:auto] [scrollbar-width:none] [touch-action:pan-x_pan-y] data-dragging:cursor-grabbing data-dragging:select-none [&::-webkit-scrollbar]:hidden ${className}`}
+      >
+        {children}
+      </div>
+      {([-1, 1] as const).map((dir) => (
+        <button
+          key={dir}
+          type="button"
+          aria-label={dir < 0 ? "Scroll left" : "Scroll right"}
+          onClick={() => nudgeRef.current?.(dir)}
+          // Hidden until the pointer is over the strip, then they fade in
+          // and slide a few pixels inward from the edge over 300ms, so they
+          // arrive rather than blink on. Each starts 6px outside its resting
+          // spot (-translate-x-1.5 on the left, + on the right) and moves in
+          // toward the row, as if stepping in from the edge.
+          //
+          // Touch screens have no hover, so a coarse pointer shows them at
+          // rest instead, and keyboard focus always reveals the one focused.
+          //
+          // Two hover levels sit on two elements so they never fight over the
+          // same property: this button answers the strip (group/marquee), the
+          // chevron inside answers the arrow itself (group/arrow) by growing
+          // a touch.
+          //
+          // top-[46px] centres them on the marks, not the whole row: 28px of
+          // py-7 padding plus half the 36px mark.
+          className={`group/arrow absolute top-[46px] z-10 flex h-11 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted opacity-0 transition-[opacity,translate,color] duration-300 ease-out group-hover/marquee:translate-x-0 group-hover/marquee:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100 pointer-coarse:translate-x-0 pointer-coarse:opacity-70 ${dir < 0 ? "-left-2 -translate-x-1.5" : "-right-2 translate-x-1.5"}`}
+        >
+          <Chevron dir={dir} />
+        </button>
+      ))}
     </div>
   );
 }

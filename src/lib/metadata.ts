@@ -7,8 +7,29 @@ const OG_SIZE = { width: 1200, height: 630 };
 
 export const SITE_TITLE = `${site.name} · ${site.role}`;
 
+/**
+ * At most 160 characters, which is where Bing flags a description as too
+ * long and where search results cut it off mid-sentence. This one was 174
+ * and Bing's URL Inspection reported it; it is written to fit rather than
+ * trimmed, since a hand-made sentence reads better than a truncated one.
+ */
 export const SITE_DESCRIPTION =
-  "Graduate researcher at Istanbul Technical University working on AI for cybersecurity: intrusion detection and LLM agent security. Full-stack and cloud engineer by background.";
+  "Graduate researcher at Istanbul Technical University in AI for cybersecurity: intrusion detection and LLM agent security. Full-stack engineer by background.";
+
+/** Search engines' limit for a meta description (Bing flags 25 to 160). */
+const DESCRIPTION_MAX = 160;
+
+/**
+ * A description that fits the limit, cut at a word boundary with an ellipsis
+ * when it does not. For text written for somewhere roomier, like a note's
+ * summary, which the listing shows in full: the meta copy is trimmed so no
+ * note can trip the length check, while the summary itself stays whole.
+ */
+function fitDescription(text: string) {
+  if (text.length <= DESCRIPTION_MAX) return text;
+  const cut = text.slice(0, DESCRIPTION_MAX - 1);
+  return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[,;:.]$/, "")}…`;
+}
 
 /**
  * Per-page metadata: title, description, canonical URL and Open Graph.
@@ -47,9 +68,10 @@ export function pageMetadata({
   /** This page's own preview card; the site card when omitted. */
   image?: { url: `/${string}`; alt: string };
 }): Metadata {
+  const meta = fitDescription(description);
   return {
     ...(title ? { title } : {}),
-    description,
+    description: meta,
     alternates: { canonical: path },
     openGraph: {
       ...(publishedTime
@@ -60,7 +82,7 @@ export function pageMetadata({
       // The template in the layout only applies to <title>, not to og:title,
       // so the full string is spelled out here.
       title: title ? `${title} · ${site.name}` : SITE_TITLE,
-      description,
+      description: meta,
       url: path,
       /**
        * The preview card, named outright on every page. The file at the root

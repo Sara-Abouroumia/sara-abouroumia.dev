@@ -75,17 +75,17 @@ const DAY: Palette = {
   ocean: "#efe9de",
   land: "#d9d0bd",
   rim: "rgba(150, 135, 105, 0.35)",
-  // Claude orange (#d97757) for every country: how visited it is shows in
-  // opacity alone. The accent's family belongs on this warm page, and it
-  // is redder than the tan land, where amber (the land's own hue) mixed
-  // into mud. Painted normally, so it stays the true orange: multiply
-  // would darken it into the tan.
+  // Neon yellow, lights from above. Real neon reads by being far brighter
+  // than its surroundings, which a light ground cannot give, so this
+  // borrows neon's other trait: full saturation (no blue at all), which
+  // pops against the muted cream where paler yellows faded into it.
+  // Painted normally: additive blending would wash it toward white.
   glow: [
-    [217, 119, 87],
-    [217, 119, 87],
+    [255, 214, 0],
+    [255, 235, 0],
   ],
   blend: "source-over",
-  strength: 1.6,
+  strength: 2,
 };
 
 /** Degrees per arrow-key press. */
@@ -214,24 +214,33 @@ export function VisitorGlobe({
 
         // Lights, near side only: a point more than 90 degrees of arc from
         // the view centre is behind the globe.
-        ctx.globalCompositeOperation = p.blend;
+        //
+        // Heat, not dots: one soft patch per country with no hard edge and
+        // no solid centre. Weight (already log-scaled) drives mostly
+        // opacity and a little spread, so a busy country reads as warmer,
+        // not as a bigger blob covering its neighbours. HEAT_FLOOR keeps a
+        // single visit faintly visible next to a busy one. Patches that
+        // overlap (Europe) add up, which is what makes it a heat map. Near
+        // the rim they dim, the way a city near the horizon does.
         const center: [number, number] = [-rot.lambda, -rot.phi];
+        const lit: { xy: [number, number]; a: number; r: number; w: number }[] =
+          [];
         for (const d of dots) {
           const arc = geoDistance(d.at, center);
           if (arc > Math.PI / 2) continue;
           const xy = projection(d.at);
           if (!xy) continue;
-          // Heat, not dots: one soft patch per country with no hard edge
-          // and no solid centre. Weight (already log-scaled) drives mostly
-          // opacity and a little spread, so a busy country reads as warmer,
-          // not as a bigger blob covering its neighbours. HEAT_FLOOR keeps a
-          // single visit faintly visible next to a busy one. Patches that
-          // overlap (Europe) add up, which is what makes it a heat map.
-          // Near the rim they dim, the way a city near the horizon does.
           const fade = Math.min(1, (Math.PI / 2 - arc) / 0.35);
-          const a =
-            (HEAT_FLOOR + (1 - HEAT_FLOOR) * d.weight) * fade * p.strength;
-          const r = size * (0.06 + 0.04 * d.weight);
+          lit.push({
+            xy,
+            a: (HEAT_FLOOR + (1 - HEAT_FLOOR) * d.weight) * fade * p.strength,
+            r: size * (0.06 + 0.04 * d.weight),
+            w: d.weight,
+          });
+        }
+
+        ctx.globalCompositeOperation = p.blend;
+        for (const { xy, a, r, w } of lit) {
           const heat = ctx.createRadialGradient(
             xy[0],
             xy[1],
@@ -246,7 +255,7 @@ export function VisitorGlobe({
           // overlapping patches further toward white. Kept well under full
           // opacity so even the busiest country is a tint on the land, not
           // a glare.
-          const c = mix(p.glow[0], p.glow[1], d.weight);
+          const c = mix(p.glow[0], p.glow[1], w);
           heat.addColorStop(0, `rgba(${c}, ${0.5 * a})`);
           heat.addColorStop(0.35, `rgba(${c}, ${0.3 * a})`);
           heat.addColorStop(0.7, `rgba(${c}, ${0.1 * a})`);
