@@ -8,6 +8,7 @@ import { NowPanel } from "@/components/now-panel";
 import { OrgLogo } from "@/components/org-logo";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { PinIcon } from "@/components/pin-icon";
+import { References } from "@/components/references";
 import { ResumePreview } from "@/components/resume-preview";
 import { PROSE, Section } from "@/components/section";
 import { SectionBar } from "@/components/section-bar";
@@ -19,6 +20,7 @@ import { WorldReadersGlobe } from "@/components/world-readers-globe";
 import { BIO_LINES, bio } from "@/content/about";
 import { education } from "@/content/education";
 import { companies } from "@/content/experience";
+import { references } from "@/content/references";
 // import { service, serviceIntro } from "@/content/experience";
 import { site } from "@/content/site";
 import { pageMetadata, SITE_DESCRIPTION } from "@/lib/metadata";
@@ -71,8 +73,11 @@ const SECTIONS = [
   "Experience",
   "Education",
   "Skills",
+  // Only while there is something in it, so the nav never points at a
+  // section that is not rendered (see the References section below).
+  ...(references.length ? ["References"] : []),
   // "Leadership & Service",
-] as const;
+];
 
 export default async function Home() {
   const visits = await getCountryVisits();
@@ -263,10 +268,20 @@ export default async function Home() {
         <SkillsMarquee />
       </Section>
 
+      {/* Last, as the page's closing word: after what Sara has done, what the
+          people she did it with say. The section and its nav entry are
+          driven by the one list of references, so with none it disappears
+          rather than showing an empty heading. */}
+      {references.length ? (
+        <Section title="References">
+          <References references={references} />
+        </Section>
+      ) : null}
+
       {/* Leadership & Service is parked, not deleted. It was the largest
           section on the page, about 29% of it on desktop and 33% on a phone,
-          which put more weight on volunteering than on Experience, and the
-          plan is to give that space to References and Certifications instead.
+          which put more weight on volunteering than on Experience, and its
+          space went to References instead (Certifications may follow).
 
           Everything it needs is still here: <ServiceFrontPage /> in
           components, `service` and `serviceIntro` in content/experience.ts.
