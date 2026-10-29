@@ -38,10 +38,16 @@ type Palette = {
   ocean: string;
   land: string;
   rim: string;
-  /** Heat colour as r,g,b: centre, edge. */
-  glow: [string, string];
+  /**
+   * Heat colour as [r, g, b]: least visited, most visited. Each country is
+   * one colour, mixed between the two by its weight, so the colour itself
+   * says "a few" or "a lot", the way a heat map's legend does.
+   */
+  glow: [RGB, RGB];
   blend: GlobalCompositeOperation;
 };
+
+type RGB = [number, number, number];
 
 const NIGHT: Palette = {
   // The site's dark neutrals, not a blue night: a blue-black globe read as
@@ -51,7 +57,11 @@ const NIGHT: Palette = {
   ocean: "#0f1114",
   land: "#2a2d33",
   rim: "rgba(255, 255, 255, 0.1)",
-  glow: ["255, 196, 82", "255, 165, 55"],
+  // Amber for the few, bright sodium yellow for the most.
+  glow: [
+    [255, 165, 55],
+    [255, 196, 82],
+  ],
   blend: "lighter",
 };
 
@@ -59,7 +69,14 @@ const DAY: Palette = {
   ocean: "#efe9de",
   land: "#d9d0bd",
   rim: "rgba(150, 135, 105, 0.35)",
-  glow: ["235, 150, 25", "225, 135, 20"],
+  // Neon city light: violet for the few, hot pink for the most. Both sit
+  // far from the tan land on the colour wheel (purple is yellow's
+  // opposite), so they read where amber blended in. Painted normally:
+  // multiply would darken them to mauve and lose the neon.
+  glow: [
+    [147, 51, 234],
+    [236, 72, 153],
+  ],
   blend: "source-over",
 };
 
@@ -214,15 +231,17 @@ export function VisitorGlobe({
             xy[1],
             r,
           );
-          // Glow colour all the way in, never a near-white core: a white
+          // One colour per country, only its opacity falls off, so no
+          // country shows two shades. Never a near-white core: a white
           // centre reads as a lamp, and additive blending pushes
           // overlapping patches further toward white. Kept well under full
-          // opacity so even the busiest country is a warm tint on the land,
-          // not a glare.
-          heat.addColorStop(0, `rgba(${p.glow[0]}, ${0.5 * a})`);
-          heat.addColorStop(0.35, `rgba(${p.glow[0]}, ${0.3 * a})`);
-          heat.addColorStop(0.7, `rgba(${p.glow[1]}, ${0.1 * a})`);
-          heat.addColorStop(1, `rgba(${p.glow[1]}, 0)`);
+          // opacity so even the busiest country is a tint on the land, not
+          // a glare.
+          const c = mix(p.glow[0], p.glow[1], d.weight);
+          heat.addColorStop(0, `rgba(${c}, ${0.5 * a})`);
+          heat.addColorStop(0.35, `rgba(${c}, ${0.3 * a})`);
+          heat.addColorStop(0.7, `rgba(${c}, ${0.1 * a})`);
+          heat.addColorStop(1, `rgba(${c}, 0)`);
           ctx.fillStyle = heat;
           ctx.beginPath();
           ctx.arc(xy[0], xy[1], r, 0, Math.PI * 2);
@@ -410,4 +429,13 @@ function clampVel(v: number): number {
 
 function clamp(phi: number): number {
   return Math.max(-MAX_TILT, Math.min(MAX_TILT, phi));
+}
+
+/**
+ * The colour a fraction t of the way from `from` to `to`, as "r, g, b" for
+ * an rgba() string. Straight per-channel interpolation: across violet and
+ * pink, both saturated, it stays vivid all the way, with no grey middle.
+ */
+function mix(from: RGB, to: RGB, t: number): string {
+  return from.map((v, i) => Math.round(v + (to[i] - v) * t)).join(", ");
 }

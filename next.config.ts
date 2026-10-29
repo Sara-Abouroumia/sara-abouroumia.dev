@@ -206,8 +206,23 @@ const withMDX = createMDX({
       // "markdown" people assume are markdown but are actually GitHub's
       // extensions to it.
       "remark-gfm",
+      // $inline$ and $$display$$ math, in ordinary LaTeX syntax, so an
+      // equation copies straight from a paper or Overleaf. This only marks
+      // where the math is; rehype-katex below typesets it.
+      "remark-math",
     ],
     rehypePlugins: [
+      /**
+       * Typesets the math at build time, into plain HTML and CSS. Readers
+       * download finished equations, not a math engine (MathJax in the
+       * browser is about a megabyte of script), and nothing reflows as it
+       * loads. The default output also carries MathML alongside, which is
+       * what screen readers read the equation from.
+       *
+       * Its stylesheet and fonts are imported by the note page, so they are
+       * bundled and served from this origin, as the CSP's font-src requires.
+       */
+      "rehype-katex",
       // id="..." on every heading, so the table of contents and any deep link
       // into a post have something to point at.
       "rehype-slug",

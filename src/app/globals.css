@@ -518,3 +518,39 @@ body {
 .dark [data-rehype-pretty-code-figure] span {
   color: var(--shiki-dark);
 }
+
+/* Figure numbering. The note body resets a counter, each <Figure> advances
+   it, and the caption prints it, so numbers follow document order with no
+   prop to keep in step. "Figure 2." is set in the text colour and weight so
+   it reads as the label, with the caption muted after it. */
+.note-body {
+  counter-reset: figure;
+}
+
+.note-figure {
+  counter-increment: figure;
+}
+
+.note-figure figcaption::before {
+  content: "Figure " counter(figure) ". ";
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Display math. A long equation scrolls sideways inside its own block rather
+   than widening the page: on a phone, a page that scrolls sideways moves the
+   whole column with it. The vertical padding gives tall fractions and
+   superscripts room so the scroll container does not clip them. */
+.note-body .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  margin: 20px 0;
+}
+
+/* KaTeX sizes math at 1.21em of the prose, tuned for 10pt-style paper text.
+   Against this 17px body that is ~20.6px, a visible jump inside a sentence.
+   1.1em keeps inline math level with the words around it. */
+.note-body .katex {
+  font-size: 1.1em;
+}

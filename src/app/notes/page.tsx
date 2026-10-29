@@ -33,8 +33,8 @@ export const metadata: Metadata = {
 };
 
 /**
- * The notes index, as a grid of overview cards. See <NotesBrowser /> for the
- * cards and the category filter.
+ * The notes index, as a reading list of rows. See <NotesBrowser /> for the
+ * rows and the filters.
  *
  * This page absorbed what used to be the separate Blog tab, and was itself
  * called Research until 2026-10 (see the note at the top of lib/notes.ts).

@@ -29,6 +29,26 @@ rather than shipping a note with a blank summary.
 | `date` | yes | `YYYY-MM-DD`. Sorts the index, newest first |
 | `draft` | no | Defaults to `false`. `true` hides it in production only |
 | `tags` | no | Topics, free-form (`intrusion detection`, `transformers`). Defaults to none |
+| `cover` | no | The listing thumbnail, a path under `public/` (`/notes/my-note/fig.png`). Without it, the first image in the note is used; without that, the row has no image |
+| `source` | no | What the note is about, when it is about a piece of work. Shown under the title on the listing and the note |
+
+For a paper note, `source` is what makes the row read like a reference:
+
+```yaml
+source:
+  authors: Vaswani et al.
+  venue: NeurIPS
+  year: 2017
+  url: https://arxiv.org/abs/1706.03762
+```
+
+Only `authors` is required. `url` makes the authors a link on the note page.
+
+**Pick a figure, not a picture, for the thumbnail.** A confusion matrix or an
+architecture diagram previews what is inside the note; a stock image only
+says "blog". Keep each note's images in its own folder under
+`public/notes/`, named after the note, so they are easy to find and remove
+together.
 
 The four categories:
 
@@ -100,6 +120,59 @@ A block with no language set still renders, it just is not coloured:
 ```
 kaggle competitions download -c titanic
 ```
+
+---
+
+## Math
+
+Ordinary LaTeX between dollar signs. Inline, in a sentence: the softmax of a
+score $s_i$ is $\sigma(s)_i = e^{s_i} / \sum_j e^{s_j}$, and it sits level with
+the words around it.
+
+On its own line, between double dollar signs:
+
+$$
+\mathrm{Attention}(Q, K, V) = \mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_k}}\right) V
+$$
+
+Numbered, with `\tag`, for an equation the text refers back to:
+
+$$
+\mathcal{L}(\theta) = -\frac{1}{N} \sum_{i=1}^{N} \sum_{c=1}^{C} y_{i,c} \log \hat{y}_{i,c}(\theta) + \lambda \lVert \theta \rVert_2^2 \tag{1}
+$$
+
+Equation (1) is long on purpose: on a phone it scrolls sideways inside its
+own block instead of pushing the page wider. It is typeset when the site is
+built, so readers download finished math, not a math engine.
+
+Write a literal dollar sign as `\$`, as in "a \$5 dataset", or it starts an
+equation.
+
+## Figures
+
+A plain markdown image works, `![What it shows](/notes/my-note/fig1.png)`,
+but a figure with a caption is what a note usually wants:
+
+<Figure
+  src="/notes/writing-a-note/example-plot.svg"
+  caption="TCP's congestion window: exponential growth in slow start, then the additive-increase, multiplicative-decrease sawtooth around the threshold."
+/>
+
+The number is automatic. Figures count up in the order they appear, so
+adding one in the middle renumbers everything after it, and there is nothing
+to keep in step by hand.
+
+For plots from a notebook, save them as SVG, which stays sharp at any zoom
+and is usually smaller than a PNG:
+
+```python
+plt.savefig("fig1.svg", bbox_inches="tight")
+```
+
+Put a note's images in a folder named after the note under `public/notes/`,
+here `public/notes/writing-a-note/`, so they can be found and removed
+together. The first image in a note also becomes its thumbnail on the
+listing, unless `cover` says otherwise.
 
 ---
 

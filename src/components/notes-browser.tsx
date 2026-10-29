@@ -1,6 +1,7 @@
 "use client";
 
 import * as Popover from "@radix-ui/react-popover";
+import Image from "next/image";
 import Link from "next/link";
 import {
   type ReactNode,
@@ -11,6 +12,7 @@ import {
   useState,
 } from "react";
 import { EmptyState } from "@/components/empty-state";
+import { site } from "@/content/site";
 import { formatDay } from "@/lib/dates";
 import {
   countTopics,
@@ -26,6 +28,7 @@ import {
   CATEGORIES,
   type CategoryId,
   categoryLabel,
+  citations,
   noteHref,
 } from "@/lib/notes-common";
 
@@ -36,16 +39,15 @@ const SEARCH_FROM = 3;
 /** Above this many topics the menu grows its own "find a topic" field. */
 const TOPIC_FIND_FROM = 8;
 /**
- * Notes shown before "Show more", and how many each press adds. Twelve is six
- * rows of two: about a screen and a half, enough to browse without the page
- * becoming a wall, and it divides evenly into rows of two or three. Fewer
- * means pressing the button constantly; many more and it may as well not be
- * there.
+ * Notes shown before "Show more", and how many each press adds. Ten rows is
+ * about three screens: enough to browse without the page becoming a wall.
+ * Fewer means pressing the button constantly; many more and it may as well
+ * not be there.
  */
-const PAGE_SIZE = 12;
+const PAGE_SIZE = 10;
 
 /**
- * The notes index: overview cards, narrowed by three filters.
+ * The notes index: a reading list of rows, narrowed by three filters.
  *
  *   Kind    one category at a time (a note has exactly one).
  *   Topics  any number of tags, OR'd: picking "math" and "statistics" shows
@@ -173,6 +175,19 @@ export function NotesBrowser({ notes }: { notes: Note[] }) {
   const visible = shown.slice(0, limit);
   const remaining = shown.length - visible.length;
 
+  // Notes arrive newest first, so years come out in order without a sort.
+  const years = useMemo(() => {
+    const groups: { year: string; notes: Note[] }[] = [];
+    for (const note of notes) {
+      const year = note.date.slice(0, 4);
+      if (groups.at(-1)?.year !== year) groups.push({ year, notes: [] });
+      groups.at(-1)?.notes.push(note);
+    }
+    return groups;
+  }, [notes]);
+  const grouped = years.length > 1;
+  const firstYear = visible[0]?.date.slice(0, 4);
+
   // Any change to what is being asked for starts the list over at one page.
   // biome-ignore lint/correctness/useExhaustiveDependencies: the filters are the trigger, not values read inside
   useEffect(() => {
@@ -187,7 +202,7 @@ export function NotesBrowser({ notes }: { notes: Note[] }) {
     const note = shown[revealedFrom];
     if (note) {
       document
-        .querySelector<HTMLAnchorElement>(`[data-note="${note.slug}"] h2 a`)
+        .querySelector<HTMLAnchorElement>(`[data-note="${note.slug}"] a[href]`)
         ?.focus();
     }
     setRevealedFrom(null);
@@ -370,25 +385,57 @@ export function NotesBrowser({ notes }: { notes: Note[] }) {
         </EmptyState>
       ) : null}
 
-      {/* A list, because it is one: screen readers announce "list, 6 items",
-          the overview a sighted reader gets from the grid. Hidden cards stay
-          in the DOM (see the top of this file). */}
-      <ul className="m-0 grid list-none gap-4 p-0 sm:grid-cols-2">
-        {notes.map((note) => (
-          <li
-            key={note.slug}
-            data-note={note.slug}
-            hidden={!visible.includes(note)}
-          >
-            <NoteCard
-              note={note}
-              terms={terms}
-              topics={topics}
-              onTopic={showTopics ? toggleTopic : undefined}
-            />
-          </li>
-        ))}
-      </ul>
+      {/* Grouped by year, the way a publication list on a CV is: it shows
+          the writing as a record kept over time, and gives a long list
+          landmarks to scan by. Only once there is more than one year, since
+          a lone "2026" over everything labels nothing.
+
+          Each group is a list, because it is one: screen readers announce
+          "list, 6 items". Hidden rows stay in the DOM (see the top of this
+          file), and a group with none showing hides whole, heading and all. */}
+      {years.map(({ year, notes: inYear }) => (
+        <section
+          key={year}
+          aria-labelledby={grouped ? `notes-${year}` : undefined}
+          hidden={!inYear.some((n) => visible.includes(n))}
+        >
+          {grouped ? (
+            // The first group on screen sits close under the toolbar; later
+            // ones get room above, which is what makes the year a break.
+            // Worked out here, not with :first-child, because a filtered-out
+            // group is still in the DOM and would count as first.
+            <h2
+              id={`notes-${year}`}
+              className={`m-0 flex items-center gap-3 font-mono text-[12px] text-muted-light tracking-[0.08em] ${
+                year === firstYear ? "mt-2" : "mt-10"
+              }`}
+            >
+              {year}
+              <span aria-hidden="true" className="h-px flex-1 bg-border" />
+            </h2>
+          ) : null}
+          <ul className="m-0 list-none p-0">
+            {inYear.map((note) => (
+              <li
+                key={note.slug}
+                data-note={note.slug}
+                hidden={!visible.includes(note)}
+                // A hairline between rows, not boxes around them: boxes read
+                // as products on a shelf, rules read as entries in a list.
+                className="border-border border-b last:border-b-0"
+              >
+                <NoteRow
+                  note={note}
+                  terms={terms}
+                  topics={topics}
+                  onTopic={showTopics ? toggleTopic : undefined}
+                  heading={grouped ? "h3" : "h2"}
+                />
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
 
       {remaining > 0 ? (
         <div className="mt-8 flex justify-center">
@@ -619,63 +666,126 @@ function Highlight({ text, terms }: { text: string; terms: string[] }) {
 }
 
 /**
- * One note, as an overview: what kind of note, what it is about, how long it
- * takes. The detail is one click away, so nothing here needs to be complete.
+ * One note, as a row in a reading list. Composed from three references, each
+ * for the thing it does best:
  *
- * The whole card is the click target, but only the title is a link. Its
- * ::after box is stretched over the card (the "stretched link" pattern), so a
+ *   Medium         one entry per row, hairline between, a thumbnail on the
+ *                  right. A row reads top to bottom like a reference list,
+ *                  where a grid of cards makes the eye zigzag.
+ *   Google Scholar the source line under the title (authors, venue, year),
+ *                  search terms marked inside the summary, and Cite.
+ *   ResearchGate   the thumbnail is a figure from inside the note, not a
+ *                  picked image, so it previews the actual content.
+ *
+ * And what was left out, on purpose: claps, read counts and avatars. Those are
+ * social signals, and on a one-author site with modest numbers they say less
+ * than nothing.
+ *
+ * The whole row is the click target, but only the title is a link. Its
+ * ::after box is stretched over the row (the "stretched link" pattern), so a
  * click anywhere lands on the link, while a screen reader hears one link
- * named by the title rather than every word of the card read out as a link.
- * Focus is shown on the card (has-[a:focus-visible]) since the link itself is
- * only as big as the title.
+ * named by the title rather than every word of the row read out as a link.
+ * Focus is shown on the row (has-[a:focus-visible]). The tags and the two
+ * actions are the exceptions, lifted above the stretched link (relative z-10)
+ * so a click on one does its own thing instead of navigating.
  *
- * The tags are the exception to "the card is one link": they are buttons
- * that filter by that topic, lifted above the stretched link (relative z-10)
- * so a click on one filters instead of navigating.
+ * Layout is one grid whose cells move between breakpoints, rather than two
+ * layouts. From sm, the text is a column and the thumbnail spans its height
+ * on the right. On a phone the thumbnail shrinks to a square beside just the
+ * meta line and title, and everything below runs the full width, which is
+ * where a 390px screen needs the room.
  */
-function NoteCard({
+function NoteRow({
   note,
   terms,
   topics,
   onTopic,
+  heading: Heading,
 }: {
   note: Note;
   terms: string[];
   topics: string[];
   /** Absent while topic filtering is off, and then tags are plain labels. */
   onTopic?: (tag: string) => void;
+  /** h3 under a year heading, h2 when there is none, so the outline has no gap. */
+  heading: "h2" | "h3";
 }) {
+  const thumb = note.thumbnail;
+  // Without a thumbnail, the text simply takes the full width. No placeholder:
+  // a mix of rows with and without figures reads as deliberate, a generic
+  // stand-in image reads as unfinished.
+  const below = thumb
+    ? "col-span-2 sm:col-span-1 sm:col-start-1"
+    : "col-span-2";
+  const source = note.source;
+
   return (
-    <article className="group relative flex h-full flex-col rounded-[5px] border border-border bg-bg p-5 transition-[border-color,box-shadow,transform] duration-200 hover:border-accent/40 hover:shadow-[0_6px_24px_-12px_rgba(28,28,26,0.25)] has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-accent has-[a:focus-visible]:outline-offset-2 motion-safe:hover:-translate-y-0.5">
-      <p className="m-0 mb-2 font-semibold text-[11px] text-accent uppercase tracking-[0.12em]">
-        {categoryLabel(note.category)}
+    <article
+      className={`group relative grid grid-cols-[minmax(0,1fr)_auto] py-6 has-[a:focus-visible]:outline-2 has-[a:focus-visible]:outline-accent has-[a:focus-visible]:outline-offset-2 ${
+        thumb ? "gap-x-4 sm:gap-x-8" : ""
+      }`}
+    >
+      {/* Kind first, as a label, then when and how long: what sort of read
+          this is before what it is about. */}
+      <p className="col-start-1 m-0 flex flex-wrap items-center gap-x-2 font-mono text-[11px] text-muted-light uppercase tracking-[0.06em]">
+        <span className="font-sans font-semibold text-accent tracking-[0.12em]">
+          {categoryLabel(note.category)}
+        </span>
+        <span aria-hidden="true">·</span>
+        <time dateTime={note.date}>{formatDay(note.date)}</time>
+        <span aria-hidden="true">·</span>
+        <span>{note.readingMinutes} min read</span>
+        {note.draft ? (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className="text-error-text">Draft</span>
+          </>
+        ) : null}
       </p>
 
-      <h2 className="m-0 mb-2 font-serif font-semibold text-[19px] text-text leading-snug">
+      <Heading className="col-start-1 m-0 mt-2 font-serif font-semibold text-[19px] text-text leading-snug transition-colors group-hover:text-accent sm:text-[21px]">
         <Link
           href={noteHref(note.slug)}
-          className="text-inherit no-underline outline-none after:absolute after:inset-0 after:rounded-[5px] after:content-['']"
+          className="text-inherit no-underline outline-none after:absolute after:inset-0 after:content-['']"
         >
           <Highlight text={note.title} terms={terms} />
         </Link>
-      </h2>
+      </Heading>
 
-      {/* Three lines when browsing: enough to say what the note covers,
-          short enough that the cards stay an even grid. Unclamped while
-          searching, so a match in the fourth line is not hidden behind the
-          ellipsis the reader is looking for it under. */}
+      {/* The Scholar line. The venue is italic, as a journal or proceedings
+          name is in a reference. */}
+      {source ? (
+        <p className={`${below} m-0 mt-1.5 text-[13px] text-muted`}>
+          {source.authors}
+          {source.venue || source.year ? (
+            <>
+              <span aria-hidden="true"> · </span>
+              {source.venue ? <em>{source.venue}</em> : null}
+              {source.venue && source.year ? " " : null}
+              {source.year}
+            </>
+          ) : null}
+        </p>
+      ) : null}
+
+      {/* Two lines when browsing, as Medium does: enough to say what the note
+          covers without each row becoming a paragraph. Unclamped while
+          searching, so a match further in is not hidden behind the ellipsis
+          the reader is looking for it under. */}
       <p
-        className={`m-0 text-[15px] text-text-soft leading-[1.6] ${
-          terms.length ? "" : "line-clamp-3"
+        className={`${below} m-0 mt-2 text-[15px] text-text-soft leading-[1.6] ${
+          terms.length ? "" : "line-clamp-2"
         }`}
       >
         <Highlight text={note.summary} terms={terms} />
       </p>
 
       {note.tags.length ? (
-        <ul className="m-0 mt-3 flex list-none flex-wrap gap-1.5 p-0">
+        <ul
+          className={`${below} m-0 mt-3 flex list-none flex-wrap gap-1.5 p-0`}
+        >
           {/* A selected topic is shown first and in accent, so it is clear
-              why this card is in the results. */}
+              why this row is in the results. */}
           {[...note.tags]
             .sort(
               (a, b) => Number(topics.includes(b)) - Number(topics.includes(a)),
@@ -683,9 +793,6 @@ function NoteCard({
             .slice(0, 3)
             .map((tag) => {
               const on = topics.includes(tag);
-              // A matching tag keeps the grey tag's ground and only its text
-              // turns accent: one signal, enough to say why the card is here,
-              // without a tinted block repeated on every card in the grid.
               const look = `rounded-[3px] bg-panel px-2 py-0.5 text-[12px] ${
                 on ? "font-medium text-accent" : "text-muted"
               }`;
@@ -710,29 +817,202 @@ function NoteCard({
         </ul>
       ) : null}
 
-      {/* mt-auto pins the footer to the bottom, so cards with short and long
-          summaries in the same row still line their dates up. */}
-      <div className="mt-auto flex items-center justify-between gap-3 pt-4 font-mono text-[11px] text-muted-light uppercase tracking-[0.06em]">
-        <span className="flex flex-wrap items-center gap-x-2">
-          <time dateTime={note.date}>{formatDay(note.date)}</time>
-          <span aria-hidden="true">·</span>
-          <span>{note.readingMinutes} min read</span>
-          {note.draft ? (
-            <>
-              <span aria-hidden="true">·</span>
-              <span className="text-error-text">Draft</span>
-            </>
-          ) : null}
-        </span>
+      {/* Always the full width, even beside a figure, so "Read" lands at the
+          same right edge on every row. Ending under the text instead made it
+          zigzag down the list between rows with and without one. */}
+      <div className="col-span-2 mt-3 flex items-center gap-1">
+        <CiteMenu note={note} />
+        <CopyLink note={note} />
         {/* The "dive deeper" cue. Decorative: the link is the title. */}
         <span
           aria-hidden="true"
-          className="shrink-0 text-muted transition-[color,transform] group-hover:text-accent motion-safe:group-hover:translate-x-0.5"
+          className="ml-auto shrink-0 font-mono text-[11px] text-muted uppercase tracking-[0.06em] transition-[color,transform] group-hover:text-accent motion-safe:group-hover:translate-x-0.5"
         >
           Read &rarr;
         </span>
       </div>
+
+      {thumb ? (
+        // Decorative (alt=""): it previews a figure the title already
+        // introduces, and the reader meets it with its caption in the note.
+        // A hairline edge, because most figures are on white and would
+        // otherwise bleed into a light page. object-cover with the top
+        // anchored: a figure's title and top axis matter more than its foot.
+        //
+        // Placed with row-start and row-end, never row-span: Tailwind's
+        // row-span is the grid-row SHORTHAND, which resets the start too, so
+        // `row-start-1 sm:row-span-6` silently became "span 6 from wherever"
+        // and the image dropped below the text. Lines 1 to 3 cover the meta
+        // line and title on a phone; from sm, 1 to 6 covers every text row
+        // above the actions, which run the full width beneath it.
+        //
+        // Dimmed a touch in dark mode, where a white figure on a dark page
+        // glares, and back to full on hover, when it is being looked at.
+        <Image
+          src={thumb}
+          alt=""
+          width={320}
+          height={214}
+          sizes="(min-width: 640px) 160px, 72px"
+          className="col-start-2 row-start-1 row-end-3 h-[72px] w-[72px] self-start rounded-[4px] border border-border bg-white object-cover object-top transition-[filter] duration-200 dark:brightness-[0.82] dark:group-hover:brightness-100 sm:row-end-6 sm:h-[107px] sm:w-[160px]"
+        />
+      ) : null}
     </article>
+  );
+}
+
+/** Feedback for a copy action: true for a moment after it succeeds. */
+function useCopied() {
+  const [copied, setCopied] = useState(false);
+  const timer = useRef(0);
+  useEffect(() => () => clearTimeout(timer.current), []);
+  const copy = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Clipboard refused (an insecure context, a denied permission). Say
+      // nothing rather than claim a copy that did not happen.
+      return;
+    }
+    setCopied(true);
+    clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setCopied(false), 1600);
+  };
+  return { copied, copy };
+}
+
+/** Shared look of the small row actions: quiet until pointed at. */
+const ACTION =
+  "relative z-10 inline-flex h-8 items-center gap-1.5 rounded-[3px] px-2 text-[13px] text-muted transition-colors first:-ml-2 hover:text-text focus-visible:outline-2 focus-visible:outline-accent";
+
+/**
+ * Cite: APA and BibTeX for the note, each copied in one press. The one
+ * feature from Scholar that is pure academic signal, and genuinely useful to
+ * anyone who wants to reference the note. A popover rather than copying one
+ * format outright, since which one a reader needs depends on what they are
+ * writing in.
+ */
+function CiteMenu({ note }: { note: Note }) {
+  const { apa, bibtex } = citations(note, site);
+  return (
+    <Popover.Root>
+      <Popover.Trigger className={`${ACTION} data-[state=open]:text-text`}>
+        <QuoteIcon />
+        Cite
+      </Popover.Trigger>
+      <Popover.Portal>
+        <Popover.Content
+          align="start"
+          sideOffset={6}
+          collisionPadding={16}
+          className="z-30 w-[min(26rem,calc(100vw-2rem))] rounded-[5px] border border-border bg-bg p-3 shadow-[0_16px_40px_-16px_rgba(0,0,0,0.35)] focus:outline-none"
+        >
+          <CiteFormat label="APA" text={apa} />
+          <CiteFormat label="BibTeX" text={bibtex} mono />
+        </Popover.Content>
+      </Popover.Portal>
+    </Popover.Root>
+  );
+}
+
+function CiteFormat({
+  label,
+  text,
+  mono = false,
+}: {
+  label: string;
+  text: string;
+  mono?: boolean;
+}) {
+  const { copied, copy } = useCopied();
+  return (
+    <div className="[&+&]:mt-3 [&+&]:border-border [&+&]:border-t [&+&]:pt-3">
+      <div className="mb-1.5 flex items-center justify-between">
+        <span className="font-semibold text-[11px] text-muted uppercase tracking-[0.12em]">
+          {label}
+        </span>
+        <button
+          type="button"
+          onClick={() => copy(text)}
+          className="rounded-[3px] px-1.5 py-0.5 text-[12px] text-accent transition-colors hover:bg-panel focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          {/* The live region makes "Copied" heard, not only seen. */}
+          <span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
+        </button>
+      </div>
+      {/* Selectable as well as copyable, for anyone who wants only part.
+          BibTeX scrolls sideways rather than wrapping: a soft wrap in code
+          suggests a line break that is not there. */}
+      <p
+        className={`m-0 select-all rounded-[3px] bg-panel px-2.5 py-2 text-text-soft ${
+          mono
+            ? "overflow-x-auto whitespace-pre font-mono text-[11.5px] leading-[1.55]"
+            : "whitespace-pre-wrap break-words text-[13px] leading-[1.55]"
+        }`}
+      >
+        {text}
+      </p>
+    </div>
+  );
+}
+
+function CopyLink({ note }: { note: Note }) {
+  const { copied, copy } = useCopied();
+  return (
+    <button
+      type="button"
+      onClick={() => copy(`${site.url}${noteHref(note.slug)}`)}
+      className={ACTION}
+    >
+      {copied ? <CheckIcon /> : <LinkIcon />}
+      <span aria-live="polite">{copied ? "Copied" : "Copy link"}</span>
+    </button>
+  );
+}
+
+function QuoteIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      className="h-3.5 w-3.5"
+      fill="currentColor"
+    >
+      <path d="M3 9.5C3 7 4.4 5 6.6 4l.6 1C5.9 5.7 5.2 6.7 5.1 7.8 6 7.8 6.8 8.6 6.8 9.6S6 11.5 4.9 11.5C3.8 11.5 3 10.7 3 9.5Zm6 0C9 7 10.4 5 12.6 4l.6 1c-1.3.7-2 1.7-2.1 2.8.9 0 1.7.8 1.7 1.8s-.8 1.9-1.9 1.9C9.8 11.5 9 10.7 9 9.5Z" />
+    </svg>
+  );
+}
+
+function LinkIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      className="h-3.5 w-3.5"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+    >
+      <path d="M6.5 9.5l3-3M7 4.5l1-1a2.8 2.8 0 0 1 4 4l-1 1M9 11.5l-1 1a2.8 2.8 0 0 1-4-4l1-1" />
+    </svg>
+  );
+}
+
+function CheckIcon() {
+  return (
+    <svg
+      viewBox="0 0 16 16"
+      aria-hidden="true"
+      className="h-3.5 w-3.5 text-accent"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M3.5 8.5l3 3 6-7" />
+    </svg>
   );
 }
 

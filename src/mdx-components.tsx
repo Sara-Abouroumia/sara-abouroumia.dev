@@ -153,6 +153,46 @@ const components: MDXComponents = {
       className="my-6 h-auto w-full rounded-[3px] border border-border"
     />
   ),
+
+  /**
+   * A numbered figure with a caption, the academic form of an image:
+   *
+   *   <Figure src="/notes/my-note/fig1.svg" caption="What it shows." />
+   *
+   * Available in every note without an import, because it is in this map.
+   *
+   * The number is not a prop. A CSS counter on the note body counts figures
+   * in document order (see .note-figure in globals.css), so inserting one in
+   * the middle renumbers everything after it, and no note can say "Figure 3"
+   * twice. `alt` defaults to the caption; give it separately when the caption
+   * is an interpretation and the reader without sight needs a description.
+   *
+   * A white ground, since plots and diagrams are drawn on white, dimmed a
+   * little in dark mode, where a white panel would otherwise glare.
+   */
+  Figure: ({
+    src,
+    caption,
+    alt,
+  }: {
+    src: string;
+    caption: string;
+    alt?: string;
+  }) => (
+    <figure className="note-figure mx-0 my-8">
+      {/* biome-ignore lint/performance/noImgElement: no intrinsic size to give next/image; see img above */}
+      <img
+        src={src}
+        alt={alt ?? caption}
+        loading="lazy"
+        decoding="async"
+        className="h-auto w-full rounded-[3px] border border-border bg-white dark:brightness-[0.9]"
+      />
+      <figcaption className="mt-2.5 text-[14px] text-muted leading-[1.55]">
+        {caption}
+      </figcaption>
+    </figure>
+  ),
 };
 
 export function useMDXComponents(): MDXComponents {

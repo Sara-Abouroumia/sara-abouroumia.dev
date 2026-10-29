@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { site } from "@/content/site";
 
+// Not imported from og.tsx, which reads fonts with node:fs and would drag
+// that into every page's metadata module for the sake of two numbers.
+const OG_SIZE = { width: 1200, height: 630 };
+
 export const SITE_TITLE = `${site.name} · ${site.role}`;
 
 export const SITE_DESCRIPTION =
@@ -28,6 +32,7 @@ export function pageMetadata({
   description,
   path,
   publishedTime,
+  image,
 }: {
   title?: string;
   description: string;
@@ -39,6 +44,8 @@ export function pageMetadata({
    * article, so the two cannot get out of step.
    */
   publishedTime?: string;
+  /** This page's own preview card; the site card when omitted. */
+  image?: { url: `/${string}`; alt: string };
 }): Metadata {
   return {
     ...(title ? { title } : {}),
@@ -55,6 +62,22 @@ export function pageMetadata({
       title: title ? `${title} · ${site.name}` : SITE_TITLE,
       description,
       url: path,
+      /**
+       * The preview card, named outright on every page. The file at the root
+       * (app/opengraph-image.tsx) is only inherited by a page that sets no
+       * openGraph of its own, and every page sets one here, so without this
+       * /notes and /contact shared as bare text. And once this names an
+       * image, it also beats a segment's own opengraph-image file (measured,
+       * despite the docs' "files outrank config"), which is why a note passes
+       * its card in as `image` instead of relying on the file being found.
+       */
+      images: [
+        {
+          url: image?.url ?? "/opengraph-image",
+          ...OG_SIZE,
+          alt: image?.alt ?? SITE_TITLE,
+        },
+      ],
     },
   };
 }

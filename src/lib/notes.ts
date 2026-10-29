@@ -63,12 +63,53 @@ const Frontmatter = z.object({
   date: z.union([z.string(), z.date()]).transform(toIsoDay),
   draft: z.boolean().default(false),
   tags: z.array(z.string()).default([]),
+  /**
+   * The listing thumbnail, a path under public/ ("/notes/x/fig.png"). Optional:
+   * without it the note's first figure is used, and without that, none. Local
+   * paths only, since the CSP allows images from this origin alone.
+   */
+  cover: z.string().startsWith("/").optional(),
+  /**
+   * What the note is about, when it is about a piece of work: a paper, a talk,
+   * a book. Shown under the title the way Scholar shows authors and venue,
+   * which is the line that tells a reader this engages with real literature.
+   */
+  source: z
+    .object({
+      authors: z.string().min(1),
+      venue: z.string().optional(),
+      year: z.number().int().optional(),
+      url: z.url().optional(),
+    })
+    .optional(),
 });
 
 export type Note = z.infer<typeof Frontmatter> & {
   slug: string;
   readingMinutes: number;
+  /** The cover, else the first figure in the body, else undefined. */
+  thumbnail?: string;
 };
+
+/**
+ * The first local image in a note's body, markdown or JSX form.
+ *
+ * Why a figure from the note rather than a picked image: a thumbnail of the
+ * confusion matrix or the architecture diagram previews what is actually
+ * inside, which is what makes a listing look scholarly. A stock picture only
+ * says "blog". Remote images are skipped, as the CSP would block them anyway.
+ */
+function firstFigure(body: string): string | undefined {
+  // Code first: an image written out as an example, in a fence or in
+  // backticks, is not an image in the note.
+  const prose = body.replace(/```[\s\S]*?```/g, " ").replace(/`[^`]*`/g, " ");
+  // One pattern for all three forms, so whichever comes first in the note
+  // wins: ![alt](src), <img src>, and <Figure src>.
+  const match = prose.match(
+    /!\[[^\]]*\]\((\/[^)\s]+)|<(?:img|Figure)\b[^>]*?\ssrc=["'](\/[^"']+)["']/,
+  );
+  return match?.[1] ?? match?.[2];
+}
 
 function toIsoDay(value: string | Date): string {
   if (value instanceof Date) return value.toISOString().slice(0, 10);
@@ -134,6 +175,7 @@ export function getNotes(): Note[] {
         ...parsed.data,
         slug: file.replace(/\.mdx$/, ""),
         readingMinutes: readingMinutes(content),
+        thumbnail: parsed.data.cover ?? firstFigure(content),
       };
     })
     .filter((note) => SHOW_DRAFTS || !note.draft)

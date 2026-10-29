@@ -1,3 +1,16 @@
+// The typeset math's stylesheet. Imported here, the one route that renders
+// note bodies, so its ~25 KB and the math fonts load only where equations can
+// appear, never on the home page.
+//
+// The HTML is rendered by rehype-katex's copy of katex and this CSS comes from
+// the top-level one, so the two must be the same version. package.json
+// enforces that with `"overrides": { "katex": "$katex" }`, which makes every
+// copy follow the direct dependency (`npm ls katex` says "deduped"). When they
+// differed (0.16 markup, 0.19 CSS, which renamed .tag to .katex-tag) equation
+// numbers silently lost their right alignment while everything else looked
+// fine. rehype-katex itself only asks for 0.16, which carries a security
+// advisory fixed in 0.18.2; the override is also what lifts it past that.
+import "katex/dist/katex.min.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,6 +24,7 @@ import {
   NOTES_PATH,
   noteHref,
 } from "@/lib/notes";
+import { alt as noteCardAlt } from "./opengraph-image";
 
 /**
  * A single note.
@@ -52,6 +66,9 @@ export async function generateMetadata({
       description: note.summary,
       path: noteHref(slug),
       publishedTime: note.date,
+      // The card drawn by ./opengraph-image.tsx. Same alt as that file
+      // exports, so the two cannot describe the image differently.
+      image: { url: `${noteHref(slug)}/opengraph-image`, alt: noteCardAlt },
     }),
     // A draft reachable on a preview deployment should still never be indexed
     // if that URL is shared.
@@ -113,6 +130,34 @@ export default async function NotePage({ params }: PageProps<"/notes/[slug]">) {
         {note.title}
       </h1>
 
+      {/* What the note is about, as on its row in the listing, and here a
+          link to the original, since this is where a reader goes looking. */}
+      {note.source ? (
+        <p className="m-0 mb-3 text-[14px] text-muted">
+          On{" "}
+          {note.source.url ? (
+            <a
+              href={note.source.url}
+              target="_blank"
+              rel="noopener"
+              className="text-text-soft underline decoration-field-border underline-offset-[3px] transition-colors hover:text-accent hover:decoration-accent"
+            >
+              {note.source.authors}
+            </a>
+          ) : (
+            note.source.authors
+          )}
+          {note.source.venue || note.source.year ? (
+            <>
+              <span aria-hidden="true"> · </span>
+              {note.source.venue ? <em>{note.source.venue}</em> : null}
+              {note.source.venue && note.source.year ? " " : null}
+              {note.source.year}
+            </>
+          ) : null}
+        </p>
+      ) : null}
+
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[11px] text-muted-light uppercase tracking-[0.06em]">
         <time dateTime={note.date}>{formatDay(note.date)}</time>
         <span aria-hidden="true">·</span>
@@ -131,7 +176,7 @@ export default async function NotePage({ params }: PageProps<"/notes/[slug]">) {
           At 17px that is roughly 70 characters a line, which is the range
           long-form prose is comfortable in. The title above stays wider so it
           still reads as a headline over the column. */}
-      <div className="mt-8 max-w-[640px] border-border border-t pt-2">
+      <div className="note-body mt-8 max-w-[640px] border-border border-t pt-2">
         <Body />
       </div>
 
