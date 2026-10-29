@@ -1,0 +1,39 @@
+# Dependabot: keeps dependencies current by opening pull requests.
+#
+# Two kinds of pull request come from it, and only one is configured here:
+#
+#   - Security updates: a PR as soon as a dependency has a published
+#     vulnerability with a fix (the critical Next.js one found by `npm audit`
+#     in Oct 2026 is the kind it exists for). Those are switched on in the
+#     repository settings, not in this file: Settings > Code security >
+#     Dependabot security updates.
+#   - Version updates: routine upgrades on a schedule, configured below.
+#
+# Routine upgrades are grouped into one PR a week, so the inbox gets one
+# reviewable change instead of a dozen. Major versions stay separate: they
+# can break things, so each deserves its own PR and its own look.
+
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - minor
+          - patch
+    commit-message:
+      prefix: deps
+
+  # The workflow files pin GitHub Actions by version (actions/checkout@v5),
+  # and those go stale too.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    commit-message:
+      prefix: ci

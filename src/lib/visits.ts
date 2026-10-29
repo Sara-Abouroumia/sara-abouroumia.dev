@@ -1,9 +1,8 @@
-import { createHmac } from "node:crypto";
-import { isIP } from "node:net";
 import { sql } from "drizzle-orm";
 import { unstable_cache } from "next/cache";
 import { db } from "@/db";
 import { visitCounts } from "@/db/schema";
+import { networkKey, networkOf } from "@/lib/network-key";
 
 export type CountryVisits = { code: string; visits: number };
 
@@ -46,10 +45,8 @@ export async function recordVisit(
   const network = networkOf(ip);
   if (!network) return false;
   const day = new Date().toISOString().slice(0, 10);
-  const visitor = createHmac("sha256", hashSecret())
-    .update(`${day}|${network}`)
-    .digest("hex")
-    .slice(0, 32);
+  // Scoped by the day, so tomorrow the same network is a stranger.
+  const visitor = networkKey(day, network);
 
   // Casts on the SELECT list: parameters arrive untyped, and Postgres will
   // not assign untyped text to a date column without being told.
@@ -71,50 +68,6 @@ export async function recordVisit(
     select count from counted
   `);
   return result.rows[0]?.count === 1;
-}
-
-/**
- * The key for the visitor hash. VISIT_HASH_SECRET is its own variable so
- * that a leak of the database alone is not enough to reverse the hashes.
- * Falling back to DATABASE_URL keeps counting working if it was never set
- * (it is secret too), at the cost of that separation, so set it.
- */
-function hashSecret(): string {
-  return process.env.VISIT_HASH_SECRET || process.env.DATABASE_URL || "dev";
-}
-
-/**
- * The part of an IP address that identifies a network, or null for anything
- * that is not an IP.
- *
- * IPv4: the whole address. Many people behind one router (a home, a
- * university) share it and count once a day. For a country-level map that
- * undercount is the right trade: the alternative lets one machine count as
- * many visitors as it likes.
- *
- * IPv6: only the first 64 bits. A single home line is usually handed a /64,
- * which is 18 quintillion addresses, and a script can pick a fresh one for
- * every request. Hashing the whole address would let anyone with an IPv6
- * connection count without limit. The /64 is what identifies the line.
- *
- * IPv4-mapped IPv6 ("::ffff:1.2.3.4") is treated as the IPv4 it carries.
- */
-export function networkOf(ip: string): string | null {
-  const mapped = ip.match(/^::ffff:(\d+\.\d+\.\d+\.\d+)$/i);
-  if (mapped) return mapped[1];
-  const version = isIP(ip);
-  if (version === 4) return ip;
-  if (version !== 6) return null;
-  // Expand "::" so every address has eight groups, then keep four.
-  const [head, tail = ""] = ip.split("::");
-  const front = head ? head.split(":") : [];
-  const back = tail ? tail.split(":") : [];
-  const zeros = Array(8 - front.length - back.length).fill("0");
-  const groups = ip.includes("::") ? [...front, ...zeros, ...back] : front;
-  return `${groups
-    .slice(0, 4)
-    .map((g) => Number.parseInt(g, 16).toString(16))
-    .join(":")}::/64`;
 }
 
 /**

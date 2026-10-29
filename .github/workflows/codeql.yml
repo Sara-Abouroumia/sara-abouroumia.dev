@@ -1,0 +1,50 @@
+# CodeQL: GitHub's code scanner. It reads this repository's own code (not
+# its dependencies, which are Dependabot's job) for security mistakes:
+# unsanitised input reaching HTML or a database query, open redirects,
+# secrets in source, and the like. Findings appear under the repository's
+# Security tab > Code scanning, and on any pull request that introduces one.
+#
+# Free for public repositories. Runs on every push to main, on pull requests
+# into it, and weekly, since CodeQL's own rules improve and can find
+# something in code that has not changed.
+
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC; an odd minute avoids the top-of-hour rush
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    # Least privilege: read the code, write only the scan results.
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      # JavaScript and TypeScript are analysed from source, so no build step:
+      # build-mode none is both faster and enough.
+      - uses: github/codeql-action/init@v4
+        with:
+          languages: javascript-typescript
+          build-mode: none
+          # The default suite plus the extended security queries.
+          queries: security-extended
+          # Third-party and generated code, not ours to fix here.
+          config: |
+            paths-ignore:
+              - design
+              - node_modules
+              - .next
+
+      - uses: github/codeql-action/analyze@v4
+        with:
+          category: /language:javascript-typescript

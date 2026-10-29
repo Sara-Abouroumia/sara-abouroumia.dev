@@ -1,9 +1,23 @@
 "use server";
 
+import { ipAddress } from "@vercel/functions";
+import { headers } from "next/headers";
 import { Resend } from "resend";
 import { z } from "zod";
 import { site } from "@/content/site";
+import { checkRateLimit, type Limit } from "@/lib/rate-limit";
 import { MESSAGE_MAX, TOPIC_IDS, type TopicId, topicLabel } from "./topics";
+
+/**
+ * Per network: 3 messages in 10 minutes, 10 in a day. A person writing,
+ * correcting and resending stays well inside both; a script hits the short
+ * one at its fourth message and the daily one caps what it can do even if it
+ * paces itself. The daily cap is also what protects the Resend quota.
+ */
+const CONTACT_LIMITS: Limit[] = [
+  { scope: "contact:10m", max: 3, windowSeconds: 10 * 60 },
+  { scope: "contact:1d", max: 10, windowSeconds: 24 * 60 * 60 },
+];
 
 export type ContactField = "name" | "surname" | "email" | "message";
 
@@ -89,6 +103,32 @@ export async function submitContact(
       status: "error",
       message: "Please fix the highlighted fields.",
       fieldErrors,
+      values,
+    };
+  }
+
+  /**
+   * Counted only now, after the honeypot and validation: a bot caught above
+   * never reaches a counter, and a person fixing a typo in their email does
+   * not spend one of their three. Locally there is no Vercel edge to supply
+   * the address, so a development server counts as one fixed address, which
+   * is also what makes the limit testable there.
+   */
+  const ip =
+    ipAddress(await headers()) ??
+    (process.env.NODE_ENV === "development" ? "127.0.0.1" : undefined);
+  const limit = await checkRateLimit(ip, CONTACT_LIMITS);
+  if (!limit.ok) {
+    const minutes = Math.max(1, Math.ceil(limit.retryAfter / 60));
+    return {
+      status: "error",
+      // Honest about why and for how long, and never a dead end: the address
+      // always works. Values come back so nothing typed is lost.
+      message: `You have sent a few messages in a short time. Please try again in ${
+        minutes < 60
+          ? `${minutes} minute${minutes === 1 ? "" : "s"}`
+          : "a few hours"
+      }, or email ${site.email} directly.`,
       values,
     };
   }

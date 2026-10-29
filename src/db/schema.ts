@@ -1,4 +1,12 @@
-import { char, date, integer, pgTable, primaryKey } from "drizzle-orm/pg-core";
+import {
+  char,
+  date,
+  index,
+  integer,
+  pgTable,
+  primaryKey,
+  timestamp,
+} from "drizzle-orm/pg-core";
 
 /**
  * Visits, as one counter per country per day. Nothing else.
@@ -33,7 +41,7 @@ export const visitCounts = pgTable(
  *
  * `visitor` is not an IP. It is HMAC-SHA256(secret, day + network), cut to
  * 128 bits, where the network is the IPv4 address or the IPv6 /64 (see
- * networkOf in lib/visits.ts). Three properties follow, and they are the
+ * networkOf in lib/network-key.ts). Three properties follow, and they are the
  * point of the design:
  *   - Keyed: without VISIT_HASH_SECRET, a leaked copy of this table cannot be
  *     brute-forced back into IPs, even though IPv4 has only 4 billion values.
@@ -53,4 +61,27 @@ export const visitSeen = pgTable(
     visitor: char("visitor", { length: 32 }).notNull(),
   },
   (t) => [primaryKey({ columns: [t.day, t.visitor] })],
+);
+
+/**
+ * Rate-limit counters for the public forms: how many submissions one network
+ * has made in the current window. Nothing else.
+ *
+ * `key` is networkKey(`${scope}:${slot}`, network) from lib/network-key.ts:
+ * a keyed hash, never an IP, and it changes with every window, so a row says
+ * "some network sent 2 messages in this 10-minute slot" and nothing that
+ * links it to the next slot or to a person.
+ *
+ * `expires_at` is when the window closes. Every check deletes expired rows in
+ * the same statement, so the table holds only windows still open: a few rows,
+ * gone within a day. The index on it is what keeps that sweep cheap.
+ */
+export const rateLimits = pgTable(
+  "rate_limits",
+  {
+    key: char("key", { length: 32 }).primaryKey(),
+    count: integer("count").notNull().default(0),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  },
+  (t) => [index("rate_limits_expires_at_idx").on(t.expiresAt)],
 );

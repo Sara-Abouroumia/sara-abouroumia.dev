@@ -28,11 +28,11 @@ const MAX_TILT = 60;
  * page, land a step up, a faint neutral rim, and lights in the warm yellow of sodium street lamps,
  * blended additively so they glow and brighten where they overlap.
  *
- * Light: the same Earth in daylight, in the site's own warm neutrals, so it
- * sits on the cream page instead of punching a dark hole in it. Glowing
- * yellow reads as light only on a dark ground; on a light one it washes
- * out, so here the lights are a deeper amber, drawn normally (additive
- * blending would brighten them toward white and erase them).
+ * Light: the same Earth in daylight, in its own colours muted (dusty blue
+ * sea, sage land), so it sits on the cream page instead of punching a dark
+ * hole in it. The lights are white-hot centres in a yellow glow: white is
+ * brighter than both land and sea, which is what makes them read as light
+ * on a light globe (details on DAY below).
  */
 type Palette = {
   ocean: string;
@@ -50,6 +50,14 @@ type Palette = {
    * ground needs more, so each theme sets its own.
    */
   strength: number;
+  /**
+   * A white-hot centre for each light, or null for none. On the light
+   * globe it is the one colour brighter than the tan land, and brighter
+   * than its surroundings is what makes anything read as light. On the
+   * dark globe it would read as a glaring lamp and, added up where lights
+   * overlap, burn to white, so the night globe has none.
+   */
+  core: RGB | null;
 };
 
 type RGB = [number, number, number];
@@ -69,23 +77,29 @@ const NIGHT: Palette = {
   ],
   blend: "lighter",
   strength: 1,
+  core: null,
 };
 
 const DAY: Palette = {
-  ocean: "#efe9de",
-  land: "#d9d0bd",
-  rim: "rgba(150, 135, 105, 0.35)",
-  // Neon yellow, lights from above. Real neon reads by being far brighter
-  // than its surroundings, which a light ground cannot give, so this
-  // borrows neon's other trait: full saturation (no blue at all), which
-  // pops against the muted cream where paler yellows faded into it.
-  // Painted normally: additive blending would wash it toward white.
+  // Earth's own colours, muted: a dusty sky-blue ocean and a soft sage
+  // land. Muted so it sits calmly on the warm cream page instead of
+  // reading as a bright school atlas, and both darker than white, so the
+  // lights read over land and sea alike.
+  ocean: "#cfdde6",
+  land: "#b7c7a0",
+  rim: "rgba(90, 120, 140, 0.35)",
+  // Warm white light from above: a white centre (`core`) melting into a
+  // warm yellow glow, the way a bulb looks, with no dark edge. Every coloured light faded into
+  // or sat on top of the tan land; white is the one colour brighter than
+  // it, so this reads as light rather than paint. Painted normally:
+  // additive blending would wash it out entirely on this light ground.
   glow: [
-    [255, 214, 0],
-    [255, 235, 0],
+    [250, 222, 120],
+    [252, 230, 140],
   ],
   blend: "source-over",
-  strength: 2,
+  strength: 2.2,
+  core: [255, 255, 255],
 };
 
 /** Degrees per arrow-key press. */
@@ -249,14 +263,13 @@ export function VisitorGlobe({
             xy[1],
             r,
           );
-          // One colour per country, only its opacity falls off, so no
-          // country shows two shades. Never a near-white core: a white
-          // centre reads as a lamp, and additive blending pushes
-          // overlapping patches further toward white. Kept well under full
-          // opacity so even the busiest country is a tint on the land, not
-          // a glare.
+          // Kept well under full opacity so even the busiest country is a
+          // glow on the land, not a glare. The centre is the palette's
+          // `core` where it has one (see Palette), else the country's own
+          // colour.
           const c = mix(p.glow[0], p.glow[1], w);
-          heat.addColorStop(0, `rgba(${c}, ${0.5 * a})`);
+          const centre = p.core ? p.core.join(", ") : c;
+          heat.addColorStop(0, `rgba(${centre}, ${0.5 * a})`);
           heat.addColorStop(0.35, `rgba(${c}, ${0.3 * a})`);
           heat.addColorStop(0.7, `rgba(${c}, ${0.1 * a})`);
           heat.addColorStop(1, `rgba(${c}, 0)`);
