@@ -45,6 +45,11 @@ type Palette = {
    */
   glow: [RGB, RGB];
   blend: GlobalCompositeOperation;
+  /**
+   * Opacity multiplier. Light on dark needs little to read; ink on a light
+   * ground needs more, so each theme sets its own.
+   */
+  strength: number;
 };
 
 type RGB = [number, number, number];
@@ -63,21 +68,24 @@ const NIGHT: Palette = {
     [255, 196, 82],
   ],
   blend: "lighter",
+  strength: 1,
 };
 
 const DAY: Palette = {
   ocean: "#efe9de",
   land: "#d9d0bd",
   rim: "rgba(150, 135, 105, 0.35)",
-  // Neon city light: violet for the few, hot pink for the most. Both sit
-  // far from the tan land on the colour wheel (purple is yellow's
-  // opposite), so they read where amber blended in. Painted normally:
-  // multiply would darken them to mauve and lose the neon.
+  // Claude orange (#d97757) for every country: how visited it is shows in
+  // opacity alone. The accent's family belongs on this warm page, and it
+  // is redder than the tan land, where amber (the land's own hue) mixed
+  // into mud. Painted normally, so it stays the true orange: multiply
+  // would darken it into the tan.
   glow: [
-    [147, 51, 234],
-    [236, 72, 153],
+    [217, 119, 87],
+    [217, 119, 87],
   ],
   blend: "source-over",
+  strength: 1.6,
 };
 
 /** Degrees per arrow-key press. */
@@ -221,7 +229,8 @@ export function VisitorGlobe({
           // overlap (Europe) add up, which is what makes it a heat map.
           // Near the rim they dim, the way a city near the horizon does.
           const fade = Math.min(1, (Math.PI / 2 - arc) / 0.35);
-          const a = (HEAT_FLOOR + (1 - HEAT_FLOOR) * d.weight) * fade;
+          const a =
+            (HEAT_FLOOR + (1 - HEAT_FLOOR) * d.weight) * fade * p.strength;
           const r = size * (0.06 + 0.04 * d.weight);
           const heat = ctx.createRadialGradient(
             xy[0],
