@@ -7,17 +7,25 @@ import { OG_COLORS as C, OG_SIZE, ogCard, publicImage } from "@/lib/og";
  * every route below it, which is how one file covers them all; a note's own
  * opengraph-image.tsx overrides it for that note.
  *
- * The name large with role and place under it, and the photo beside them,
- * so the footer byline every note card carries is switched off here rather
- * than saying the name twice.
+ * Read top to bottom the way a business card is: who (name, role), where
+ * (the university, with its crest), what (one line of the work), and the
+ * photo beside it. The crest is there because a recognisable institution
+ * mark says more at thumbnail size than the words do, which is also why the
+ * summary no longer repeats the university's name. The footer byline every
+ * note card carries is switched off here rather than saying the name twice.
  */
 
 export const size = OG_SIZE;
 export const contentType = "image/png";
-export const alt = `${site.name}, ${site.role}`;
+export const alt = `${site.name}, ${site.role}, Istanbul Technical University`;
 
 export default async function Image() {
-  const photo = await publicImage("/sara.png");
+  const [photo, crest] = await Promise.all([
+    publicImage("/sara.png"),
+    // The 200px JPEG, not the 96px PNG the site uses: the crest is fine
+    // linework, and scaled from 96 it greyed out into a blur on the card.
+    publicImage("/logos/itu_logo.jpg"),
+  ]);
   return ogCard(
     <div style={{ display: "flex", width: "100%", alignItems: "center" }}>
       <div style={{ display: "flex", flexDirection: "column", flex: 1 }}>
@@ -27,34 +35,69 @@ export default async function Image() {
         <div
           style={{
             display: "flex",
-            marginTop: 14,
+            marginTop: 12,
             fontSize: 34,
             color: C.muted,
           }}
         >
           {site.role}
         </div>
+
+        {/* The affiliation: crest, then institution over position and
+            place. The crest sits on white with a hairline, as the logos do
+            on the site, so its edge reads on the white card. */}
         <div
           style={{
             display: "flex",
-            marginTop: 6,
-            fontSize: 30,
-            color: C.muted,
+            alignItems: "center",
+            gap: 20,
+            marginTop: 38,
           }}
         >
-          {site.location}
+          {crest ? (
+            // biome-ignore lint/performance/noImgElement: Satori draws <img>, next/image does not exist here
+            <img
+              src={crest}
+              alt=""
+              width={76}
+              height={76}
+              style={{
+                borderRadius: 10,
+                border: `2px solid ${C.border}`,
+                background: "#ffffff",
+              }}
+            />
+          ) : null}
+          <div style={{ display: "flex", flexDirection: "column" }}>
+            <div style={{ display: "flex", fontSize: 28, fontWeight: 600 }}>
+              Istanbul Technical University
+            </div>
+            <div
+              style={{
+                display: "flex",
+                marginTop: 4,
+                fontSize: 24,
+                color: C.muted,
+              }}
+            >
+              Graduate researcher
+              <span style={{ margin: "0 10px" }}>·</span>
+              {site.location}
+            </div>
+          </div>
         </div>
+
         <div
           style={{
             display: "flex",
-            marginTop: 40,
+            marginTop: 34,
             fontSize: 28,
             lineHeight: 1.45,
             maxWidth: 680,
           }}
         >
-          AI for cybersecurity at Istanbul Technical University: intrusion
-          detection and the security of LLM agents.
+          AI for cybersecurity: intrusion detection and the security of LLM
+          agents.
         </div>
       </div>
       {photo ? (
