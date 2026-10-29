@@ -1,4 +1,5 @@
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Inter, Lora, Source_Serif_4 } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -8,7 +9,6 @@ import { SiteHeader } from "@/components/site-header";
 import { VisitBeacon } from "@/components/visit-beacon";
 import { site } from "@/content/site";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
-import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
@@ -88,6 +88,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               existing script-src 'self' and connect-src 'self' already cover
               it and the CSP needs no widening. */}
           <Analytics />
+          {/* Renders nothing. Measures real visitors' Core Web Vitals (LCP,
+              INP, CLS) and reports them to Speed Insights on the Vercel
+              dashboard. Same-origin like Analytics, served from
+              /_vercel/speed-insights, so the CSP needs no change either. */}
+          <SpeedInsights />
           {/* Renders nothing. Counts this visit's country for the map on
               About, once per browser session, from whichever page the visit
               starts on. See components/visit-beacon.tsx. */}
