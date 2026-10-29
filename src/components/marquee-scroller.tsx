@@ -371,8 +371,11 @@ export function MarqueeScroller({
           // spot (-translate-x-1.5 on the left, + on the right) and moves in
           // toward the row, as if stepping in from the edge.
           //
-          // Touch screens have no hover, so a coarse pointer shows them at
-          // rest instead, and keyboard focus always reveals the one focused.
+          // Hidden entirely on touch screens (pointer-coarse:hidden). A finger
+          // swipes the row natively, so the arrows would only cover marks,
+          // and with no hover there is no moment for them to appear anyway.
+          // display:none also takes them out of the tab order there. On
+          // desktop, keyboard focus always reveals the one focused.
           //
           // Two hover levels sit on two elements so they never fight over the
           // same property: this button answers the strip (group/marquee), the
@@ -381,7 +384,7 @@ export function MarqueeScroller({
           //
           // top-[46px] centres them on the marks, not the whole row: 28px of
           // py-7 padding plus half the 36px mark.
-          className={`group/arrow absolute top-[46px] z-10 flex h-11 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted opacity-0 transition-[opacity,translate,color] duration-300 ease-out group-hover/marquee:translate-x-0 group-hover/marquee:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100 pointer-coarse:translate-x-0 pointer-coarse:opacity-70 ${dir < 0 ? "-left-2 -translate-x-1.5" : "-right-2 translate-x-1.5"}`}
+          className={`group/arrow absolute top-[46px] z-10 flex h-11 w-9 -translate-y-1/2 cursor-pointer items-center justify-center rounded-md text-muted opacity-0 transition-[opacity,translate,color] duration-300 ease-out group-hover/marquee:translate-x-0 group-hover/marquee:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100 pointer-coarse:hidden ${dir < 0 ? "-left-2 -translate-x-1.5" : "-right-2 translate-x-1.5"}`}
         >
           <Chevron dir={dir} />
         </button>
