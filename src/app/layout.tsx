@@ -8,6 +8,7 @@ import { SiteHeader } from "@/components/site-header";
 import { VisitBeacon } from "@/components/visit-beacon";
 import { site } from "@/content/site";
 import { SITE_DESCRIPTION, SITE_TITLE } from "@/lib/metadata";
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 const inter = Inter({
   subsets: ["latin", "latin-ext"],
