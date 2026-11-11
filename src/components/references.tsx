@@ -326,7 +326,7 @@ export function LetterBody({
 }) {
   return (
     <div
-      className={`flex flex-col gap-3 font-reading text-[15px] text-text-soft leading-[1.65] ${className}`}
+      className={`flex flex-col gap-3 font-reading text-[16px] text-text-soft leading-[1.65] ${className}`}
     >
       {r.body.map((b) =>
         typeof b === "string" ? (
