@@ -378,7 +378,7 @@ function Highlight({ text, quote }: { text: string; quote: string }) {
 const MARK =
   "select-none font-semibold font-serif text-[32px] text-accent leading-[0] opacity-80";
 
-function QuoteMark({ side }: { side: "open" | "close" }) {
+export function QuoteMark({ side }: { side: "open" | "close" }) {
   return side === "open" ? (
     <span aria-hidden="true" className={`absolute top-[20px] left-0 ${MARK}`}>
       “

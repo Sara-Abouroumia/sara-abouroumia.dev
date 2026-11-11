@@ -85,6 +85,9 @@ export const references: readonly Reference[] = [
     at: "Abdullah Gül University International Office",
     date: "2023-11-10",
     profile: "https://www.linkedin.com/in/nimet-bulut-999b71115/",
+    // Shared with her permission (November 2026). Cropped to her face,
+    // 400px square, like the other.
+    photo: "/references/nimet-bulut.jpg",
     quote:
       "Sara proved to be very hardworking, reliable and dynamic, continuously showcasing a positive mindset and attitude.",
     focus: ["Leadership", "Coordination"],

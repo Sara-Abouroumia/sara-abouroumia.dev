@@ -8,7 +8,7 @@ import { NowPanel } from "@/components/now-panel";
 import { OrgLogo } from "@/components/org-logo";
 import { PersonJsonLd } from "@/components/person-json-ld";
 import { PinIcon } from "@/components/pin-icon";
-import { ReferencesFocused } from "@/components/references-focused";
+import { ReferencesLetters } from "@/components/references-letters";
 import { ResumePreview } from "@/components/resume-preview";
 import { PROSE, Section } from "@/components/section";
 import { SectionBar } from "@/components/section-bar";
@@ -274,7 +274,7 @@ export default async function Home() {
           rather than showing an empty heading. */}
       {references.length ? (
         <Section title="References">
-          <ReferencesFocused references={references} />
+          <ReferencesLetters references={references} />
         </Section>
       ) : null}
 
