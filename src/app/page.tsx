@@ -232,7 +232,6 @@ export default async function Home() {
                 <p className="text-[15px] text-text-soft leading-snug">
                   {e.degree}
                   {e.honors ? `, ${e.honors}` : ""}
-                  {e.gpa ? ` (GPA ${e.gpa})` : ""}
                 </p>
                 <p className="mt-0.5 text-muted text-sm">
                   {e.start} – {e.end} · {e.location}

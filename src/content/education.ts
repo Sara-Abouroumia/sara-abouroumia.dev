@@ -1,16 +1,15 @@
 export type Education = {
   institution: string;
   degree: string;
+  /** Shown after the degree, so written to follow a comma. */
   honors?: string;
-  gpa?: string;
   start: string;
   end: string;
   location: string;
   /** Square logo in public/logos/. Falls back to a monogram when unset. */
   logo?: string;
   /**
-   * The facts that are not courses: thesis, supervisor, capstone, a GPA
-   * breakdown. Rendered as bullets, the same as an experience entry.
+   * The facts that are not courses: thesis, supervisor, capstone. Rendered as bullets, the same as an experience entry.
    */
   details?: string[];
   /**
@@ -46,13 +45,13 @@ export const education: Education[] = [
     institution: "Abdullah Gul University",
     degree: "B.S. in Computer Engineering",
     logo: "/logos/agu.png",
-    honors: "Honors",
-    gpa: "3.45/4.00",
+    // Lower case: the page joins it to the degree with a comma, so it reads
+    // "B.S. in Computer Engineering, graduated with honors".
+    honors: "Graduated with honors",
     start: "Sep. 2019",
     end: "Jun. 2024",
     location: "Kayseri, Turkey",
     details: [
-      "Final-year term GPAs of 3.80 and 4.00",
       "Capstone (A): Diabetic Foot Ulcer Classification Using CNN Transfer Learning and TPU Acceleration",
     ],
     // As on the CV. The minus is U+2212, the typographic one, rather than a
