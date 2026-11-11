@@ -348,14 +348,25 @@ export function LetterBody({
   );
 }
 
-/** `text`, with the pulled quote (if it is in there) in the body colour. */
+/**
+ * `text`, with the pulled quote (if it is in there) marked like a highlighter
+ * pen: the words keep the strong body colour and sit on a light wash of the
+ * accent, so an opened letter shows which sentence the collapsed view was
+ * quoting. The wash is the accent at a low strength, not a fixed orange, so
+ * it follows the theme (a pale peach on white, a deep rust on the dark
+ * band) and the text on it stays well above the 4.5:1 contrast text needs.
+ * box-decoration-clone repeats the padding and rounding on every line when
+ * the sentence wraps, instead of only at its first and last edge.
+ */
 function Highlight({ text, quote }: { text: string; quote: string }) {
   const at = text.indexOf(quote);
   if (at < 0) return text;
   return (
     <>
       {text.slice(0, at)}
-      <span className="text-text">{quote}</span>
+      <span className="box-decoration-clone rounded-[3px] bg-[color-mix(in_srgb,var(--accent)_16%,transparent)] px-[3px] text-text dark:bg-[color-mix(in_srgb,var(--accent)_26%,transparent)]">
+        {quote}
+      </span>
       {text.slice(at + quote.length)}
     </>
   );
