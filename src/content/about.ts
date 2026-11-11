@@ -41,6 +41,15 @@ export type NowItem = {
   /** Which mark leads the line. See NOW_ICONS in <NowPanel />. */
   icon: "code" | "study" | "award";
   text: string;
+  /**
+   * Something started and set aside, not abandoned and not active. Shown in
+   * the same list so the card stays honest about what is NOT moving, with a
+   * pause mark in place of `icon`, dimmed text and a "Paused" label. Write
+   * `text` as the thing itself ("Claude Academy certification"), not as an
+   * activity ("Working toward ..."), which would contradict the label. Take
+   * the flag off to resume, or delete the item to drop it.
+   */
+  paused?: boolean;
 };
 
 /**
@@ -61,7 +70,7 @@ export type NowItem = {
  * can disagree.
  */
 export const now = {
-  updated: "2026-10",
+  updated: "2026-11",
   items: [
     {
       icon: "code",
@@ -72,11 +81,12 @@ export const now = {
     {
       // İTÜ with the Turkish dotted capital İ (U+0130) and Ü (U+00DC).
       icon: "study",
-      text: "Writing my M.S. thesis at İTÜ on AI for intrusion detection and network security",
+      text: "Turkcell Funded Researcher at İTÜ",
     },
     {
       icon: "award",
-      text: "Working toward Claude Academy certification in Agentic Development",
+      paused: true,
+      text: "Claude Academy certification in Agentic Development",
     },
   ] satisfies NowItem[],
 };

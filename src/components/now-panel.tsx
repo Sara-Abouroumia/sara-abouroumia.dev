@@ -16,6 +16,14 @@ const NOW_ICONS: Record<NowItem["icon"], string> = {
 };
 
 /**
+ * The mark for a paused line, in place of its activity icon: two bars, drawn
+ * in the same line-art as the others (round caps, same stroke), so the icon
+ * column reads "moving" or "stopped" at a glance, the way the green dot does
+ * for the card as a whole.
+ */
+const PAUSE_ICON = "M9.2 6.5v11 M14.8 6.5v11";
+
+/**
  * What I'm doing now.
  *
  * The pulsing dot and the date are doing the same job from two directions:
@@ -65,10 +73,27 @@ export function NowPanel() {
               // at leading-snug): (20.6 − 16) / 2 ≈ 2px.
               className="mt-0.5 h-4 w-4 shrink-0 text-muted"
             >
-              <path d={NOW_ICONS[item.icon]} />
+              <path d={item.paused ? PAUSE_ICON : NOW_ICONS[item.icon]} />
             </svg>
-            <span className="text-[15px] text-text-soft leading-snug">
+            {/* A paused line is dimmed to --muted (5.0:1 on the panel in light,
+                5.5:1 in dark, still above the 4.5:1 text needs), not faded
+                with opacity, which would cut its contrast below that. The
+                label is words, not just the pause mark and the dimming, so
+                the state reaches a screen reader and does not depend on
+                seeing a small icon or a shade of grey. It sits inline after
+                the text, so on a phone it wraps with the sentence instead of
+                being stranded at the edge. */}
+            <span
+              className={`text-[15px] leading-snug ${
+                item.paused ? "text-muted" : "text-text-soft"
+              }`}
+            >
               {item.text}
+              {item.paused ? (
+                <span className="ml-2 inline-block rounded-[3px] border border-border px-1.5 py-px align-[1px] font-semibold text-[10.5px] text-muted uppercase leading-snug tracking-[0.06em]">
+                  Paused
+                </span>
+              ) : null}
             </span>
           </li>
         ))}
