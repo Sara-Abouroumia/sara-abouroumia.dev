@@ -71,7 +71,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen flex-col">
+          {/* overflow-x-clip: a full-width band (Section's `band`) is 100vw wide,
+              which counts the scrollbar and so overshoots the visible page by
+              up to its width; this cuts that off. `clip`, not `hidden`:
+              hidden would turn this into a scroll container and break the
+              sticky header, clip does not. */}
+          <div className="flex min-h-screen flex-col overflow-x-clip">
             <SiteHeader />
             {/* Same 880 as the header and footer, so the page h1 starts at the
                 same x as the site name above it. Long-form prose is capped

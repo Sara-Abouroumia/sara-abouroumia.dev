@@ -28,6 +28,12 @@
      clear 4.5:1 on --bg (4.76:1). Only 4.3:1 on --panel, so don't reuse it
      there without darkening. */
   --label: #c74a12;
+  /* The References band's fill (Section's `band`): the panel tint at 55%,
+     about half as strong as the footer's, so the band is a soft cream stripe
+     above it. A pale sky blue from the visitor globe's ocean (#cfdde6 at 35%)
+     was tried and not liked; if a colour is wanted here later, 35% is the
+     strongest wash that keeps the accent link at 4.5:1 or more. */
+  --band: color-mix(in srgb, var(--panel) 55%, transparent);
   /*
    * A shade off --bg, not equal to it. Dark has always done this (#1a1c20
    * against a #14161a page) and it is what makes an empty field read as a
@@ -146,6 +152,9 @@
   /* School-bus yellow, pulled back off full saturation so it sits on the dark
      ground without glowing. 10.9:1 on --bg. */
   --label: #f0c42b;
+  /* The band in dark: the page colour mixed 70% with black, a little darker
+     than the page, which is also the dark globe's own ocean (#0f1114). */
+  --band: color-mix(in srgb, var(--bg) 70%, black);
   /* From here down, the design canvas's own dark values: --field, --ph,
      --body and --faint in its palette. */
   --input-bg: #1c1d22;

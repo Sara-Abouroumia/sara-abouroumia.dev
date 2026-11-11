@@ -273,7 +273,7 @@ export default async function Home() {
           driven by the one list of references, so with none it disappears
           rather than showing an empty heading. */}
       {references.length ? (
-        <Section title="References">
+        <Section title="References" band>
           <ReferencesLetters references={references} />
         </Section>
       ) : null}

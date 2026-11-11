@@ -39,28 +39,13 @@ export function ReferencesLetters({
           gap (gap-10): a line under each one says "a new section starts
           here", and these are entries in one list, the way LinkedIn sets
           its own recommendations. The gap matches the one above the
-          LinkedIn note below, so the note reads as the end of the same
-          run.
+          LinkedIn note below, so the note reads as the end of the same run.
 
-          The list itself is the container: one box (the site's own panel
-          shape: 5px corners, as on the search field and the contact
-          buttons) around both references, so they sit together the way
-          LinkedIn frames its Recommendations card. The fill is a
-          hint of the site's panel tint: --panel mixed 55% with
-          transparent (color-mix), so it is about half as strong as the
-          real panel colour. In dark mode it goes the other way: a light
-          tint on a dark page reads as a raised card, and here the box
-          should sit slightly in, so it is the page colour mixed 70% with
-          black (dark:bg-[color-mix(in_srgb,var(--bg)_70%,black)]), a
-          little darker than the page. In both themes the edge is the fill
-          alone, so the hairline is transparent (border-transparent): a
-          transparent border shows the box's own background beneath it,
-          which makes the border exactly the fill's colour while keeping
-          its 1px, so the box is the same size either way. One box rather than one per reference, or they would read
-          as separate things again. p-5 on a phone keeps the text wide
-          enough to read; md:p-8 gives it room on a desktop. The LinkedIn
-          note stays outside, under the box. */}
-      <ul className="m-0 flex list-none flex-col gap-10 rounded-[5px] border border-transparent bg-[color-mix(in_srgb,var(--panel)_55%,transparent)] p-5 md:p-8 dark:bg-[color-mix(in_srgb,var(--bg)_70%,black)]">
+          There is no box around the list any more: the container is the
+          section itself, a full-width band (see `band` in Section), and
+          the list sits in the column on top of it. So the text keeps the
+          same left edge as every other section's. */}
+      <ul className="m-0 flex list-none flex-col gap-10 p-0">
         {references.map((r) => (
           <li key={r.profile}>
             <ReferenceBlock reference={r} />
@@ -125,7 +110,7 @@ function ReferenceBlock({ reference: r }: { reference: Reference }) {
           text share these edges, so the words keep their left edge when
           the review opens.
 
-          Opened, the letter becomes a panel of its own inside the box: a
+          Opened, the letter becomes a panel of its own on the band: a
           slightly different fill, 6px corners, and an accent bar down its
           left edge that wraps round the two left corners. That is what a
           border-left does on a rounded box: the border follows the corner
@@ -137,9 +122,9 @@ function ReferenceBlock({ reference: r }: { reference: Reference }) {
           bar sits where that mark did, so the mark gives way to the bar and
           the text stays on its column, under the name. The panel is the
           letter's own, so it fades in and grows with it instead of popping
-          in. The fill is a touch lighter than the box in both themes: the
+          in. The fill is a touch lighter than the band in both themes: the
           page colour at 70% over the cream in light, a little panel tint
-          over the dark box in dark. PROSE caps the line at about 75
+          over the dark band in dark. PROSE caps the line at about 75
           characters, the page's other prose measure. */}
       <div className="mt-4 md:pl-[50px]">
         <ReadMore
